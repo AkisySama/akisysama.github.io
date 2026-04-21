@@ -5,4 +5,9 @@ site_tree:
   home:
     leftbar: welcome, recent
     rightbar: timeline
-    
+
+style:
+  site:
+    background-image: 'url(/images/background.jpeg)'
+    blur-px: 2px
+    blur-bg: var(--alpha20)
