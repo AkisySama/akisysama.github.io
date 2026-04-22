@@ -9,5 +9,5 @@ site_tree:
 style:
   site:
     background-image: 'url(/images/background.jpeg)'
-    blur-px: 2px
-    blur-bg: var(--alpha20)
+    blur-px: 10px
+    blur-bg: var(--alpha75)
