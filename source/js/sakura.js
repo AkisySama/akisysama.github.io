@@ -36,12 +36,12 @@
         this.x = Math.random() * canvas.width;
         this.y = Math.random() * canvas.height - canvas.height;
         this.size = Math.random() * 6 + 10;
-        this.speedY = Math.random() * 1.5 + 1;
-        this.speedX = Math.random() * 1.5 - 0.75;
+        this.speedY = Math.random() * 0.75 + 0.5;
+        this.speedX = Math.random() * 0.75 - 0.375;
         this.angle = Math.random() * Math.PI * 2;
-        this.spin = Math.random() * 0.04 - 0.02;
+        this.spin = Math.random() * 0.02 - 0.01;
         this.scaleX = 1;
-        this.scaleXSpeed = Math.random() * 0.03 + 0.01;
+        this.scaleXSpeed = Math.random() * 0.015 + 0.005;
         this.scaleXDir = Math.random() > 0.5 ? 1 : -1;
     }
 
