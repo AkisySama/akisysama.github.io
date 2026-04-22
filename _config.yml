@@ -13,7 +13,7 @@ timezone: ''
 avatar: /images/whitehairblueeyes.jpeg
 # URL
 ## Set your site url here. For example, if you use GitHub Page, set url as 'https://username.github.io/project'
-url: https://akisyy.github.io/
+url: https://akisysama.github.io/
 permalink: :year/:month/:day/:title/
 permalink_defaults:
 pretty_urls:
@@ -102,5 +102,5 @@ theme: stellar
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   type: git
-  repo: https://github.com/akisyy/akisy.github.io.git
+  repo: git@github.com:AkisySama/akisysama.github.io.git
   branch: main
