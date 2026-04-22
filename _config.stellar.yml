@@ -11,3 +11,9 @@ style:
     background-image: 'url(/images/background.jpeg)'
     blur-px: 10px
     blur-bg: var(--alpha75)
+
+plugins:
+  sakura:
+    enable: true
+    inject: |
+      <script defer src="/js/sakura.js"></script>

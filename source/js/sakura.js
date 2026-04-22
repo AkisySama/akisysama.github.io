@@ -1,0 +1,116 @@
+(function() {
+    var canvas = document.createElement('canvas');
+    canvas.style.position = 'fixed';
+    canvas.style.top = '0';
+    canvas.style.left = '0';
+    canvas.style.width = '100vw';
+    canvas.style.height = '100vh';
+    canvas.style.pointerEvents = 'none';
+    canvas.style.zIndex = '999999';
+    document.body.appendChild(canvas);
+
+    var ctx = canvas.getContext('2d');
+    var petals = [];
+    var petalCount = 60;
+    var mouseX = -1000;
+    var mouseY = -1000;
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    window.addEventListener('mousemove', function(e) {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+    });
+    
+    window.addEventListener('mouseout', function() {
+        mouseX = -1000;
+        mouseY = -1000;
+    });
+
+    function Petal() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height - canvas.height;
+        this.size = Math.random() * 6 + 10;
+        this.speedY = Math.random() * 1.5 + 1;
+        this.speedX = Math.random() * 1.5 - 0.75;
+        this.angle = Math.random() * Math.PI * 2;
+        this.spin = Math.random() * 0.04 - 0.02;
+        this.scaleX = 1;
+        this.scaleXSpeed = Math.random() * 0.03 + 0.01;
+        this.scaleXDir = Math.random() > 0.5 ? 1 : -1;
+    }
+
+    Petal.prototype.update = function() {
+        this.y += this.speedY;
+        this.x += this.speedX;
+        this.angle += this.spin;
+
+        this.scaleX += this.scaleXSpeed * this.scaleXDir;
+        if (this.scaleX > 1 || this.scaleX < -1) {
+            this.scaleXDir *= -1;
+        }
+        
+        var dx = this.x - mouseX;
+        var dy = this.y - mouseY;
+        var dist = Math.sqrt(dx * dx + dy * dy);
+        var maxDist = 150;
+        if (dist < maxDist) {
+            var force = (maxDist - dist) / maxDist;
+            this.x += (dx / dist) * force * 5;
+            this.y += (dy / dist) * force * 5;
+        }
+
+        if (this.y > canvas.height + this.size * 2) {
+            this.y = -this.size * 2;
+            this.x = Math.random() * canvas.width;
+        }
+        if (this.x > canvas.width + this.size * 2) {
+            this.x = -this.size * 2;
+        } else if (this.x < -this.size * 2) {
+            this.x = canvas.width + this.size * 2;
+        }
+    };
+
+    Petal.prototype.draw = function() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.angle);
+        ctx.scale(this.scaleX, 1);
+        
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(-this.size, -this.size/3, -this.size, -this.size*1.2, -this.size/3, -this.size);
+        ctx.lineTo(0, -this.size*0.8);
+        ctx.lineTo(this.size/3, -this.size);
+        ctx.bezierCurveTo(this.size, -this.size*1.2, this.size, -this.size/3, 0, 0);
+        ctx.closePath();
+        
+        var gradient = ctx.createLinearGradient(0, 0, 0, -this.size);
+        gradient.addColorStop(0, 'rgba(255, 183, 197, 0.9)');
+        gradient.addColorStop(1, 'rgba(255, 210, 220, 0.6)');
+        
+        ctx.fillStyle = gradient;
+        ctx.fill();
+        ctx.restore();
+    };
+
+    for (var i = 0; i < petalCount; i++) {
+        petals.push(new Petal());
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (var i = 0; i < petals.length; i++) {
+            petals[i].update();
+            petals[i].draw();
+        }
+        requestAnimationFrame(animate);
+    }
+    
+    animate();
+})();
