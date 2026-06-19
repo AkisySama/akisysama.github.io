@@ -1,5 +1,5 @@
 logo:
-  subtitle: '😇 | 希望开心'
+  subtitle: "🤖 | AI nerd"
 
 site_tree:
   home:
@@ -8,7 +8,6 @@ site_tree:
 
 style:
   site:
-    background-image: 'url(/images/background.jpeg)'
     blur-px: 10px
     blur-bg: var(--alpha75)
 

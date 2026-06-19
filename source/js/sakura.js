@@ -76,26 +76,40 @@
         }
     };
 
+    function drawSakuraPetal(size) {
+        ctx.beginPath();
+        ctx.moveTo(0, -size * 0.12);
+        ctx.bezierCurveTo(-size * 0.55, -size * 0.35, -size * 0.48, -size * 0.92, -size * 0.12, -size * 1.08);
+        ctx.bezierCurveTo(-size * 0.04, -size * 0.98, size * 0.04, -size * 0.98, size * 0.12, -size * 1.08);
+        ctx.bezierCurveTo(size * 0.48, -size * 0.92, size * 0.55, -size * 0.35, 0, -size * 0.12);
+        ctx.closePath();
+        ctx.fill();
+    }
+
+    function drawSakuraBlossom(size) {
+        var petalSize = size * 0.72;
+        var gradient = ctx.createLinearGradient(0, 0, 0, -petalSize);
+        gradient.addColorStop(0, 'rgba(255, 228, 238, 0.9)');
+        gradient.addColorStop(1, 'rgba(255, 170, 200, 0.68)');
+
+        ctx.fillStyle = gradient;
+        for (var i = 0; i < 5; i++) {
+            drawSakuraPetal(petalSize);
+            ctx.rotate((Math.PI * 2) / 5);
+        }
+
+        ctx.beginPath();
+        ctx.arc(0, 0, size * 0.12, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(255, 214, 130, 0.85)';
+        ctx.fill();
+    }
+
     Petal.prototype.draw = function() {
         ctx.save();
         ctx.translate(this.x, this.y);
         ctx.rotate(this.angle);
         ctx.scale(this.scaleX, 1);
-        
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.bezierCurveTo(-this.size, -this.size/3, -this.size, -this.size*1.2, -this.size/3, -this.size);
-        ctx.lineTo(0, -this.size*0.8);
-        ctx.lineTo(this.size/3, -this.size);
-        ctx.bezierCurveTo(this.size, -this.size*1.2, this.size, -this.size/3, 0, 0);
-        ctx.closePath();
-        
-        var gradient = ctx.createLinearGradient(0, 0, 0, -this.size);
-        gradient.addColorStop(0, 'rgba(255, 183, 197, 0.9)');
-        gradient.addColorStop(1, 'rgba(255, 210, 220, 0.6)');
-        
-        ctx.fillStyle = gradient;
-        ctx.fill();
+        drawSakuraBlossom(this.size);
         ctx.restore();
     };
 
