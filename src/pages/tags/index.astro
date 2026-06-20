@@ -1,0 +1,32 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { getAllTags, getPostsByTag, getPublishedPosts } from "@utils/posts";
+import { pathForTag } from "@utils/slug";
+
+const posts = await getPublishedPosts();
+const tags = getAllTags(posts);
+---
+
+<BaseLayout title="标签" description="Akisy 博客的全部标签。">
+  <header class="page-header">
+    <p class="eyebrow">Tags</p>
+    <h1>标签</h1>
+    <p>按主题浏览文章。</p>
+  </header>
+
+  {
+    tags.length > 0 ? (
+      <ul class="tag-cloud">
+        {tags.map((tag) => (
+          <li>
+            <a href={pathForTag(tag)}>
+              {tag} <span>({getPostsByTag(posts, tag).length})</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p class="empty-state">还没有标签。</p>
+    )
+  }
+</BaseLayout>

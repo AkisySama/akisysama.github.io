@@ -1,0 +1,49 @@
+---
+import mappingCsv from "../data/url-mapping.csv?raw";
+
+interface Mapping {
+  oldUrl: string;
+  newUrl: string;
+  status: string;
+}
+
+export function getStaticPaths() {
+  const mappings = mappingCsv
+    .trim()
+    .split(/\r?\n/)
+    .slice(1)
+    .filter(Boolean)
+    .map((row: string) => {
+      const [oldUrl, newUrl, status] = row.split(",");
+      return { oldUrl, newUrl, status };
+    });
+
+  return mappings.map((mapping) => ({
+    params: { legacy: mapping.oldUrl.replace(/^\/|\/$/g, "") },
+    props: { mapping },
+  }));
+}
+
+interface Props {
+  mapping: Mapping;
+}
+
+const { mapping } = Astro.props;
+const target = new URL(mapping.newUrl, Astro.site).toString();
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>文章已迁移</title>
+    <meta name="robots" content="noindex" />
+    <meta http-equiv="refresh" content={`0; url=${mapping.newUrl}`} />
+    <link rel="canonical" href={target} />
+  </head>
+  <body class="redirect-page">
+    <h1>文章已迁移</h1>
+    <p>这篇文章的新地址是 <a href={mapping.newUrl}>{mapping.newUrl}</a>。</p>
+  </body>
+</html>

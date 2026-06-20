@@ -1,0 +1,30 @@
+---
+import TagList from "./TagList.astro";
+import { formatDate } from "@utils/dates";
+import { getPostDescription, getPostUrl, type BlogPost } from "@utils/posts";
+
+interface Props {
+  post: BlogPost;
+}
+
+const { post } = Astro.props;
+const description = getPostDescription(post);
+---
+
+<article class="post-card">
+  {
+    post.data.cover && (
+      <a class="post-card-cover" href={getPostUrl(post)} aria-label={`阅读 ${post.data.title}`}>
+        <img src={post.data.cover} alt="" loading="lazy" />
+      </a>
+    )
+  }
+  <div class="post-card-body">
+    <p class="post-card-date">
+      <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+    </p>
+    <h2><a href={getPostUrl(post)}>{post.data.title}</a></h2>
+    {description && <p class="post-card-description">{description}</p>}
+    <TagList tags={post.data.tags} />
+  </div>
+</article>

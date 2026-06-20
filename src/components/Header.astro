@@ -1,0 +1,18 @@
+---
+const navItems = [
+  { href: "/", label: "首页" },
+  { href: "/posts/", label: "文章" },
+  { href: "/tags/", label: "标签" },
+  { href: "/about/", label: "关于" },
+];
+---
+
+<header class="site-header">
+  <a class="brand" href="/" aria-label="Akisy的记录首页">
+    <img src="/images/whitehairblueeyes.jpeg" alt="" width="40" height="40" />
+    <span>Akisy的记录</span>
+  </a>
+  <nav class="site-nav" aria-label="主导航">
+    {navItems.map((item) => <a href={item.href}>{item.label}</a>)}
+  </nav>
+</header>

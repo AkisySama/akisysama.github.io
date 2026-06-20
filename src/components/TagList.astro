@@ -1,0 +1,21 @@
+---
+import { pathForTag } from "@utils/slug";
+
+interface Props {
+  tags: string[];
+}
+
+const { tags } = Astro.props;
+---
+
+{
+  tags.length > 0 && (
+    <ul class="tag-list" aria-label="文章标签">
+      {tags.map((tag) => (
+        <li>
+          <a href={pathForTag(tag)}>{tag}</a>
+        </li>
+      ))}
+    </ul>
+  )
+}

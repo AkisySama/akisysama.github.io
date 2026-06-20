@@ -1,28 +1,17 @@
 {
-  "name": "hexo-site",
-  "version": "0.0.0",
+  "name": "akisy-blog",
+  "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "build": "hexo generate",
-    "clean": "hexo clean",
-    "deploy": "hexo deploy",
-    "server": "hexo server"
+    "dev": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "test": "astro check && node scripts/verify-migration.mjs"
   },
-  "hexo": {
-    "version": "7.1.1"
-  },
-  "dependencies": {
-    "hexo": "^7.0.0",
-    "hexo-deployer-git": "^4.0.0",
-    "hexo-generator-archive": "^2.0.0",
-    "hexo-generator-category": "^2.0.0",
-    "hexo-generator-index": "^3.0.0",
-    "hexo-generator-tag": "^2.0.0",
-    "hexo-renderer-ejs": "^2.0.0",
-    "hexo-renderer-marked": "^6.0.0",
-    "hexo-renderer-stylus": "^3.0.0",
-    "hexo-server": "^3.0.0",
-    "hexo-theme-landscape": "^1.0.0",
-    "hexo-theme-stellar": "^1.27.0"
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "astro": "^6.4.8",
+    "typescript": "^6.0.3"
   }
 }

@@ -1,0 +1,37 @@
+---
+import TagList from "@components/TagList.astro";
+import { formatDate, toDateTime } from "@utils/dates";
+import { type BlogPost } from "@utils/posts";
+
+interface Props {
+  post: BlogPost;
+}
+
+const { post } = Astro.props;
+---
+
+<article class="post-detail">
+  <header class="post-hero">
+    <p class="eyebrow">文章</p>
+    <h1>{post.data.title}</h1>
+    <div class="post-meta">
+      <time datetime={toDateTime(post.data.pubDate)}>发布于 {formatDate(post.data.pubDate)}</time>
+      {
+        post.data.updatedDate && (
+          <time datetime={toDateTime(post.data.updatedDate)}>
+            更新于 {formatDate(post.data.updatedDate)}
+          </time>
+        )
+      }
+    </div>
+    <TagList tags={post.data.tags} />
+    {
+      post.data.cover && (
+        <img class="post-cover" src={post.data.cover} alt="" loading="eager" />
+      )
+    }
+  </header>
+  <div class="prose">
+    <slot />
+  </div>
+</article>
