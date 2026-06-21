@@ -1,32 +1,115 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
 import PostCard from "@components/PostCard.astro";
-import { getPublishedPosts } from "@utils/posts";
+import { BookOpen, FileText, Image as ImageIcon, Tags } from "@lucide/astro";
+import { getAllTags, getPublishedPosts } from "@utils/posts";
+import { pathForTag } from "@utils/slug";
 
 const posts = await getPublishedPosts();
-const latestPosts = posts.slice(0, 5);
+const featuredPosts = posts.slice(0, 4);
+const tagCounts = getTagCounts(posts).slice(0, 8);
+const allTags = getAllTags(posts);
+
+function getTagCounts(allPosts: typeof posts) {
+  const counts = new Map<string, number>();
+
+  for (const post of allPosts) {
+    for (const tag of post.data.tags) {
+      counts.set(tag, (counts.get(tag) ?? 0) + 1);
+    }
+  }
+
+  return Array.from(counts.entries())
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag, "zh-CN"));
+}
 ---
 
 <BaseLayout>
-  <section class="hero" aria-labelledby="home-title">
-    <div>
+  <section class="home-hero neumo-surface" aria-labelledby="home-title">
+    <div class="hero-copy">
       <p class="eyebrow">Personal Blog</p>
       <h1 id="home-title">Akisy的记录</h1>
       <p>
-        这里记录一些技术笔记、生活片段、历史阅读和旅途中的想法。新站点从 Hexo
-        迁移到 Astro，先把阅读体验打稳，再慢慢长出更多功能。
+        记录技术探索、生活片段、历史阅读与旅途中的所见所想。
+        在代码与文字之间，留住生活的温度。
       </p>
+      <div class="hero-actions" aria-label="首页快速入口">
+        <a class="pill-link" href="/posts/">
+          <BookOpen class="icon-muted" size={17} stroke-width={1.8} />
+          浏览文章
+        </a>
+        <a class="pill-link" href="/tags/">
+          <Tags class="icon-muted" size={17} stroke-width={1.8} />
+          探索标签
+        </a>
+      </div>
+      <dl class="hero-stats" aria-label="博客统计">
+        <div>
+          <dt>
+            <FileText class="icon-muted" size={17} stroke-width={1.8} />
+            文章
+          </dt>
+          <dd>{posts.length}</dd>
+        </div>
+        <div>
+          <dt>
+            <Tags class="icon-muted" size={17} stroke-width={1.8} />
+            标签
+          </dt>
+          <dd>{allTags.length}</dd>
+        </div>
+        <div>
+          <dt>
+            <ImageIcon class="icon-muted" size={17} stroke-width={1.8} />
+            建站时间
+          </dt>
+          <dd>Since 2023</dd>
+        </div>
+      </dl>
     </div>
-    <img src="/images/whitehairblueeyes.jpeg" alt="Akisy 的头像" width="220" height="220" />
+    <figure class="hero-showcase" aria-label="二次元图片展示">
+      <img
+        src="/images/background.jpeg"
+        alt="金发二次元角色在明亮户外背景中的横幅图"
+        width="1861"
+        height="938"
+        loading="eager"
+      />
+    </figure>
   </section>
 
-  <section aria-labelledby="latest-posts">
-    <div class="section-heading">
-      <h2 id="latest-posts">最新文章</h2>
-      <a href="/posts/">查看全部</a>
-    </div>
-    <div class="post-grid">
-      {latestPosts.map((post) => <PostCard post={post} />)}
-    </div>
-  </section>
+  <div class="home-content-grid">
+    <section class="latest-posts neumo-surface" aria-labelledby="latest-posts">
+      <div class="section-heading">
+        <h2 id="latest-posts">
+          <FileText class="icon-muted" size={20} stroke-width={1.8} />
+          最新文章
+        </h2>
+        <a href="/posts/">查看全部</a>
+      </div>
+      <div class="post-grid">
+        {featuredPosts.map((post) => <PostCard post={post} />)}
+      </div>
+    </section>
+
+    <aside class="tag-sidebar neumo-surface" aria-labelledby="hot-tags">
+      <h2 id="hot-tags">
+        <Tags class="icon-muted" size={20} stroke-width={1.8} />
+        热门标签
+      </h2>
+      <ul>
+        {
+          tagCounts.map(({ tag, count }) => (
+            <li>
+              <a href={pathForTag(tag)}>
+                <span>{tag}</span>
+                <span>{count}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </aside>
+  </div>
 </BaseLayout>

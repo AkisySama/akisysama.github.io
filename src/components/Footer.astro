@@ -1,3 +1,34 @@
+---
+import { BookOpen, Globe, UserRound } from "@lucide/astro";
+
+const socialLinks = [
+  { href: "https://github.com/akisysama", label: "GitHub", icon: Globe, external: true },
+  { href: "/about/", label: "关于", icon: UserRound },
+  { href: "/posts/", label: "文章", icon: BookOpen },
+];
+---
+
 <footer class="site-footer">
-  <p>© {new Date().getFullYear()} Akisy. Built with Astro.</p>
+  <div class="footer-copy">
+    <img src="/images/whitehairblueeyes.jpeg" alt="" width="44" height="44" loading="lazy" />
+    <p>
+      <span>© {new Date().getFullYear()} Akisy的记录</span>
+      <span>Built with Astro · Love & Peace</span>
+    </p>
+  </div>
+  <nav class="footer-social" aria-label="页脚链接">
+    {
+      socialLinks.map(({ href, label, icon: Icon, external }) => (
+        <a
+          href={href}
+          aria-label={label}
+          title={label}
+          target={external ? "_blank" : undefined}
+          rel={external ? "noreferrer" : undefined}
+        >
+          <Icon class="icon-muted" size={18} stroke-width={1.8} />
+        </a>
+      ))
+    }
+  </nav>
 </footer>

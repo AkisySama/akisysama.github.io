@@ -7,10 +7,11 @@
     "dev": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
-    "test": "astro check && node scripts/verify-migration.mjs"
+    "test": "astro check && node scripts/verify-migration.mjs && node scripts/verify-theme.mjs"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
+    "@lucide/astro": "^1.21.0",
     "astro": "^6.4.8",
     "typescript": "^6.0.3"
   }

@@ -1,10 +1,18 @@
 ---
+import { UserRound } from "@lucide/astro";
+
 const navItems = [
   { href: "/", label: "首页" },
   { href: "/posts/", label: "文章" },
   { href: "/tags/", label: "标签" },
   { href: "/about/", label: "关于" },
 ];
+
+const currentPath = Astro.url.pathname;
+const isActive = (href: string) => {
+  if (href === "/") return currentPath === "/";
+  return currentPath.startsWith(href);
+};
 ---
 
 <header class="site-header">
@@ -13,6 +21,15 @@ const navItems = [
     <span>Akisy的记录</span>
   </a>
   <nav class="site-nav" aria-label="主导航">
-    {navItems.map((item) => <a href={item.href}>{item.label}</a>)}
+    {
+      navItems.map((item) => (
+        <a href={item.href} aria-current={isActive(item.href) ? "page" : undefined}>
+          {item.label}
+        </a>
+      ))
+    }
   </nav>
+  <a class="header-orb" href="/about/" aria-label="关于 Akisy">
+    <UserRound class="icon-muted" size={18} stroke-width={1.8} />
+  </a>
 </header>

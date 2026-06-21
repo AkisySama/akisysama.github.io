@@ -1,5 +1,6 @@
 ---
 import TagList from "./TagList.astro";
+import { Calendar } from "@lucide/astro";
 import { formatDate } from "@utils/dates";
 import { getPostDescription, getPostUrl, type BlogPost } from "@utils/posts";
 
@@ -11,7 +12,7 @@ const { post } = Astro.props;
 const description = getPostDescription(post);
 ---
 
-<article class="post-card">
+<article class:list={["post-card", !post.data.cover && "post-card-no-cover"]}>
   {
     post.data.cover && (
       <a class="post-card-cover" href={getPostUrl(post)} aria-label={`阅读 ${post.data.title}`}>
@@ -21,6 +22,7 @@ const description = getPostDescription(post);
   }
   <div class="post-card-body">
     <p class="post-card-date">
+      <Calendar class="icon-muted" size={15} stroke-width={1.8} />
       <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
     </p>
     <h2><a href={getPostUrl(post)}>{post.data.title}</a></h2>

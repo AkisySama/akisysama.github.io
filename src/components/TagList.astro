@@ -1,4 +1,5 @@
 ---
+import { Tag } from "@lucide/astro";
 import { pathForTag } from "@utils/slug";
 
 interface Props {
@@ -13,7 +14,10 @@ const { tags } = Astro.props;
     <ul class="tag-list" aria-label="文章标签">
       {tags.map((tag) => (
         <li>
-          <a href={pathForTag(tag)}>{tag}</a>
+          <a href={pathForTag(tag)}>
+            <Tag class="icon-muted" size={13} stroke-width={1.8} />
+            {tag}
+          </a>
         </li>
       ))}
     </ul>

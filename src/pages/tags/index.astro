@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
+import { Tag } from "@lucide/astro";
 import { getAllTags, getPostsByTag, getPublishedPosts } from "@utils/posts";
 import { pathForTag } from "@utils/slug";
 
@@ -20,6 +21,7 @@ const tags = getAllTags(posts);
         {tags.map((tag) => (
           <li>
             <a href={pathForTag(tag)}>
+              <Tag class="icon-muted" size={14} stroke-width={1.8} />
               {tag} <span>({getPostsByTag(posts, tag).length})</span>
             </a>
           </li>

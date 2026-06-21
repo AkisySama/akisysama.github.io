@@ -1,5 +1,6 @@
 ---
 import TagList from "@components/TagList.astro";
+import { Calendar, Clock } from "@lucide/astro";
 import { formatDate, toDateTime } from "@utils/dates";
 import { type BlogPost } from "@utils/posts";
 
@@ -15,10 +16,14 @@ const { post } = Astro.props;
     <p class="eyebrow">文章</p>
     <h1>{post.data.title}</h1>
     <div class="post-meta">
-      <time datetime={toDateTime(post.data.pubDate)}>发布于 {formatDate(post.data.pubDate)}</time>
+      <time datetime={toDateTime(post.data.pubDate)}>
+        <Calendar class="icon-muted" size={16} stroke-width={1.8} />
+        发布于 {formatDate(post.data.pubDate)}
+      </time>
       {
         post.data.updatedDate && (
           <time datetime={toDateTime(post.data.updatedDate)}>
+            <Clock class="icon-muted" size={16} stroke-width={1.8} />
             更新于 {formatDate(post.data.updatedDate)}
           </time>
         )
