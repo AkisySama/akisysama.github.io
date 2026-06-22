@@ -2,13 +2,14 @@
 import TagList from "@components/TagList.astro";
 import { Calendar, Clock } from "@lucide/astro";
 import { formatDate, toDateTime } from "@utils/dates";
-import { type BlogPost } from "@utils/posts";
+import { getPostCover, type BlogPost } from "@utils/posts";
 
 interface Props {
   post: BlogPost;
 }
 
 const { post } = Astro.props;
+const cover = getPostCover(post);
 ---
 
 <article class="post-detail">
@@ -30,11 +31,7 @@ const { post } = Astro.props;
       }
     </div>
     <TagList tags={post.data.tags} />
-    {
-      post.data.cover && (
-        <img class="post-cover" src={post.data.cover} alt="" loading="eager" />
-      )
-    }
+    <img class="post-cover" src={cover} alt="" loading="eager" />
   </header>
   <div class="prose">
     <slot />

@@ -3,12 +3,18 @@ import { pathForPost, stripMarkdownExtension } from "./slug";
 
 export type BlogPost = CollectionEntry<"blog">;
 
+export const DEFAULT_POST_COVER = "/images/default-post-cover.jpeg";
+
 export function getPostSlug(post: BlogPost): string {
   return post.data.slug ?? stripMarkdownExtension(post.id);
 }
 
 export function getPostUrl(post: BlogPost): string {
   return pathForPost(getPostSlug(post));
+}
+
+export function getPostCover(post: BlogPost): string {
+  return post.data.cover ?? DEFAULT_POST_COVER;
 }
 
 export function sortPostsByDate(posts: BlogPost[]): BlogPost[] {
