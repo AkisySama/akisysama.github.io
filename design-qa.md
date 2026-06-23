@@ -62,6 +62,8 @@ Copy and content:
 - Added a `post-card-no-cover` class and CSS rule so text-only posts fill their card layout.
 - Clamped homepage post excerpts to 5 lines to keep the homepage rhythm closer to the visual target.
 - Converted the header's right-side circular icon from decorative chrome into an accessible link to `/about/`.
+- Retuned the neumorphic system toward the 2026-06-24 reference screenshot: same-color gray-blue surfaces, near-invisible edge strokes, larger soft radii, stronger dual-direction shadows, and inset wells only where the UI should feel pressed.
+- Verified the updated homepage at desktop and `390x844`; no horizontal overflow was present.
 
 ## Implementation Checklist
 
