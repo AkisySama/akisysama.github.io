@@ -1,5 +1,5 @@
 ---
-import { UserRound } from "@lucide/astro";
+import { Moon, Sun, UserRound } from "@lucide/astro";
 
 const navItems = [
   { href: "/", label: "首页" },
@@ -29,7 +29,53 @@ const isActive = (href: string) => {
       ))
     }
   </nav>
-  <a class="header-orb" href="/about/" aria-label="关于 Akisy">
-    <UserRound class="icon-muted" size={18} stroke-width={1.8} />
-  </a>
+  <div class="header-actions">
+    <button class="theme-toggle" type="button" aria-label="切换到暗色模式" aria-pressed="false">
+      <Moon class="theme-icon theme-icon-moon" size={18} stroke-width={1.8} aria-hidden="true" />
+      <Sun class="theme-icon theme-icon-sun" size={18} stroke-width={1.8} aria-hidden="true" />
+    </button>
+    <a class="header-orb" href="/about/" aria-label="关于 Akisy">
+      <UserRound class="icon-muted" size={18} stroke-width={1.8} />
+    </a>
+  </div>
 </header>
+
+<script>
+  const applyTheme = (theme: "light" | "dark", button: HTMLButtonElement) => {
+    const isDark = theme === "dark";
+    const label = isDark ? "切换到浅色模式" : "切换到暗色模式";
+
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+    button.setAttribute("aria-label", label);
+    button.setAttribute("title", label);
+    button.setAttribute("aria-pressed", String(isDark));
+  };
+
+  const setupThemeToggle = () => {
+    const button = document.querySelector<HTMLButtonElement>(".theme-toggle");
+    if (!button || button.dataset.themeBound === "true") return;
+
+    button.dataset.themeBound = "true";
+    applyTheme(document.documentElement.dataset.theme === "dark" ? "dark" : "light", button);
+
+    button.addEventListener("click", () => {
+      const nextTheme = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      applyTheme(nextTheme, button);
+
+      try {
+        localStorage.setItem("akisy-theme", nextTheme);
+      } catch {
+        // The current page still changes theme if persistence is unavailable.
+      }
+    });
+  };
+
+  document.addEventListener("astro:before-swap", (event) => {
+    const theme = document.documentElement.dataset.theme === "dark" ? "dark" : "light";
+    event.newDocument.documentElement.dataset.theme = theme;
+    event.newDocument.documentElement.style.colorScheme = theme;
+  });
+  document.addEventListener("astro:page-load", setupThemeToggle);
+  setupThemeToggle();
+</script>

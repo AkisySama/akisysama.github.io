@@ -30,6 +30,27 @@ const ogImage = image ? new URL(image, Astro.site).toString() : undefined;
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     {ogImage && <meta property="og:image" content={ogImage} />}
+    <script is:inline>
+      (() => {
+        let savedTheme = null;
+
+        try {
+          savedTheme = localStorage.getItem("akisy-theme");
+        } catch {
+          // Storage can be unavailable in privacy-restricted contexts.
+        }
+
+        const theme =
+          savedTheme === "light" || savedTheme === "dark"
+            ? savedTheme
+            : matchMedia("(prefers-color-scheme: dark)").matches
+              ? "dark"
+              : "light";
+
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme;
+      })();
+    </script>
     <ClientRouter />
   </head>
   <body>

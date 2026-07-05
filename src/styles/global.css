@@ -27,6 +27,61 @@
   --shadow-sunken-soft: inset 13px 15px 26px rgb(163 171 190 / 32%), inset -9px -11px 22px rgb(255 255 255 / 82%);
   --shadow-button-raised: 10px 10px 18px rgb(154 164 185 / 44%), -10px -10px 18px rgb(255 255 255 / 92%);
   --shadow-button-pressed: inset 9px 11px 17px rgb(163 171 190 / 34%), inset -6px -8px 15px rgb(255 255 255 / 84%);
+  --shadow-card-hover: inset 9px 11px 17px rgb(163 171 190 / 34%);
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-bg: #242a35;
+  --color-surface: #242a35;
+  --color-surface-lifted: #29313e;
+  --color-surface-soft: #202630;
+  --color-text: #e8edf6;
+  --color-muted: #aab5c6;
+  --color-border: #3a4352;
+  --color-accent: #8eb2ff;
+  --color-accent-soft: #33425d;
+  --color-code-bg: #1d222b;
+  --color-icon: #9ba9bd;
+  --color-icon-soft: #8291a7;
+  --color-icon-faint: #59677b;
+  --surface-edge: 1px solid rgb(255 255 255 / 6%);
+  --shadow-raised: 14px 14px 26px rgb(11 14 19 / 58%), -14px -14px 26px rgb(55 64 79 / 52%);
+  --shadow-raised-strong: 20px 20px 36px rgb(10 13 18 / 62%), -20px -20px 36px rgb(55 64 79 / 56%);
+  --shadow-soft: 10px 10px 20px rgb(11 14 19 / 48%), -10px -10px 20px rgb(55 64 79 / 42%);
+  --shadow-inset: inset 10px 12px 20px rgb(10 13 18 / 58%), inset -7px -9px 17px rgb(55 64 79 / 42%);
+  --shadow-sunken-soft: inset 13px 15px 26px rgb(10 13 18 / 54%), inset -9px -11px 22px rgb(55 64 79 / 38%);
+  --shadow-button-raised: 10px 10px 18px rgb(11 14 19 / 54%), -10px -10px 18px rgb(55 64 79 / 48%);
+  --shadow-button-pressed: inset 9px 11px 17px rgb(10 13 18 / 58%), inset -6px -8px 15px rgb(55 64 79 / 40%);
+  --shadow-card-hover: inset 9px 11px 17px rgb(10 13 18 / 58%);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --color-bg: #242a35;
+    --color-surface: #242a35;
+    --color-surface-lifted: #29313e;
+    --color-surface-soft: #202630;
+    --color-text: #e8edf6;
+    --color-muted: #aab5c6;
+    --color-border: #3a4352;
+    --color-accent: #8eb2ff;
+    --color-accent-soft: #33425d;
+    --color-code-bg: #1d222b;
+    --color-icon: #9ba9bd;
+    --color-icon-soft: #8291a7;
+    --color-icon-faint: #59677b;
+    --surface-edge: 1px solid rgb(255 255 255 / 6%);
+    --shadow-raised: 14px 14px 26px rgb(11 14 19 / 58%), -14px -14px 26px rgb(55 64 79 / 52%);
+    --shadow-raised-strong: 20px 20px 36px rgb(10 13 18 / 62%), -20px -20px 36px rgb(55 64 79 / 56%);
+    --shadow-soft: 10px 10px 20px rgb(11 14 19 / 48%), -10px -10px 20px rgb(55 64 79 / 42%);
+    --shadow-inset: inset 10px 12px 20px rgb(10 13 18 / 58%), inset -7px -9px 17px rgb(55 64 79 / 42%);
+    --shadow-sunken-soft: inset 13px 15px 26px rgb(10 13 18 / 54%), inset -9px -11px 22px rgb(55 64 79 / 38%);
+    --shadow-button-raised: 10px 10px 18px rgb(11 14 19 / 54%), -10px -10px 18px rgb(55 64 79 / 48%);
+    --shadow-button-pressed: inset 9px 11px 17px rgb(10 13 18 / 58%), inset -6px -8px 15px rgb(55 64 79 / 40%);
+    --shadow-card-hover: inset 9px 11px 17px rgb(10 13 18 / 58%);
+  }
 }
 
 * {
@@ -170,7 +225,13 @@ img {
   transform: translateY(1px);
 }
 
-.header-orb {
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.header-orb,
+.theme-toggle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -182,9 +243,34 @@ img {
   box-shadow: var(--shadow-button-raised);
 }
 
-.header-orb:hover {
+.theme-toggle {
+  border: var(--surface-edge);
+  color: var(--color-icon);
+  cursor: pointer;
+}
+
+.header-orb:hover,
+.theme-toggle:hover {
   box-shadow: var(--shadow-button-pressed);
   transform: translateY(1px);
+}
+
+.theme-toggle:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 4px;
+}
+
+.theme-icon {
+  stroke: currentColor;
+}
+
+.theme-icon-sun,
+:root[data-theme="dark"] .theme-icon-moon {
+  display: none;
+}
+
+:root[data-theme="dark"] .theme-icon-sun {
+  display: block;
 }
 
 .site-main {
@@ -383,12 +469,16 @@ img {
 
 .post-card:hover {
   border-color: transparent;
-  box-shadow: inset 9px 11px 17px rgb(163 171 190 / 34%);
+  box-shadow: var(--shadow-card-hover);
   transform: translateY(1px);
 }
 
 .post-grid .post-card {
   grid-template-columns: 1fr;
+}
+
+.post-card-cover {
+  align-self: center;
 }
 
 .post-card-cover img {

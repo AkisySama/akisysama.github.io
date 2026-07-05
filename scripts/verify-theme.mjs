@@ -39,13 +39,13 @@ assert.ok(homepage.includes("热门标签"), "Homepage should render the hot tag
 assert.ok(homepage.includes("getTagCounts"), "Homepage should derive hot tags from post data");
 
 for (const token of [
-  "--color-bg: #ebf1fe",
-  "--color-surface: #f8fbff",
-  "--color-surface-soft: #eef5ff",
-  "--color-border: #d7e2f3",
-  "--color-accent: #6787b3",
-  "--color-accent-soft: #dde9fb",
-  "--color-code-bg: #e4ecf8",
+  "--color-bg: #eef1f7",
+  "--color-surface: #eef1f7",
+  "--color-surface-soft: #eceff6",
+  "--color-border: #d7dce7",
+  "--color-accent: #2f6bea",
+  "--color-accent-soft: #dfe7fb",
+  "--color-code-bg: #e6eaf2",
   "--color-icon: #93a5bc",
   "--color-icon-soft: #b0bed0",
   "--color-icon-faint: #d4deec",
@@ -57,6 +57,46 @@ for (const token of [
 ]) {
   assert.ok(styles.includes(token), `Missing theme token ${token}`);
 }
+
+assert.ok(
+  styles.includes(':root[data-theme="dark"]'),
+  "Theme styles should expose an explicit dark color-token set",
+);
+assert.match(
+  styles,
+  /@media\s*\(prefers-color-scheme:\s*dark\)[\s\S]*:root:not\(\[data-theme\]\)/,
+  "Theme styles should follow the system preference before a choice is stored",
+);
+assert.match(
+  baseLayout,
+  /localStorage\.getItem\(["']akisy-theme["']\)/,
+  "BaseLayout should restore a saved theme before rendering",
+);
+assert.match(
+  baseLayout,
+  /matchMedia\(["']\(prefers-color-scheme: dark\)["']\)/,
+  "BaseLayout should use the system preference when no theme is saved",
+);
+assert.match(
+  baseLayout,
+  /document\.documentElement\.dataset\.theme\s*=/,
+  "BaseLayout should apply the resolved theme to the root element",
+);
+assert.match(
+  header,
+  /<button[^>]+class=["']theme-toggle["'][^>]+aria-label=["'][^"']+["']/,
+  "Header should render an accessible theme toggle button",
+);
+assert.match(
+  header,
+  /localStorage\.setItem\(["']akisy-theme["']/,
+  "Theme toggle should persist the visitor's explicit choice",
+);
+assert.ok(
+  header.includes("astro:before-swap"),
+  "Theme toggle should carry the active theme into Astro's incoming document",
+);
+assert.ok(header.includes("astro:page-load"), "Theme toggle should survive Astro page transitions");
 
 for (const selector of [
   ".neumo-surface",
@@ -73,13 +113,13 @@ for (const selector of [
 assert.ok(styles.includes("-webkit-line-clamp: 5"), "Homepage post cards should clamp long excerpts");
 assert.match(
   cssRule(".home-hero"),
-  /box-shadow:\s*var\(--shadow-sunken-soft\);/,
-  "Homepage hero panel should use the soft sunken neumorphic shadow",
+  /box-shadow:\s*var\(--shadow-raised-strong\);/,
+  "Homepage hero panel should use the strong raised neumorphic shadow",
 );
 assert.match(
   cssRule(".latest-posts"),
-  /box-shadow:\s*var\(--shadow-sunken-soft\);/,
-  "Latest posts panel should use the soft sunken neumorphic shadow",
+  /box-shadow:\s*var\(--shadow-raised-strong\);/,
+  "Latest posts panel should use the strong raised neumorphic shadow",
 );
 assert.match(
   cssRule(".tag-sidebar"),
@@ -102,9 +142,9 @@ assert.match(
   "Primary clickable pills should press inward on hover or active state",
 );
 assert.match(
-  cssRule(".header-orb"),
+  cssRule(".header-orb,\n.theme-toggle"),
   /box-shadow:\s*var\(--shadow-button-raised\);/,
-  "Header orb should read as a raised clickable control",
+  "Header utility controls should read as raised clickable controls",
 );
 assert.match(
   cssRule(".tag-list a,\n.tag-cloud a"),
