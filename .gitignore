@@ -8,3 +8,6 @@ dist/
 tmp/
 .deploy*/
 _multiconfig.yml
+
+# Internal planning and specification artifacts should not be published.
+/docs/superpowers/
