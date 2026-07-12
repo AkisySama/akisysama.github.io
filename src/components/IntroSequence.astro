@@ -56,6 +56,13 @@ const portraitAscii = portraitSource.trimEnd();
     intro.dataset.bound = "true";
 
     const root = document.documentElement;
+
+    if (root.dataset.intro !== "pending") {
+      root.dataset.blogEntered = "true";
+      intro.hidden = true;
+      return;
+    }
+
     const stage = intro.querySelector("[data-intro-stage]");
     const windowElement = intro.querySelector("[data-terminal-window]");
     const commandOutput = intro.querySelector("[data-command-output]");
@@ -96,6 +103,7 @@ const portraitAscii = portraitSource.trimEnd();
     const enterBlog = () => {
       if (!finished || entering) return;
       entering = true;
+      root.dataset.blogEntered = "true";
       window.removeEventListener("wheel", handleWheel);
       window.removeEventListener("touchstart", handleTouchStart);
       window.removeEventListener("touchend", handleTouchEnd);
@@ -202,6 +210,10 @@ const portraitAscii = portraitSource.trimEnd();
   :global(html[data-page="home"][data-intro="pending"]),
   :global(html[data-page="home"][data-intro="playing"]) {
     overflow: hidden;
+  }
+
+  :global(html[data-page="home"][data-intro="seen"]) .intro-sequence {
+    display: none;
   }
 
   .intro-sequence {

@@ -276,31 +276,87 @@ img {
 
 .hero-portrait img {
   position: absolute;
-  top: -52px;
-  right: 68px;
-  width: 515px;
+  top: 0;
+  right: 0;
+  width: auto;
+  height: 100%;
   max-width: none;
-  opacity: 0.66;
-  filter: grayscale(1) invert(1) contrast(6);
+  opacity: 0.82;
+  filter: grayscale(1) contrast(1.18) brightness(1.08);
   mix-blend-mode: screen;
 }
 
 :root[data-theme="light"] .hero-portrait img {
-  opacity: 0.72;
-  filter: grayscale(1) contrast(3);
+  opacity: 0.58;
+  filter: grayscale(1) invert(1) contrast(1.28);
   mix-blend-mode: multiply;
+}
+
+.hero-signal-field {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hero-signal-field i {
+  position: absolute;
+  top: var(--signal-y);
+  left: var(--signal-x);
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--color-heading);
+  box-shadow: 0 0 7px 2px rgb(238 232 220 / 42%);
+  opacity: 0;
+  transform: translate(-50%, -50%);
+}
+
+.hero-signal-field i::after {
+  position: absolute;
+  inset: -4px;
+  border: 1px solid var(--color-accent);
+  border-radius: 50%;
+  opacity: 0;
+  content: "";
+}
+
+.hero-signal-field i.is-active {
+  animation: signal-node-flash var(--signal-duration) ease-out forwards;
+}
+
+.hero-signal-field i.is-active::after {
+  animation: signal-node-ring var(--signal-duration) ease-out forwards;
+}
+
+:root[data-theme="light"] .hero-signal-field i {
+  background: var(--color-heading);
+  box-shadow: 0 0 5px 1px rgb(24 24 22 / 25%);
+}
+
+@keyframes signal-node-flash {
+  0% { opacity: 0; }
+  12% { opacity: 1; }
+  42% { opacity: 0.72; }
+  100% { opacity: 0; }
+}
+
+@keyframes signal-node-ring {
+  0%, 8% { opacity: 0; transform: scale(0.35); }
+  22% { opacity: 0.62; }
+  100% { opacity: 0; transform: scale(4.2); }
 }
 
 .hero-portrait figcaption {
   position: absolute;
-  right: 54px;
-  bottom: 38px;
+  right: 42px;
+  bottom: 28px;
   z-index: 1;
   color: var(--color-accent-soft);
-  font-family: var(--font-serif);
-  font-size: 1.15rem;
-  font-style: italic;
-  letter-spacing: 0.05em;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.16em;
 }
 
 .focus-strip {
@@ -855,7 +911,7 @@ img {
   }
 
   .hero-portrait img {
-    right: 0;
+    right: -18px;
   }
 
   .focus-item {
@@ -937,15 +993,21 @@ img {
   }
 
   .hero-portrait img {
-    top: -2px;
-    right: -28px;
-    width: 390px;
-    opacity: 0.48;
+    top: 0;
+    right: -12px;
+    width: auto;
+    height: 100%;
+    opacity: 0.58;
   }
 
   .hero-portrait figcaption {
     right: 24px;
-    bottom: 24px;
+    bottom: 20px;
+    font-size: 0.54rem;
+  }
+
+  .hero-signal-field i {
+    left: var(--signal-mobile-x);
   }
 
   .focus-strip {

@@ -30,7 +30,10 @@ for (const className of [
   assert.ok(homepage.includes(className), `Homepage missing ${className}`);
 }
 
-assert.ok(homepage.includes("/images/akisy-line-art.png"), "Homepage should use the supplied line-art portrait");
+assert.ok(
+  homepage.includes("/images/digital-island-signal.webp"),
+  "Homepage should use the supplied digital-island signal artwork",
+);
 assert.ok(homepage.includes("getPublishedPosts"), "Homepage should use real blog content");
 assert.ok(homepage.includes("selectedImages"), "Homepage should render the monochrome photo selection");
 
@@ -64,4 +67,4 @@ assert.ok(footer.includes("快速导航"), "Footer should expose quick navigatio
 assert.ok(footer.includes("保持联系"), "Footer should retain the reference-inspired editorial layout");
 assert.ok(footer.includes("<blockquote>"), "Footer should render its editorial quote");
 
-console.log("Verified dark editorial anime theme contract.");
+console.log("Verified dark editorial digital-island theme contract.");

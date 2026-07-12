@@ -45,6 +45,16 @@ const selectedImages = [
   { src: "/images/my university/4.jpeg", alt: "辽阔平原风景" },
   { src: "/assets/ring.webp", alt: "夜色中的奇幻风景" },
 ];
+
+const signalNodes = [
+  { x: 48, mobileX: 11, y: 40 },
+  { x: 56, mobileX: 25, y: 62 },
+  { x: 64, mobileX: 39, y: 25 },
+  { x: 72, mobileX: 53, y: 48 },
+  { x: 80, mobileX: 68, y: 70 },
+  { x: 88, mobileX: 82, y: 35 },
+  { x: 94, mobileX: 93, y: 58 },
+];
 ---
 
 <BaseLayout>
@@ -57,21 +67,24 @@ const selectedImages = [
       <p class="hero-intro">
         这是我在互联网上的一片孤岛,创建于2024年3月26日
       </p>
-      <a class="text-link hero-link" href="/about/">
-        认识我
-        <span class="round-arrow" aria-hidden="true"><ArrowRight size={16} stroke-width={1.4} /></span>
-      </a>
     </div>
 
-    <figure class="hero-portrait" aria-label="动漫人物线稿主视觉">
+    <figure class="hero-portrait" aria-label="数字孤岛信号图主视觉">
       <img
-        src="/images/akisy-line-art.png"
-        alt="眨眼并比出胜利手势的动漫女孩线稿"
-        width="1275"
-        height="1234"
+        src="/images/digital-island-signal.webp"
+        alt="由等高线、信号节点与扫描轨迹组成的数字孤岛"
+        width="1774"
+        height="887"
         loading="eager"
       />
-      <figcaption>Akisy’s Journal</figcaption>
+      <span class="hero-signal-field" data-signal-field aria-hidden="true">
+        {
+          signalNodes.map(({ x, mobileX, y }) => (
+            <i style={`--signal-x:${x}%;--signal-mobile-x:${mobileX}%;--signal-y:${y}%`}></i>
+          ))
+        }
+      </span>
+      <figcaption>SIGNAL FOUND / AKISY’S JOURNAL</figcaption>
     </figure>
   </section>
 
@@ -163,3 +176,41 @@ const selectedImages = [
     </div>
   </section>
 </BaseLayout>
+
+<script>
+  const setupSignalField = () => {
+    document.querySelectorAll<HTMLElement>("[data-signal-field]").forEach((field) => {
+      if (field.dataset.bound === "true") return;
+      field.dataset.bound = "true";
+
+      const nodes = Array.from(field.querySelectorAll<HTMLElement>("i"));
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+      const schedulePulse = () => {
+        if (!field.isConnected || reducedMotion.matches) return;
+
+        const available = [...nodes];
+        const activeCount = Math.random() > 0.72 ? 2 : 1;
+
+        for (let index = 0; index < activeCount; index += 1) {
+          const selectedIndex = Math.floor(Math.random() * available.length);
+          const node = available.splice(selectedIndex, 1)[0];
+          const duration = 1050 + Math.random() * 650;
+
+          node.style.setProperty("--signal-duration", `${duration}ms`);
+          node.classList.remove("is-active");
+          void node.offsetWidth;
+          node.classList.add("is-active");
+          window.setTimeout(() => node.classList.remove("is-active"), duration);
+        }
+
+        window.setTimeout(schedulePulse, 900 + Math.random() * 1900);
+      };
+
+      window.setTimeout(schedulePulse, 700 + Math.random() * 900);
+    });
+  };
+
+  document.addEventListener("astro:page-load", setupSignalField);
+  setupSignalField();
+</script>

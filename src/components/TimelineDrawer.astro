@@ -1,0 +1,577 @@
+---
+import { ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
+---
+
+<div class="timeline-shell" data-timeline-shell>
+  <button
+    class="timeline-toggle"
+    type="button"
+    aria-controls="timeline-drawer"
+    aria-expanded="false"
+    aria-label="打开生活动态"
+    data-timeline-toggle
+  >
+    <MessageCircle size={18} stroke-width={1.5} aria-hidden="true" />
+    <span>动态</span>
+  </button>
+
+  <button class="timeline-backdrop" type="button" aria-label="关闭生活动态" tabindex="-1" data-timeline-close></button>
+
+  <aside class="timeline-drawer" id="timeline-drawer" aria-label="生活动态" aria-hidden="true" data-timeline-drawer inert>
+    <header class="timeline-header">
+      <div>
+        <p class="timeline-kicker">MOMENTS / 碎片</p>
+        <h2>生活动态</h2>
+      </div>
+      <button class="timeline-close" type="button" aria-label="关闭生活动态" data-timeline-close>
+        <X size={20} stroke-width={1.4} aria-hidden="true" />
+      </button>
+    </header>
+
+    <div class="timeline-content" data-timeline-content aria-live="polite">
+      <div class="timeline-loading" data-timeline-loading>
+        <span></span><span></span><span></span>
+        <p>正在翻阅最近的记录…</p>
+      </div>
+    </div>
+
+    <footer class="timeline-footer">
+      <button class="timeline-refresh" type="button" data-timeline-refresh>
+        <RefreshCw size={13} stroke-width={1.5} aria-hidden="true" />
+        刷新
+      </button>
+      <a href="https://github.com/AkisySama/akisysama.github.io/issues" target="_blank" rel="noreferrer">
+        在 GitHub 查看
+        <ExternalLink size={13} stroke-width={1.5} aria-hidden="true" />
+      </a>
+    </footer>
+  </aside>
+</div>
+
+<script>
+  interface TimelineIssue {
+    number: number;
+    title: string;
+    body: string | null;
+    html_url: string;
+    created_at: string;
+    comments: number;
+    pull_request?: unknown;
+    user: {
+      login: string;
+      avatar_url: string;
+      html_url: string;
+    } | null;
+    labels: Array<{ name: string; color: string }>;
+  }
+
+  const API_URL = "https://api.github.com/repos/AkisySama/akisysama.github.io/issues?state=all&per_page=30&sort=created&direction=desc";
+  const CACHE_KEY = "akisy-timeline-cache-v1";
+  const CACHE_MAX_AGE = 5 * 60 * 1000;
+
+  const relativeDate = (value: string) => {
+    const date = new Date(value);
+    const elapsed = Date.now() - date.getTime();
+    const hours = Math.floor(elapsed / 3_600_000);
+    const days = Math.floor(elapsed / 86_400_000);
+
+    if (hours < 1) return "刚刚";
+    if (hours < 24) return `${hours} 小时前`;
+    if (days < 7) return `${days} 天前`;
+    return new Intl.DateTimeFormat("zh-CN", {
+      year: date.getFullYear() === new Date().getFullYear() ? undefined : "numeric",
+      month: "long",
+      day: "numeric",
+    }).format(date);
+  };
+
+  const appendRichText = (container: HTMLElement, text: string) => {
+    const pattern = /\[([^\]]+)]\((https?:\/\/[^\s)]+)\)|(https?:\/\/[^\s]+)/g;
+    let cursor = 0;
+
+    for (const match of text.matchAll(pattern)) {
+      const index = match.index ?? 0;
+      container.append(document.createTextNode(text.slice(cursor, index)));
+
+      const anchor = document.createElement("a");
+      anchor.href = match[2] ?? match[3];
+      anchor.textContent = match[1] ?? match[3];
+      anchor.target = "_blank";
+      anchor.rel = "noreferrer";
+      container.append(anchor);
+      cursor = index + match[0].length;
+    }
+
+    container.append(document.createTextNode(text.slice(cursor)));
+  };
+
+  const buildIssueCard = (issue: TimelineIssue) => {
+    const article = document.createElement("article");
+    article.className = "timeline-item";
+
+    const avatarLink = document.createElement("a");
+    avatarLink.className = "timeline-avatar";
+    avatarLink.href = issue.user?.html_url ?? issue.html_url;
+    avatarLink.target = "_blank";
+    avatarLink.rel = "noreferrer";
+    avatarLink.setAttribute("aria-label", `查看 ${issue.user?.login ?? "Akisy"} 的 GitHub`);
+
+    const avatar = document.createElement("img");
+    avatar.src = issue.user?.avatar_url ?? "https://github.com/AkisySama.png";
+    avatar.alt = "";
+    avatar.width = 42;
+    avatar.height = 42;
+    avatar.loading = "lazy";
+    avatarLink.append(avatar);
+
+    const main = document.createElement("div");
+    main.className = "timeline-item-main";
+
+    const author = document.createElement("a");
+    author.className = "timeline-author";
+    author.href = issue.user?.html_url ?? issue.html_url;
+    author.target = "_blank";
+    author.rel = "noreferrer";
+    author.textContent = issue.user?.login ?? "Akisy";
+
+    const title = document.createElement("a");
+    title.className = "timeline-title";
+    title.href = issue.html_url;
+    title.target = "_blank";
+    title.rel = "noreferrer";
+    title.textContent = issue.title;
+
+    main.append(author, title);
+
+    const imagePattern = /!\[[^\]]*]\((https?:\/\/[^\s)]+)(?:\s+["'][^"']*["'])?\)/g;
+    const images = Array.from(issue.body?.matchAll(imagePattern) ?? [], (match) => match[1]).slice(0, 4);
+    const cleanBody = (issue.body ?? "")
+      .replace(imagePattern, "")
+      .replace(/^#{1,6}\s+/gm, "")
+      .replace(/^[-*+]\s+/gm, "")
+      .trim();
+
+    if (cleanBody) {
+      const body = document.createElement("p");
+      body.className = "timeline-body";
+      appendRichText(body, cleanBody);
+      main.append(body);
+    }
+
+    if (images.length) {
+      const gallery = document.createElement("div");
+      gallery.className = `timeline-gallery timeline-gallery-${Math.min(images.length, 4)}`;
+      for (const src of images) {
+        const link = document.createElement("a");
+        link.href = src;
+        link.target = "_blank";
+        link.rel = "noreferrer";
+        const image = document.createElement("img");
+        image.src = src;
+        image.alt = "动态配图";
+        image.loading = "lazy";
+        link.append(image);
+        gallery.append(link);
+      }
+      main.append(gallery);
+    }
+
+    if (issue.labels.length) {
+      const labels = document.createElement("div");
+      labels.className = "timeline-labels";
+      issue.labels.slice(0, 3).forEach((label) => {
+        const item = document.createElement("span");
+        item.textContent = `# ${label.name}`;
+        labels.append(item);
+      });
+      main.append(labels);
+    }
+
+    const meta = document.createElement("div");
+    meta.className = "timeline-meta";
+    const time = document.createElement("time");
+    time.dateTime = issue.created_at;
+    time.title = new Date(issue.created_at).toLocaleString("zh-CN");
+    time.textContent = relativeDate(issue.created_at);
+    meta.append(time);
+
+    if (issue.comments > 0) {
+      const comments = document.createElement("a");
+      comments.href = issue.html_url;
+      comments.target = "_blank";
+      comments.rel = "noreferrer";
+      comments.textContent = `${issue.comments} 条回应`;
+      meta.append(comments);
+    }
+
+    main.append(meta);
+    article.append(avatarLink, main);
+    return article;
+  };
+
+  const setupTimeline = () => {
+    const shell = document.querySelector<HTMLElement>("[data-timeline-shell]");
+    if (!shell || shell.dataset.bound === "true") return;
+    shell.dataset.bound = "true";
+
+    const toggle = shell.querySelector<HTMLButtonElement>("[data-timeline-toggle]");
+    const drawer = shell.querySelector<HTMLElement>("[data-timeline-drawer]");
+    const content = shell.querySelector<HTMLElement>("[data-timeline-content]");
+    const refresh = shell.querySelector<HTMLButtonElement>("[data-timeline-refresh]");
+    const closeButton = shell.querySelector<HTMLButtonElement>(".timeline-close");
+    if (!toggle || !drawer || !content || !refresh) return;
+
+    let hasLoaded = false;
+
+    const showMessage = (title: string, detail: string, isError = false) => {
+      content.replaceChildren();
+      const state = document.createElement("div");
+      state.className = `timeline-state${isError ? " is-error" : ""}`;
+      const heading = document.createElement("p");
+      heading.textContent = title;
+      const description = document.createElement("span");
+      description.textContent = detail;
+      state.append(heading, description);
+      content.append(state);
+    };
+
+    const renderIssues = (issues: TimelineIssue[]) => {
+      const timelineIssues = issues.filter((issue) => !issue.pull_request);
+      content.replaceChildren();
+      if (!timelineIssues.length) {
+        showMessage("这里还很安静", "新的生活片段会出现在这里。");
+        return;
+      }
+      const list = document.createElement("div");
+      list.className = "timeline-list";
+      timelineIssues.forEach((issue) => list.append(buildIssueCard(issue)));
+      content.append(list);
+    };
+
+    const loadIssues = async (force = false) => {
+      refresh.disabled = true;
+      refresh.classList.add("is-loading");
+
+      try {
+        if (!force) {
+          const cached = sessionStorage.getItem(CACHE_KEY);
+          if (cached) {
+            const parsed = JSON.parse(cached) as { savedAt: number; issues: TimelineIssue[] };
+            if (Date.now() - parsed.savedAt < CACHE_MAX_AGE) {
+              renderIssues(parsed.issues);
+              hasLoaded = true;
+              return;
+            }
+          }
+        }
+
+        const response = await fetch(API_URL, {
+          headers: { Accept: "application/vnd.github+json" },
+        });
+        if (!response.ok) throw new Error(response.status === 403 ? "rate-limit" : `http-${response.status}`);
+
+        const issues = await response.json() as TimelineIssue[];
+        sessionStorage.setItem(CACHE_KEY, JSON.stringify({ savedAt: Date.now(), issues }));
+        renderIssues(issues);
+        hasLoaded = true;
+      } catch (error) {
+        const limited = error instanceof Error && error.message === "rate-limit";
+        showMessage(
+          limited ? "GitHub 暂时休息了" : "动态没有加载成功",
+          limited ? "访问次数已达上限，请稍后再来看看。" : "请检查网络，或点击下方刷新重试。",
+          true,
+        );
+      } finally {
+        refresh.disabled = false;
+        refresh.classList.remove("is-loading");
+      }
+    };
+
+    const setOpen = (open: boolean) => {
+      shell.classList.toggle("is-open", open);
+      toggle.setAttribute("aria-expanded", String(open));
+      toggle.setAttribute("aria-label", open ? "关闭生活动态" : "打开生活动态");
+      drawer.setAttribute("aria-hidden", String(!open));
+      drawer.toggleAttribute("inert", !open);
+      document.body.classList.toggle("timeline-is-open", open && window.matchMedia("(max-width: 600px)").matches);
+      if (open && !hasLoaded) void loadIssues();
+      if (open) closeButton?.focus({ preventScroll: true });
+      else toggle.focus({ preventScroll: true });
+    };
+
+    toggle.addEventListener("click", () => setOpen(!shell.classList.contains("is-open")));
+    shell.querySelectorAll<HTMLElement>("[data-timeline-close]").forEach((button) => {
+      button.addEventListener("click", () => setOpen(false));
+    });
+    refresh.addEventListener("click", () => void loadIssues(true));
+    shell.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") setOpen(false);
+    });
+  };
+
+  document.addEventListener("astro:page-load", setupTimeline);
+  setupTimeline();
+</script>
+
+<style>
+  .timeline-shell {
+    --timeline-width: min(410px, calc(100vw - 54px));
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    pointer-events: none;
+    transition: opacity 180ms ease;
+  }
+
+  .timeline-toggle {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    align-items: center;
+    width: 44px;
+    border: 1px solid var(--color-border);
+    border-left: 0;
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
+    padding: 13px 8px 12px;
+    background: var(--color-surface-lifted);
+    box-shadow: 7px 8px 24px rgb(0 0 0 / 16%);
+    color: var(--color-accent);
+    cursor: pointer;
+    pointer-events: auto;
+    transform: translateY(-50%);
+    transition: left 280ms ease, color 180ms ease, background 180ms ease;
+  }
+
+  .timeline-toggle span {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    writing-mode: vertical-rl;
+  }
+
+  .timeline-toggle:hover {
+    background: var(--color-surface-soft);
+    color: var(--color-heading);
+  }
+
+  .timeline-drawer {
+    position: absolute;
+    inset: 0 auto 0 0;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    width: var(--timeline-width);
+    border-right: 1px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-surface) 96%, transparent);
+    box-shadow: 18px 0 50px rgb(0 0 0 / 24%);
+    pointer-events: auto;
+    transform: translateX(-101%);
+    transition: transform 280ms ease;
+    backdrop-filter: blur(18px);
+  }
+
+  .timeline-shell.is-open .timeline-drawer { transform: translateX(0); }
+  .timeline-shell.is-open .timeline-toggle { left: var(--timeline-width); }
+
+  .timeline-backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background: rgb(0 0 0 / 22%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 280ms ease;
+  }
+
+  .timeline-shell.is-open .timeline-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .timeline-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    min-height: 112px;
+    border-bottom: 1px solid var(--color-border);
+    padding: 28px 25px 21px 28px;
+  }
+
+  .timeline-kicker {
+    margin: 0 0 5px;
+    color: var(--color-accent-soft);
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+  }
+
+  .timeline-header h2 {
+    margin: 0;
+    color: var(--color-heading);
+    font-family: var(--font-serif);
+    font-size: 1.8rem;
+    font-weight: 500;
+    line-height: 1;
+  }
+
+  .timeline-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: 1px solid var(--color-border);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--color-muted);
+    cursor: pointer;
+  }
+
+  .timeline-close:hover { color: var(--color-heading); border-color: var(--color-accent-soft); }
+
+  .timeline-content {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-color: var(--color-border) transparent;
+  }
+
+  :global(.timeline-list) { padding: 7px 32px 10px 28px; }
+
+  :global(.timeline-item) {
+    position: relative;
+    display: grid;
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 13px;
+    padding: 22px 0;
+  }
+
+  :global(.timeline-item + .timeline-item) { border-top: 1px solid var(--color-border-soft); }
+  :global(.timeline-avatar) { border-radius: 50%; text-decoration: none; }
+  :global(.timeline-avatar img) { width: 42px; height: 42px; border: 1px solid var(--color-border); border-radius: 50%; object-fit: cover; }
+  :global(.timeline-item-main) { min-width: 0; }
+
+  :global(.timeline-author) {
+    display: block;
+    width: fit-content;
+    margin-bottom: 5px;
+    color: var(--color-accent);
+    font-family: var(--font-serif);
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.2;
+    text-decoration: none;
+  }
+
+  :global(.timeline-title) {
+    display: block;
+    margin-bottom: 7px;
+    color: var(--color-heading);
+    font-size: 0.83rem;
+    font-weight: 600;
+    line-height: 1.5;
+    text-decoration: none;
+  }
+
+  :global(.timeline-body) {
+    display: -webkit-box;
+    overflow: hidden;
+    margin: 0 0 11px;
+    color: var(--color-text);
+    font-size: 0.76rem;
+    line-height: 1.72;
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 7;
+  }
+
+  :global(.timeline-body a) { color: var(--color-accent-soft); }
+
+  :global(.timeline-gallery) {
+    display: grid;
+    gap: 4px;
+    margin: 10px 0 12px;
+    overflow: hidden;
+    border-radius: var(--radius-sm);
+  }
+
+  :global(.timeline-gallery-2),
+  :global(.timeline-gallery-3),
+  :global(.timeline-gallery-4) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  :global(.timeline-gallery-3 a:first-child) { grid-row: span 2; }
+  :global(.timeline-gallery img) { width: 100%; height: 112px; object-fit: cover; }
+  :global(.timeline-gallery-1 img) { height: auto; max-height: 250px; }
+
+  :global(.timeline-labels) { display: flex; flex-wrap: wrap; gap: 5px 10px; margin: 8px 0; }
+  :global(.timeline-labels span) { color: var(--color-accent-soft); font-size: 0.65rem; }
+
+  :global(.timeline-meta) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 8px;
+    color: var(--color-faint);
+    font-size: 0.64rem;
+  }
+
+  :global(.timeline-meta a) { color: var(--color-muted); text-decoration: none; }
+
+  .timeline-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 55px;
+    border-top: 1px solid var(--color-border);
+    padding: 0 28px;
+    color: var(--color-muted);
+    font-size: 0.67rem;
+  }
+
+  .timeline-footer a,
+  .timeline-refresh { display: inline-flex; gap: 6px; align-items: center; color: inherit; text-decoration: none; }
+  .timeline-refresh { border: 0; padding: 0; background: transparent; font: inherit; cursor: pointer; }
+  .timeline-refresh:disabled { cursor: wait; opacity: 0.55; }
+  .timeline-refresh.is-loading svg { animation: timeline-spin 0.9s linear infinite; }
+
+  .timeline-loading { padding: 28px; }
+  .timeline-loading span { display: block; height: 72px; margin-bottom: 13px; border-radius: var(--radius-sm); background: var(--color-surface-soft); animation: timeline-pulse 1.5s ease-in-out infinite; }
+  .timeline-loading span:nth-child(2) { animation-delay: 120ms; }
+  .timeline-loading span:nth-child(3) { animation-delay: 240ms; }
+  .timeline-loading p { margin: 18px 0 0; color: var(--color-muted); font-size: 0.7rem; text-align: center; }
+
+  :global(.timeline-state) { padding: 70px 30px; text-align: center; }
+  :global(.timeline-state p) { margin: 0 0 7px; color: var(--color-heading); font-family: var(--font-serif); font-size: 1.1rem; }
+  :global(.timeline-state span) { color: var(--color-muted); font-size: 0.72rem; }
+  :global(.timeline-state.is-error p) { color: var(--color-accent); }
+
+  :global(html[data-page="home"]:not([data-blog-entered="true"]) .timeline-shell) {
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  @keyframes timeline-spin { to { transform: rotate(360deg); } }
+  @keyframes timeline-pulse { 50% { opacity: 0.48; } }
+
+  @media (min-width: 900px) {
+    .timeline-backdrop { background: transparent; }
+  }
+
+  @media (max-width: 600px) {
+    .timeline-shell { --timeline-width: calc(100vw - 44px); }
+    .timeline-toggle { width: 40px; }
+    .timeline-header { min-height: 98px; padding: 23px 20px 18px; }
+    :global(.timeline-list) { padding-right: 24px; padding-left: 20px; }
+    .timeline-footer { padding-inline: 20px; }
+    :global(body.timeline-is-open) { overflow: hidden; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .timeline-toggle,
+    .timeline-drawer,
+    .timeline-backdrop,
+    .timeline-shell { transition: none; }
+  }
+</style>

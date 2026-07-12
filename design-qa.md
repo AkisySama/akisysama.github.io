@@ -1,61 +1,65 @@
-# Design QA — Supplied ASCII Portrait Intro
+# Design QA — Digital Island Homepage Hero
 
-Source visual truth: `/Users/akisy/Downloads/anime_character_ascii_v2.txt`
+Source visual truth: `/var/folders/mt/rshsz8nd0094xnfyrh1drl5c0000gn/T/codex-clipboard-2de064cd-a79f-4491-bdb3-520ffc035780.png`
 
-Bundled source asset: `/Users/akisy/Downloads/Projects/blog/src/assets/anime_character_ascii_v2.txt`
+Bundled source asset: `/Users/akisy/Downloads/Projects/blog/public/images/digital-island-signal.webp`
 
-Implementation screenshot: `/Users/akisy/Downloads/Projects/blog/design-qa-assets/intro-supplied-ascii.jpg`
+Implementation screenshot: `/Users/akisy/Downloads/Projects/blog/design-qa-assets/digital-island-homepage-desktop.png`
 
-Viewport: 1280 × 720 desktop. Responsive geometry also checked at 390 × 844.
+Mobile screenshot: `/Users/akisy/Downloads/Projects/blog/design-qa-assets/digital-island-homepage-mobile.png`
 
-State: homepage first visit, dark theme, supplied portrait complete, slow scroll cue visible.
+Focused comparison: `/Users/akisy/Downloads/Projects/blog/design-qa-assets/digital-island-comparison.jpg`
+
+Viewport: 1440 × 1000 desktop; responsive layout also checked at 390 × 844.
+
+State: homepage after the intro sequence, dark theme. Light-theme rendering was checked separately.
 
 ## Findings
 
 - No actionable P0, P1, or P2 findings remain.
-- All 45 lines and the full 96-character maximum width are preserved without modification.
+- The supplied artwork keeps its original contour detail, signal nodes, negative space, and right-weighted composition.
+- P3: the HTML caption is intentionally layered over the artwork rather than baked into the raster asset so it remains readable and accessible across themes.
 
 ## Required Fidelity Surfaces
 
-- Fonts and typography: the original character spacing is preserved with the site's monospace stack, 0.88 line height, and no wrapping.
-- Spacing and layout rhythm: the terminal expands to 532px on desktop so the portrait and status occupy separate regions. The portrait remains centered with no overlap.
-- Colors and visual tokens: the supplied ASCII inherits the existing warm monochrome terminal palette and restrained glow.
-- Image and asset fidelity: the user-provided text file is imported directly as a raw asset; no generated or simplified substitute is used.
-- Copy and content: the command reads `render anime_character_ascii_v2.txt --stream`, rendering status reports every line, and completion remains `portrait complete — journal ready`.
+- Fonts and typography: existing Cormorant-led hero typography remains unchanged. The new signal caption uses the established monospace token at 0.6rem with restrained tracking.
+- Spacing and layout rhythm: the 2:1 artwork maps directly into the 56% hero track at desktop. Its built-in negative space preserves separation from the left copy. At mobile, the artwork fills the lower 330px of the hero without horizontal overflow.
+- Colors and visual tokens: dark mode uses the original near-black and warm-gray artwork through a screen blend. Light mode reverses it through a multiply blend at reduced opacity, matching the existing warm paper palette.
+- Image quality and asset fidelity: the exact supplied 1774 × 887 source is bundled as a 177KB WebP. No placeholder, CSS drawing, SVG recreation, or generated substitute is used. Fine contour lines remain legible at both tested breakpoints.
+- Copy and content: the existing homepage title and introduction remain unchanged. The figure label and alt text now describe the digital-island signal map; the visible caption reads `SIGNAL FOUND / AKISY’S JOURNAL`.
 
 ## Interaction and Runtime Checks
 
-- The command completes before the ASCII stream begins.
-- The portrait renders from top to bottom one line at a time with a 67ms interval, completing all 45 lines in approximately 3 seconds.
-- The entry line begins immediately after rendering, reaches full height over 2.5 seconds, then bobs gently by 4px.
-- At 1280 × 720, the 96-column portrait has no horizontal or vertical overflow and does not overlap the status message.
-- At 390 × 844, the terminal is 354px wide and the portrait stays within a 320px content width with no page overflow.
-- Refresh playback, skip behavior, swipe-to-enter, and reduced-motion behavior remain intact.
-- Browser console checks reported no errors or warnings.
-- `npm test` and `npm run build` pass with zero Astro diagnostics.
+- The island raster remains static so its fine contour lines stay crisp without transform resampling or visible jitter. Independent signal nodes pulse above it without moving the artwork.
+- Dark-to-light theme switching preserves the image and caption with appropriate contrast.
+- Desktop navigation and the theme toggle remain functional.
+- At 390px, document width equals viewport width and the hero introduces no horizontal overflow.
+- Browser console checks reported no errors or warnings in desktop and mobile states.
+- `npm test` passes with zero Astro diagnostics and the theme contract now asserts the new source asset.
+
+## Full-view Comparison Evidence
+
+The desktop implementation screenshot shows the supplied island occupying the original portrait region without changing the surrounding header, hero copy, focus strip, editorial grid, or footer. The artwork's right-weighted hierarchy matches the source while the left-side signal path creates a visual bridge toward the hero copy.
+
+## Focused Region Comparison Evidence
+
+`digital-island-comparison.jpg` places the supplied raster source and rendered right-side hero region in the same image. The implementation preserves the contour structure, peak hierarchy, node positions, and negative space. The only intentional additions are the accessible HTML caption and theme-aware blending.
 
 ## Comparison History
 
-1. Replaced the hand-authored 30-line portrait with the supplied 45-line, 96-column source.
-2. Set the render cadence to 67ms per line so the denser portrait completes in approximately 3 seconds.
-3. Increased terminal height and moved the status into document flow after detecting a bottom-right overlap.
-4. Removed session suppression so every homepage refresh replays the intro, then added one-gesture wheel, swipe, and keyboard entry into the blog.
-5. Clean desktop and mobile passes confirmed full source preservation and no overflow.
-
-## Focused Region Comparison
-
-The implementation screenshot shows the complete 96 × 45 portrait at readable size, including its full border and dense facial detail. Source fidelity is also verified exactly by automated line-count and maximum-width assertions.
+1. Initial rendered comparison passed with no P0/P1/P2 differences.
+2. Desktop dark, desktop light, and 390px mobile states were inspected; no corrective visual iteration was required.
 
 ## Implementation Checklist
 
-- [x] Supplied ASCII file bundled and imported directly
-- [x] All 45 lines and 96-column width preserved
-- [x] Three-second, 67ms line-by-line rendering
-- [x] Terminal resized to avoid status overlap
-- [x] Immediate 2.5-second entry-line growth with gentle bobbing
-- [x] Intro replays on every refresh
-- [x] One-gesture wheel, swipe, and keyboard entry
-- [x] Desktop and mobile overflow checks
-- [x] Clean tests, build, and browser console
+- [x] Supplied source bundled and optimized
+- [x] Old anime portrait reference replaced
+- [x] Theme-aware dark and light treatment
+- [x] Stable, jitter-free contour rendering
+- [x] Randomized, reduced-motion-aware signal pulses
+- [x] Responsive desktop and mobile crop
+- [x] Accessible figure label and alt text
+- [x] Automated tests and browser console checks
+- [x] Focused side-by-side visual comparison
 
 final result: passed

@@ -8,6 +8,7 @@ const read = (file) => readFileSync(join(root, file), "utf8");
 const baseLayout = read("src/layouts/BaseLayout.astro");
 const homepage = read("src/pages/index.astro");
 const intro = read("src/components/IntroSequence.astro");
+const timeline = read("src/components/TimelineDrawer.astro");
 const portrait = read("src/assets/anime_character_ascii_v2.txt");
 
 assert.ok(baseLayout.includes('<slot name="intro" />'), "Base layout should render the intro before the header");
@@ -39,6 +40,11 @@ assert.ok(baseLayout.includes('history.scrollRestoration = "manual"'), "Scroll r
 assert.ok(baseLayout.includes('window.addEventListener("pageshow", resetIntroScroll)'), "Restored scroll should be corrected after pageshow");
 assert.ok(baseLayout.includes('window.addEventListener("beforeunload"'), "Refresh should save the homepage at scroll position zero");
 assert.ok(intro.includes("Math.abs(window.scrollY - blogTop) > 2"), "One gesture should settle exactly at the blog top");
+assert.ok(intro.includes('root.dataset.blogEntered = "true"'), "Entering the blog should reveal homepage utilities");
+assert.ok(
+  timeline.includes(':not([data-blog-entered="true"]) .timeline-shell'),
+  "Timeline should stay hidden until the homepage intro has been entered",
+);
 assert.match(intro, /aria-live="polite"/, "Terminal progress should be announced without interrupting visitors");
 
 assert.match(intro, /line-grow 2\.5s/, "Entry line should fully appear over 2.5 seconds");
