@@ -16,10 +16,15 @@ const { title = siteTitle, description = defaultDescription, image } = Astro.pro
 const pageTitle = title === siteTitle ? title : `${title} | ${siteTitle}`;
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
 const ogImage = image ? new URL(image, Astro.site).toString() : undefined;
+const isHome = Astro.url.pathname === "/";
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html
+  lang="zh-CN"
+  data-page={isHome ? "home" : "inner"}
+  data-intro={isHome ? "pending" : undefined}
+>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -32,6 +37,24 @@ const ogImage = image ? new URL(image, Astro.site).toString() : undefined;
     {ogImage && <meta property="og:image" content={ogImage} />}
     <script is:inline>
       (() => {
+        const root = document.documentElement;
+        const isHomePage = root.dataset.page === "home";
+
+        if (isHomePage) {
+          if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+
+          const resetIntroScroll = () => {
+            if (root.dataset.intro === "pending" || root.dataset.intro === "playing") {
+              window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+            }
+          };
+
+          resetIntroScroll();
+          window.addEventListener("pageshow", resetIntroScroll);
+          window.addEventListener("load", resetIntroScroll, { once: true });
+          window.addEventListener("beforeunload", () => window.scrollTo(0, 0), { capture: true });
+        }
+
         let savedTheme = null;
 
         try {
@@ -40,20 +63,17 @@ const ogImage = image ? new URL(image, Astro.site).toString() : undefined;
           // Storage can be unavailable in privacy-restricted contexts.
         }
 
-        const theme =
-          savedTheme === "light" || savedTheme === "dark"
-            ? savedTheme
-            : matchMedia("(prefers-color-scheme: dark)").matches
-              ? "dark"
-              : "light";
+        const theme = savedTheme === "light" || savedTheme === "dark" ? savedTheme : "dark";
 
-        document.documentElement.dataset.theme = theme;
-        document.documentElement.style.colorScheme = theme;
+        root.dataset.theme = theme;
+        root.style.colorScheme = theme;
+
       })();
     </script>
     <ClientRouter />
   </head>
   <body>
+    <slot name="intro" />
     <Header />
     <main class="site-main">
       <slot />

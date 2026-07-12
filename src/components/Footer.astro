@@ -9,26 +9,41 @@ const socialLinks = [
 ---
 
 <footer class="site-footer">
-  <div class="footer-copy">
-    <img src="/images/whitehairblueeyes.jpeg" alt="" width="44" height="44" loading="lazy" />
-    <p>
-      <span>© {new Date().getFullYear()} Akisy的记录</span>
-      <span>Built with Astro · Love & Peace</span>
-    </p>
+  <div class="footer-intro">
+    <p class="footer-title">保持联系</p>
+    <p>欢迎交换想法，也欢迎分享你正在做的有趣事情。</p>
+    <a class="text-link" href="/about/">关于我 <span aria-hidden="true">→</span></a>
   </div>
-  <nav class="footer-social" aria-label="页脚链接">
-    {
-      socialLinks.map(({ href, label, icon: Icon, external }) => (
-        <a
-          href={href}
-          aria-label={label}
-          title={label}
-          target={external ? "_blank" : undefined}
-          rel={external ? "noreferrer" : undefined}
-        >
-          <Icon class="icon-muted" size={18} stroke-width={1.8} />
-        </a>
-      ))
-    }
-  </nav>
+  <div class="footer-links">
+    <p class="footer-title">快速导航</p>
+    <a href="/">首页</a>
+    <a href="/posts/">文章</a>
+    <a href="/tags/">标签</a>
+    <a href="/about/">关于</a>
+  </div>
+  <div class="footer-follow">
+    <p class="footer-title">关注</p>
+    <nav class="footer-social" aria-label="页脚链接">
+      {
+        socialLinks.map(({ href, label, icon: Icon, external }) => (
+          <a
+            href={href}
+            aria-label={label}
+            title={label}
+            target={external ? "_blank" : undefined}
+            rel={external ? "noreferrer" : undefined}
+          >
+            <Icon class="icon-muted" size={17} stroke-width={1.5} />
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+  <blockquote>
+    “原本想做个高雅的网站，最后发现我高雅不起来”
+  </blockquote>
+  <div class="footer-bottom">
+    <span>© {new Date().getFullYear()} Akisy. All rights reserved.</span>
+    <span>Built with Astro · Love & Peace</span>
+  </div>
 </footer>

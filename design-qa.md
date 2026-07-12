@@ -1,82 +1,61 @@
-# Design QA: Astro Neumorphic Anime Theme
+# Design QA — Supplied ASCII Portrait Intro
 
-source visual truth path: `docs/superpowers/specs/2026-06-21-astro-neumorphic-anime-theme-reference.png`
+Source visual truth: `/Users/akisy/Downloads/anime_character_ascii_v2.txt`
 
-implementation screenshot path: `tmp/theme-qa/home-desktop-v3.png`
+Bundled source asset: `/Users/akisy/Downloads/Projects/blog/src/assets/anime_character_ascii_v2.txt`
 
-viewport: desktop `1440x1024`; mobile spot-check `390x844`
+Implementation screenshot: `/Users/akisy/Downloads/Projects/blog/design-qa-assets/intro-supplied-ascii.jpg`
 
-state: homepage default state, no hover or menu state
+Viewport: 1280 × 720 desktop. Responsive geometry also checked at 390 × 844.
 
-full-view comparison evidence: `tmp/theme-qa/comparison-desktop-v2.png`
-
-focused region comparison evidence: `tmp/theme-qa/comparison-focus.png`
-
-additional evidence:
-
-- `tmp/theme-qa/home-mobile-viewport.png`
-- `tmp/theme-qa/posts-desktop-v2.png`
-- `tmp/theme-qa/tags-desktop-viewport.png`
-- `tmp/theme-qa/about-desktop-viewport.png`
-- `tmp/theme-qa/post-desktop-viewport.png`
+State: homepage first visit, dark theme, supplied portrait complete, slow scroll cue visible.
 
 ## Findings
 
-- No actionable P0/P1/P2 findings remain.
+- No actionable P0, P1, or P2 findings remain.
+- All 45 lines and the full 96-character maximum width are preserved without modification.
 
-## Fidelity Surfaces
+## Required Fidelity Surfaces
 
-Fonts and typography:
+- Fonts and typography: the original character spacing is preserved with the site's monospace stack, 0.88 line height, and no wrapping.
+- Spacing and layout rhythm: the terminal expands to 532px on desktop so the portrait and status occupy separate regions. The portrait remains centered with no overlap.
+- Colors and visual tokens: the supplied ASCII inherits the existing warm monochrome terminal palette and restrained glow.
+- Image and asset fidelity: the user-provided text file is imported directly as a raw asset; no generated or simplified substitute is used.
+- Copy and content: the command reads `render anime_character_ascii_v2.txt --stream`, rendering status reports every line, and completion remains `portrait complete — journal ready`.
 
-- The implementation uses the existing system UI stack, which is close to the selected mock's clean product typography.
-- Heading scale, weight, and hierarchy match the mock closely enough for the real content. Long Chinese titles wrap correctly on cards and article pages.
-- Body copy remains readable on desktop and mobile. Mobile first viewport shows no clipped text.
+## Interaction and Runtime Checks
 
-Spacing and layout rhythm:
+- The command completes before the ASCII stream begins.
+- The portrait renders from top to bottom one line at a time with a 67ms interval, completing all 45 lines in approximately 3 seconds.
+- The entry line begins immediately after rendering, reaches full height over 2.5 seconds, then bobs gently by 4px.
+- At 1280 × 720, the 96-column portrait has no horizontal or vertical overflow and does not overlap the status message.
+- At 390 × 844, the terminal is 354px wide and the portrait stays within a 320px content width with no page overflow.
+- Refresh playback, skip behavior, swipe-to-enter, and reduced-motion behavior remain intact.
+- Browser console checks reported no errors or warnings.
+- `npm test` and `npm run build` pass with zero Astro diagnostics.
 
-- Header, hero, image showcase, latest posts, tag sidebar, and footer follow the selected composition.
-- The implementation uses real migrated content, so the latest-post section differs from the generated mock where some latest posts have no cover image.
-- A P2 layout issue was found and fixed: no-cover post cards in the posts index originally collapsed into a narrow grid column. Cards now use `post-card-no-cover` and span correctly.
-- A P2 polish issue was found and fixed: homepage excerpts were too tall and made the latest-post section heavier than the mock. Homepage card excerpts are now clamped to 5 lines.
+## Comparison History
 
-Colors and visual tokens:
+1. Replaced the hand-authored 30-line portrait with the supplied 45-line, 96-column source.
+2. Set the render cadence to 67ms per line so the denser portrait completes in approximately 3 seconds.
+3. Increased terminal height and moved the status into document flow after detecting a bottom-right overlap.
+4. Removed session suppression so every homepage refresh replays the intro, then added one-gesture wheel, swipe, and keyboard entry into the blog.
+5. Clean desktop and mobile passes confirmed full source preservation and no overflow.
 
-- The page uses cool mist-white surfaces, soft gray shadows, and subdued blue-gray accents.
-- Small icons and UI chrome use the light-gray icon system rather than saturated colors.
-- Active navigation uses pressed surfaces instead of bright color.
+## Focused Region Comparison
 
-Image quality and asset fidelity:
-
-- The large homepage anime showcase uses `/images/background.jpeg`, preserving vivid color and making the image the dominant saturated element.
-- Existing article cover images remain vivid and are not affected by global filters.
-- Icons come from `@lucide/astro`; no handcrafted SVG, CSS art, emoji, or text-symbol substitutes are used for visible UI icons.
-
-Copy and content:
-
-- Site navigation, homepage hero copy, article cards, tags, and footer use real project content.
-- No placeholder copy is visible.
-
-## Patches Made Since Previous QA Pass
-
-- Replaced the old Astro view-transition API name with `ClientRouter`, matching Astro 6.4.8.
-- Added a `post-card-no-cover` class and CSS rule so text-only posts fill their card layout.
-- Clamped homepage post excerpts to 5 lines to keep the homepage rhythm closer to the visual target.
-- Converted the header's right-side circular icon from decorative chrome into an accessible link to `/about/`.
-- Retuned the neumorphic system toward the 2026-06-24 reference screenshot: same-color gray-blue surfaces, near-invisible edge strokes, larger soft radii, stronger dual-direction shadows, and inset wells only where the UI should feel pressed.
-- Verified the updated homepage at desktop and `390x844`; no horizontal overflow was present.
+The implementation screenshot shows the complete 96 × 45 portrait at readable size, including its full border and dense facial detail. Source fidelity is also verified exactly by automated line-count and maximum-width assertions.
 
 ## Implementation Checklist
 
-- Header uses neumorphic shell and active nav state.
-- Homepage uses two-column hero and large anime showcase.
-- Stats, links, tags, dates, and footer controls use muted Lucide icons.
-- Latest posts and hot tags render from existing content.
-- Posts, tags, about, and post detail pages share the new visual system.
-- Desktop and mobile screenshots show no horizontal overflow.
-
-## Follow-up Polish
-
-- P3: If the user wants the homepage to match the mock more tightly, choose featured posts with cover images for the homepage while keeping the posts index chronological.
-- P3: Add a real RSS/feed route before turning the footer controls into a feed link.
+- [x] Supplied ASCII file bundled and imported directly
+- [x] All 45 lines and 96-column width preserved
+- [x] Three-second, 67ms line-by-line rendering
+- [x] Terminal resized to avoid status overlap
+- [x] Immediate 2.5-second entry-line growth with gentle bobbing
+- [x] Intro replays on every refresh
+- [x] One-gesture wheel, swipe, and keyboard entry
+- [x] Desktop and mobile overflow checks
+- [x] Clean tests, build, and browser console
 
 final result: passed

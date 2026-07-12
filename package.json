@@ -7,7 +7,7 @@
     "dev": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
-    "test": "astro check && node scripts/verify-migration.mjs && node scripts/verify-theme.mjs"
+    "test": "astro check && node scripts/verify-migration.mjs && node scripts/verify-theme.mjs && node scripts/verify-intro.mjs"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",

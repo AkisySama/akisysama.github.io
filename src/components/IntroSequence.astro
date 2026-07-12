@@ -1,0 +1,526 @@
+---
+import portraitSource from "../assets/anime_character_ascii_v2.txt?raw";
+
+const command = "render anime_character_ascii_v2.txt --stream";
+const portraitAscii = portraitSource.trimEnd();
+---
+
+<section class="intro-sequence" data-intro-sequence aria-label="博客开场动画">
+  <div class="intro-stage" data-intro-stage>
+    <p class="intro-kicker" aria-hidden="true">A.K. / PRIVATE JOURNAL</p>
+
+    <div class="terminal-window" data-terminal-window>
+      <div class="terminal-titlebar" aria-hidden="true">
+        <div class="terminal-lights">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <span class="terminal-title">akisy — zsh — 96×45</span>
+        <span class="terminal-spacer"></span>
+      </div>
+
+      <div class="terminal-body">
+        <p class="terminal-command" aria-label={`执行命令 ${command}`}>
+          <span class="terminal-prompt">akisy@journal ~ %</span>
+          <span data-command-output></span><span class="terminal-cursor" aria-hidden="true"></span>
+        </p>
+        <pre
+          class="ascii-portrait"
+          data-ascii-portrait
+          aria-live="off"
+          aria-label="人物 ASCII 肖像正在逐行生成"
+        ></pre>
+        <p class="terminal-status" data-terminal-status aria-live="polite">waiting for source...</p>
+      </div>
+    </div>
+
+    <div class="entry-cue" data-entry-cue aria-hidden="true">
+      <span class="entry-line"></span>
+      <span class="entry-label">SCROLL TO ENTER</span>
+    </div>
+
+    <button class="intro-skip" type="button" data-intro-skip>跳过序章</button>
+  </div>
+</section>
+
+<script is:inline define:vars={{ command, portraitAscii }}>
+  const portraitLines = portraitAscii.split(/\r?\n/);
+
+  const sleep = (duration) => new Promise((resolve) => window.setTimeout(resolve, duration));
+
+  const setupIntro = () => {
+    const intro = document.querySelector("[data-intro-sequence]");
+    if (!(intro instanceof HTMLElement) || intro.dataset.bound === "true") return;
+
+    intro.dataset.bound = "true";
+
+    const root = document.documentElement;
+    const stage = intro.querySelector("[data-intro-stage]");
+    const windowElement = intro.querySelector("[data-terminal-window]");
+    const commandOutput = intro.querySelector("[data-command-output]");
+    const portrait = intro.querySelector("[data-ascii-portrait]");
+    const status = intro.querySelector("[data-terminal-status]");
+    const skip = intro.querySelector("[data-intro-skip]");
+    const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (
+      !(stage instanceof HTMLElement) ||
+      !(windowElement instanceof HTMLElement) ||
+      !(commandOutput instanceof HTMLElement) ||
+      !(portrait instanceof HTMLElement) ||
+      !(status instanceof HTMLElement) ||
+      !(skip instanceof HTMLButtonElement)
+    ) {
+      root.dataset.intro = "seen";
+      return;
+    }
+
+    let finished = false;
+    let cancelled = false;
+    let entering = false;
+    let touchStartY = 0;
+    root.dataset.intro = "playing";
+    intro.hidden = false;
+
+    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
+    window.scrollTo({ top: 0, behavior: "auto" });
+
+    const updateScrollProgress = () => {
+      if (!finished) return;
+      const progress = Math.min(window.scrollY / Math.max(window.innerHeight * 0.38, 1), 1);
+      stage.style.setProperty("--intro-shift", `${progress * -48}px`);
+      stage.style.setProperty("--intro-opacity", String(1 - progress * 0.92));
+    };
+
+    const enterBlog = () => {
+      if (!finished || entering) return;
+      entering = true;
+      window.removeEventListener("wheel", handleWheel);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
+      window.removeEventListener("keydown", handleKeydown);
+      const blogTop = intro.offsetHeight;
+      window.scrollTo({
+        top: blogTop,
+        behavior: reducedMotion ? "auto" : "smooth",
+      });
+
+      if (!reducedMotion) {
+        window.setTimeout(() => {
+          if (Math.abs(window.scrollY - blogTop) > 2) {
+            window.scrollTo({ top: blogTop, behavior: "auto" });
+          }
+        }, 900);
+      }
+    };
+
+    const handleWheel = (event) => {
+      if (event.deltaY <= 6 || window.scrollY >= intro.offsetHeight) return;
+      event.preventDefault();
+      enterBlog();
+    };
+
+    const handleTouchStart = (event) => {
+      touchStartY = event.changedTouches[0]?.clientY ?? 0;
+    };
+
+    const handleTouchEnd = (event) => {
+      const touchEndY = event.changedTouches[0]?.clientY ?? touchStartY;
+      if (touchStartY - touchEndY >= 36) enterBlog();
+    };
+
+    const handleKeydown = (event) => {
+      if (!["ArrowDown", "PageDown", " "].includes(event.key)) return;
+      event.preventDefault();
+      enterBlog();
+    };
+
+    const finish = (shouldEnter = false) => {
+      if (finished) return;
+      finished = true;
+      commandOutput.textContent = command;
+      portrait.textContent = portraitLines.join("\n");
+      portrait.setAttribute("aria-label", "已经生成的人物 ASCII 肖像");
+      status.textContent = "portrait complete — journal ready";
+      intro.classList.add("is-complete");
+      root.dataset.intro = "complete";
+      window.addEventListener("scroll", updateScrollProgress, { passive: true });
+      window.addEventListener("wheel", handleWheel, { passive: false });
+      window.addEventListener("touchstart", handleTouchStart, { passive: true });
+      window.addEventListener("touchend", handleTouchEnd, { passive: true });
+      window.addEventListener("keydown", handleKeydown);
+
+      if (shouldEnter) {
+        window.setTimeout(enterBlog, reducedMotion ? 0 : 180);
+      }
+    };
+
+    skip.addEventListener("click", () => {
+      cancelled = true;
+      finish(true);
+    });
+
+    const play = async () => {
+      if (reducedMotion) {
+        finish(false);
+        return;
+      }
+
+      await sleep(520);
+
+      for (const character of command) {
+        if (cancelled || !intro.isConnected) return;
+        commandOutput.textContent += character;
+        await sleep(character === " " ? 72 : 46);
+      }
+
+      status.textContent = "reading anime_character_ascii_v2.txt...";
+      await sleep(320);
+
+      for (let index = 0; index < portraitLines.length; index += 1) {
+        if (cancelled || !intro.isConnected) return;
+        portrait.textContent += `${index === 0 ? "" : "\n"}${portraitLines[index]}`;
+        status.textContent = `rendering line ${String(index + 1).padStart(2, "0")}/${portraitLines.length}`;
+        await sleep(67);
+      }
+
+      status.textContent = "portrait complete";
+      await sleep(620);
+
+      if (!cancelled && intro.isConnected) finish(false);
+    };
+
+    play();
+  };
+
+  document.addEventListener("astro:page-load", setupIntro);
+  setupIntro();
+</script>
+
+<style>
+  :global(html[data-page="home"][data-intro="pending"]),
+  :global(html[data-page="home"][data-intro="playing"]) {
+    overflow: hidden;
+  }
+
+  .intro-sequence {
+    min-height: 135svh;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  .intro-stage {
+    --intro-shift: 0px;
+    --intro-opacity: 1;
+    position: sticky;
+    top: 0;
+    display: grid;
+    place-items: center;
+    height: 100svh;
+    min-height: 620px;
+    overflow: hidden;
+    opacity: var(--intro-opacity);
+    transform: translateY(var(--intro-shift));
+    transition: opacity 120ms linear, transform 120ms linear;
+  }
+
+  .intro-kicker {
+    position: absolute;
+    top: 34px;
+    left: clamp(24px, 5vw, 72px);
+    margin: 0;
+    color: var(--color-faint);
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+  }
+
+  .terminal-window {
+    width: min(84vw, 760px);
+    min-height: 530px;
+    overflow: hidden;
+    border: 1px solid #313337;
+    border-radius: 11px;
+    background: #090b0d;
+    box-shadow: 0 28px 80px rgb(0 0 0 / 52%);
+    opacity: 0;
+    transform: translateY(22px) scale(0.985);
+    animation: terminal-enter 900ms cubic-bezier(0.2, 0.75, 0.25, 1) 120ms forwards;
+  }
+
+  .terminal-titlebar {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    height: 42px;
+    padding: 0 15px;
+    border-bottom: 1px solid #282a2d;
+    background: #131518;
+  }
+
+  .terminal-lights {
+    display: flex;
+    gap: 8px;
+  }
+
+  .terminal-lights span {
+    width: 10px;
+    height: 10px;
+    border: 1px solid #5b5a56;
+    border-radius: 50%;
+    background: #242528;
+  }
+
+  .terminal-title,
+  .terminal-status {
+    color: #74767a;
+    font-family: var(--font-mono);
+    font-size: 0.67rem;
+  }
+
+  .terminal-spacer {
+    min-width: 42px;
+  }
+
+  .terminal-body {
+    position: relative;
+    min-height: 488px;
+    padding: 26px 30px 24px;
+    font-family: var(--font-mono);
+  }
+
+  .terminal-command {
+    display: flex;
+    align-items: center;
+    min-height: 22px;
+    margin: 0;
+    color: #d8d4ca;
+    font-size: 0.78rem;
+    white-space: pre-wrap;
+  }
+
+  .terminal-prompt {
+    margin-right: 9px;
+    color: #8e9a83;
+  }
+
+  .terminal-cursor {
+    width: 7px;
+    height: 1.1em;
+    margin-left: 3px;
+    background: #bfb7a6;
+    animation: cursor-blink 880ms steps(1) infinite;
+  }
+
+  .ascii-portrait {
+    display: grid;
+    place-items: center;
+    min-height: 350px;
+    margin: 3px 0 0;
+    color: #cfc7b7;
+    font-family: var(--font-mono);
+    font-size: clamp(0.42rem, 0.74vw, 0.56rem);
+    font-weight: 400;
+    line-height: 0.88;
+    letter-spacing: 0;
+    text-align: left;
+    text-shadow: 0 0 18px rgb(207 199 183 / 12%);
+    white-space: pre;
+  }
+
+  .terminal-status {
+    margin: 6px 0 0;
+    letter-spacing: 0.04em;
+    text-align: right;
+  }
+
+  .entry-cue {
+    position: absolute;
+    bottom: 18px;
+    left: 50%;
+    display: grid;
+    justify-items: center;
+    gap: 9px;
+    color: var(--color-faint);
+    opacity: 0;
+    transform: translateX(-50%) translateY(12px);
+  }
+
+  .entry-line {
+    width: 1px;
+    height: 0;
+    background: var(--color-accent-soft);
+  }
+
+  .entry-label {
+    opacity: 0;
+    transform: translateY(5px);
+    font-size: 0.55rem;
+    letter-spacing: 0.22em;
+    white-space: nowrap;
+  }
+
+  .is-complete .terminal-window {
+    animation: terminal-breathe 5s ease-in-out infinite;
+    opacity: 1;
+    transform: none;
+  }
+
+  .is-complete .ascii-portrait {
+    animation: portrait-breathe 5.8s ease-in-out infinite;
+  }
+
+  .is-complete .terminal-cursor {
+    opacity: 0;
+  }
+
+  .is-complete .entry-cue {
+    opacity: 1;
+    transform: translateX(-50%);
+  }
+
+  .is-complete .entry-line {
+    animation:
+      line-grow 2.5s cubic-bezier(0.22, 0.7, 0.28, 1) forwards,
+      line-bob 2.4s ease-in-out 2.5s infinite;
+  }
+
+  .is-complete .entry-label {
+    animation: label-reveal 900ms ease 2s forwards;
+  }
+
+  .intro-skip {
+    position: absolute;
+    right: clamp(24px, 5vw, 72px);
+    bottom: 34px;
+    border: 0;
+    border-bottom: 1px solid transparent;
+    padding: 3px 0;
+    background: transparent;
+    color: var(--color-faint);
+    font-family: var(--font-sans);
+    font-size: 0.68rem;
+    cursor: pointer;
+  }
+
+  .intro-skip:hover {
+    border-color: var(--color-faint);
+    color: var(--color-text);
+  }
+
+  @keyframes terminal-enter {
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @keyframes terminal-breathe {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+  }
+
+  @keyframes portrait-breathe {
+    0%, 100% { opacity: 0.86; text-shadow: 0 0 15px rgb(207 199 183 / 8%); }
+    50% { opacity: 1; text-shadow: 0 0 24px rgb(207 199 183 / 22%); }
+  }
+
+  @keyframes cursor-blink {
+    0%, 48% { opacity: 1; }
+    49%, 100% { opacity: 0; }
+  }
+
+  @keyframes line-grow {
+    to { height: 54px; }
+  }
+
+  @keyframes line-bob {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(4px); }
+  }
+
+  @keyframes label-reveal {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 720px) {
+    .intro-stage {
+      min-height: 560px;
+    }
+
+    .terminal-window {
+      width: calc(100vw - 36px);
+      min-height: 470px;
+    }
+
+    .terminal-titlebar {
+      grid-template-columns: 1fr auto 1fr;
+      padding-inline: 12px;
+    }
+
+    .terminal-title {
+      font-size: 0.58rem;
+    }
+
+    .terminal-body {
+      min-height: 428px;
+      padding: 22px 16px 20px;
+    }
+
+    .terminal-command {
+      font-size: 0.62rem;
+    }
+
+    .ascii-portrait {
+      min-height: 286px;
+      font-size: clamp(0.31rem, 1.28vw, 0.42rem);
+    }
+
+    .terminal-status {
+      margin-top: 5px;
+      font-size: 0.56rem;
+    }
+
+    .intro-kicker {
+      top: 24px;
+    }
+
+    .intro-skip {
+      right: 22px;
+      bottom: 24px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .intro-stage,
+    .terminal-window,
+    .ascii-portrait,
+    .terminal-cursor,
+    .entry-cue,
+    .entry-line,
+    .entry-label {
+      animation: none !important;
+      transition: none !important;
+    }
+
+    .terminal-window {
+      opacity: 1;
+      transform: none;
+    }
+
+    .is-complete .entry-cue {
+      opacity: 1;
+      transform: translateX(-50%);
+    }
+
+    .is-complete .entry-line {
+      height: 54px;
+    }
+
+    .is-complete .entry-label {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>

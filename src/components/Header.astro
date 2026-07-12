@@ -1,5 +1,5 @@
 ---
-import { Moon, Sun, UserRound } from "@lucide/astro";
+import { Moon, Sun } from "@lucide/astro";
 
 const navItems = [
   { href: "/", label: "首页" },
@@ -16,10 +16,7 @@ const isActive = (href: string) => {
 ---
 
 <header class="site-header">
-  <a class="brand" href="/" aria-label="Akisy的记录首页">
-    <img src="/images/whitehairblueeyes.jpeg" alt="" width="40" height="40" />
-    <span>Akisy的记录</span>
-  </a>
+  <span class="brand-spacer" aria-hidden="true"></span>
   <nav class="site-nav" aria-label="主导航">
     {
       navItems.map((item) => (
@@ -34,9 +31,7 @@ const isActive = (href: string) => {
       <Moon class="theme-icon theme-icon-moon" size={18} stroke-width={1.8} aria-hidden="true" />
       <Sun class="theme-icon theme-icon-sun" size={18} stroke-width={1.8} aria-hidden="true" />
     </button>
-    <a class="header-orb" href="/about/" aria-label="关于 Akisy">
-      <UserRound class="icon-muted" size={18} stroke-width={1.8} />
-    </a>
+    <a class="header-note" href="/about/">个人日志</a>
   </div>
 </header>
 

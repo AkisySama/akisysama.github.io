@@ -1,115 +1,165 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
-import PostCard from "@components/PostCard.astro";
-import { BookOpen, FileText, Image as ImageIcon, Tags } from "@lucide/astro";
-import { getAllTags, getPublishedPosts } from "@utils/posts";
+import IntroSequence from "@components/IntroSequence.astro";
+import {
+  ArrowRight,
+  Camera,
+  CodeXml,
+  NotebookPen,
+} from "@lucide/astro";
+import { formatDate } from "@utils/dates";
+import { getPostDescription, getPostUrl, getPublishedPosts } from "@utils/posts";
 import { pathForTag } from "@utils/slug";
 
 const posts = await getPublishedPosts();
-const featuredPosts = posts.slice(0, 4);
-const tagCounts = getTagCounts(posts).slice(0, 8);
-const allTags = getAllTags(posts);
+const featuredPosts = posts.slice(0, 3);
+const journalPost = posts[0];
 
-function getTagCounts(allPosts: typeof posts) {
-  const counts = new Map<string, number>();
+const focusItems = [
+  {
+    icon: CodeXml,
+    title: "技术手记",
+    description: "我真的有技术吗？",
+    linkLabel: "探索技术",
+    href: pathForTag("技术"),
+  },
+  {
+    icon: Camera,
+    title: "生活片段",
+    description: "随便拍的和碎碎念",
+    linkLabel: "翻阅生活",
+    href: pathForTag("回忆"),
+  },
+  {
+    icon: NotebookPen,
+    title: "随想与阅读",
+    description: "大概率是睡不着的胡思乱想",
+    linkLabel: "阅读随想",
+    href: pathForTag("历史"),
+  },
+];
 
-  for (const post of allPosts) {
-    for (const tag of post.data.tags) {
-      counts.set(tag, (counts.get(tag) ?? 0) + 1);
-    }
-  }
-
-  return Array.from(counts.entries())
-    .map(([tag, count]) => ({ tag, count }))
-    .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag, "zh-CN"));
-}
+const selectedImages = [
+  { src: "/images/209169A8-B52A-4BA1-8F9E-B009E467288E_4_5005_c.jpeg", alt: "海边旅行照片" },
+  { src: "/images/my university/1.jpeg", alt: "大学时的摩天轮照片" },
+  { src: "/images/my university/4.jpeg", alt: "辽阔平原风景" },
+  { src: "/assets/ring.webp", alt: "夜色中的奇幻风景" },
+];
 ---
 
 <BaseLayout>
-  <section class="home-hero neumo-surface" aria-labelledby="home-title">
+  <IntroSequence slot="intro" />
+
+  <section class="editorial-hero" aria-labelledby="home-title">
     <div class="hero-copy">
-      <p class="eyebrow">Personal Blog</p>
-      <h1 id="home-title">Akisy的记录</h1>
-      <p>
-        记录技术探索、生活片段、历史阅读与旅途中的所见所想。
-        在代码与文字之间，留住生活的温度。
+      <p class="hero-greeting"></p>
+      <h1 id="home-title">Akisy.</h1>
+      <p class="hero-intro">
+        这是我在互联网上的一片孤岛,创建于2024年3月26日
       </p>
-      <div class="hero-actions" aria-label="首页快速入口">
-        <a class="pill-link" href="/posts/">
-          <BookOpen class="icon-muted" size={17} stroke-width={1.8} />
-          浏览文章
-        </a>
-        <a class="pill-link" href="/tags/">
-          <Tags class="icon-muted" size={17} stroke-width={1.8} />
-          探索标签
-        </a>
-      </div>
-      <dl class="hero-stats" aria-label="博客统计">
-        <div>
-          <dt>
-            <FileText class="icon-muted" size={17} stroke-width={1.8} />
-            文章
-          </dt>
-          <dd>{posts.length}</dd>
-        </div>
-        <div>
-          <dt>
-            <Tags class="icon-muted" size={17} stroke-width={1.8} />
-            标签
-          </dt>
-          <dd>{allTags.length}</dd>
-        </div>
-        <div>
-          <dt>
-            <ImageIcon class="icon-muted" size={17} stroke-width={1.8} />
-            建站时间
-          </dt>
-          <dd>Since 2023</dd>
-        </div>
-      </dl>
+      <a class="text-link hero-link" href="/about/">
+        认识我
+        <span class="round-arrow" aria-hidden="true"><ArrowRight size={16} stroke-width={1.4} /></span>
+      </a>
     </div>
-    <figure class="hero-showcase" aria-label="二次元图片展示">
+
+    <figure class="hero-portrait" aria-label="动漫人物线稿主视觉">
       <img
-        src="/images/background.jpeg"
-        alt="金发二次元角色在明亮户外背景中的横幅图"
-        width="1861"
-        height="938"
+        src="/images/akisy-line-art.png"
+        alt="眨眼并比出胜利手势的动漫女孩线稿"
+        width="1275"
+        height="1234"
         loading="eager"
       />
+      <figcaption>Akisy’s Journal</figcaption>
     </figure>
   </section>
 
-  <div class="home-content-grid">
-    <section class="latest-posts neumo-surface" aria-labelledby="latest-posts">
-      <div class="section-heading">
-        <h2 id="latest-posts">
-          <FileText class="icon-muted" size={20} stroke-width={1.8} />
-          最新文章
-        </h2>
-        <a href="/posts/">查看全部</a>
-      </div>
-      <div class="post-grid">
-        {featuredPosts.map((post) => <PostCard post={post} />)}
-      </div>
-    </section>
-
-    <aside class="tag-sidebar neumo-surface" aria-labelledby="hot-tags">
-      <h2 id="hot-tags">
-        <Tags class="icon-muted" size={20} stroke-width={1.8} />
-        热门标签
-      </h2>
-      <ul>
-        {
-          tagCounts.map(({ tag, count }) => (
-            <li>
-              <a href={pathForTag(tag)}>
-                <span>{tag}</span>
-                <span>{count}</span>
+  <section class="focus-strip" aria-labelledby="focus-title">
+    <p class="vertical-label" id="focus-title">FOCUS</p>
+    <div class="focus-grid">
+      {
+        focusItems.map(({ icon: Icon, title, description, linkLabel, href }) => (
+          <article class="focus-item">
+            <span class="focus-icon" aria-hidden="true">
+              <Icon size={23} stroke-width={1.25} />
+            </span>
+            <div>
+              <h2>{title}</h2>
+              <p>{description}</p>
+              <a class="text-link" href={href}>
+                {linkLabel}
+                <ArrowRight size={15} stroke-width={1.35} aria-hidden="true" />
               </a>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="editorial-grid" aria-label="博客精选内容">
+    <div class="featured-list">
+      <div class="editorial-heading">
+        <span>精选文章</span>
+        <i aria-hidden="true"></i>
+      </div>
+      <ol>
+        {
+          featuredPosts.map((post, index) => (
+            <li>
+              <span class="article-index">{String(index + 1).padStart(2, "0")}</span>
+              <div>
+                <h2><a href={getPostUrl(post)}>{post.data.title}</a></h2>
+                <p>{getPostDescription(post)}</p>
+                <p class="article-meta">
+                  <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+                  <span>·</span>
+                  <span>{Math.max(3, Math.round((post.body?.length ?? 0) / 650))} 分钟阅读</span>
+                </p>
+              </div>
+              <ArrowRight class="article-arrow" size={16} stroke-width={1.3} aria-hidden="true" />
             </li>
           ))
         }
-      </ul>
-    </aside>
-  </div>
+      </ol>
+    </div>
+
+    <div class="journal-feature">
+      <div class="editorial-heading">
+        <span>最新记录</span>
+        <i aria-hidden="true"></i>
+      </div>
+      {
+        journalPost && (
+          <article class="journal-card">
+            <img src={journalPost.data.cover ?? "/images/default-post-cover.jpeg"} alt="" loading="lazy" />
+            <div class="journal-card-overlay">
+              <time datetime={journalPost.data.pubDate.toISOString()}>{formatDate(journalPost.data.pubDate)}</time>
+              <h2>{journalPost.data.title}</h2>
+              <p>{getPostDescription(journalPost)}</p>
+              <a class="text-link" href={getPostUrl(journalPost)}>
+                继续阅读
+                <ArrowRight size={15} stroke-width={1.35} aria-hidden="true" />
+              </a>
+            </div>
+          </article>
+        )
+      }
+    </div>
+
+    <div class="photo-selection">
+      <div class="editorial-heading">
+        <span>片刻收藏</span>
+        <i aria-hidden="true"></i>
+      </div>
+      <div class="photo-grid">
+        {selectedImages.map((image) => <img src={image.src} alt={image.alt} loading="lazy" />)}
+      </div>
+      <a class="text-link" href="/posts/">
+        浏览全部记录
+        <ArrowRight size={15} stroke-width={1.35} aria-hidden="true" />
+      </a>
+    </div>
+  </section>
 </BaseLayout>
