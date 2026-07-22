@@ -9,7 +9,6 @@ const baseLayout = read("src/layouts/BaseLayout.astro");
 const homepage = read("src/pages/index.astro");
 const intro = read("src/components/IntroSequence.astro");
 const timeline = read("src/components/TimelineDrawer.astro");
-const portrait = read("src/assets/anime_character_ascii_v2.txt");
 
 assert.ok(baseLayout.includes('<slot name="intro" />'), "Base layout should render the intro before the header");
 assert.ok(baseLayout.includes('data-page={isHome ? "home" : "inner"}'), "Base layout should identify the homepage");
@@ -20,11 +19,14 @@ assert.ok(homepage.includes('<IntroSequence slot="intro" />'), "Homepage should 
 for (const contract of [
   "terminal-window",
   "terminal-titlebar",
-  "ascii-portrait",
+  "terminal-transcript",
+  "terminal-output-line",
   "entry-line",
   "SCROLL TO ENTER",
-  "render anime_character_ascii_v2.txt --stream",
-  "rendering line",
+  "journalctl --boot --priority=notice --no-pager",
+  "npx vectorize ./memory --dimensions=1536 --incremental",
+  "curl -s localhost:4321/health | jq -C",
+  "all systems nominal — journal ready",
   'window.addEventListener("wheel", handleWheel, { passive: false })',
   'window.addEventListener("touchend", handleTouchEnd, { passive: true })',
   '"ArrowDown", "PageDown", " "',
@@ -49,8 +51,8 @@ assert.match(intro, /aria-live="polite"/, "Terminal progress should be announced
 
 assert.match(intro, /line-grow 2\.5s/, "Entry line should fully appear over 2.5 seconds");
 assert.match(intro, /line-bob 2\.4s ease-in-out 2\.5s infinite/, "Completed entry line should bob gently");
-assert.match(intro, /await sleep\(67\)/, "Large portrait should render in about three seconds");
-assert.equal(portrait.trimEnd().split(/\r?\n/).length, 45, "Supplied portrait should retain all 45 lines");
-assert.equal(Math.max(...portrait.trimEnd().split(/\r?\n/).map((line) => line.length)), 96, "Supplied portrait should retain its full width");
+assert.ok(!intro.includes("ascii-portrait"), "Intro should no longer render an ASCII portrait");
+assert.ok(!intro.includes("anime_character_ascii"), "Intro should no longer load the portrait source");
+assert.match(intro, /terminalSequence\.length/, "Terminal should play the complete command pipeline");
 
-console.log("Verified terminal portrait intro contract.");
+console.log("Verified simulated terminal intro contract.");

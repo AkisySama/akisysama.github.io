@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "postinstall": "node scripts/fix-keystatic-translations.mjs",
     "dev": "astro dev",
+    "write": "astro dev --open /keystatic",
     "build": "astro check && astro build",
     "preview": "astro preview",
     "test": "astro check && node scripts/verify-migration.mjs && node scripts/verify-theme.mjs && node scripts/verify-intro.mjs"
@@ -14,5 +16,12 @@
     "@lucide/astro": "^1.21.0",
     "astro": "^6.4.8",
     "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "@astrojs/react": "^6.0.1",
+    "@keystatic/astro": "^5.2.0",
+    "@keystatic/core": "^0.6.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   }
 }

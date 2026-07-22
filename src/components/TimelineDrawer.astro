@@ -332,17 +332,18 @@ import { ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
     gap: 7px;
     align-items: center;
     width: 44px;
-    border: 1px solid var(--color-border);
-    border-left: 0;
+    border: 0;
     border-radius: 0 var(--radius-md) var(--radius-md) 0;
     padding: 13px 8px 12px;
-    background: var(--color-surface-lifted);
-    box-shadow: 7px 8px 24px rgb(0 0 0 / 16%);
+    background: color-mix(in srgb, var(--color-surface-lifted) 72%, transparent);
+    box-shadow: 8px 8px 28px rgb(0 0 0 / 10%);
     color: var(--color-accent);
     cursor: pointer;
     pointer-events: auto;
     transform: translateY(-50%);
     transition: left 280ms ease, color 180ms ease, background 180ms ease;
+    -webkit-backdrop-filter: blur(24px) saturate(115%);
+    backdrop-filter: blur(24px) saturate(115%);
   }
 
   .timeline-toggle span {
@@ -353,7 +354,7 @@ import { ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
   }
 
   .timeline-toggle:hover {
-    background: var(--color-surface-soft);
+    background: color-mix(in srgb, var(--color-surface-soft) 82%, transparent);
     color: var(--color-heading);
   }
 
@@ -363,13 +364,13 @@ import { ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
     display: grid;
     grid-template-rows: auto 1fr auto;
     width: var(--timeline-width);
-    border-right: 1px solid var(--color-border);
-    background: color-mix(in srgb, var(--color-surface) 96%, transparent);
-    box-shadow: 18px 0 50px rgb(0 0 0 / 24%);
+    background: transparent;
+    box-shadow: none;
     pointer-events: auto;
     transform: translateX(-101%);
     transition: transform 280ms ease;
-    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(56px);
+    backdrop-filter: blur(56px);
   }
 
   .timeline-shell.is-open .timeline-drawer { transform: translateX(0); }
@@ -395,7 +396,6 @@ import { ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
     align-items: flex-start;
     justify-content: space-between;
     min-height: 112px;
-    border-bottom: 1px solid var(--color-border);
     padding: 28px 25px 21px 28px;
   }
 
@@ -421,19 +421,23 @@ import { ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
     justify-content: center;
     width: 34px;
     height: 34px;
-    border: 1px solid var(--color-border);
+    border: 0;
     border-radius: 50%;
-    background: transparent;
+    background: color-mix(in srgb, var(--color-surface-soft) 56%, transparent);
     color: var(--color-muted);
     cursor: pointer;
   }
 
-  .timeline-close:hover { color: var(--color-heading); border-color: var(--color-accent-soft); }
+  .timeline-close:hover {
+    background: color-mix(in srgb, var(--color-surface-soft) 82%, transparent);
+    color: var(--color-heading);
+  }
 
   .timeline-content {
     min-height: 0;
     overflow-y: auto;
     overscroll-behavior: contain;
+    background: transparent;
     scrollbar-color: var(--color-border) transparent;
   }
 
@@ -447,9 +451,8 @@ import { ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
     padding: 22px 0;
   }
 
-  :global(.timeline-item + .timeline-item) { border-top: 1px solid var(--color-border-soft); }
   :global(.timeline-avatar) { border-radius: 50%; text-decoration: none; }
-  :global(.timeline-avatar img) { width: 42px; height: 42px; border: 1px solid var(--color-border); border-radius: 50%; object-fit: cover; }
+  :global(.timeline-avatar img) { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
   :global(.timeline-item-main) { min-width: 0; }
 
   :global(.timeline-author) {
@@ -524,7 +527,6 @@ import { ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
     align-items: center;
     justify-content: space-between;
     min-height: 55px;
-    border-top: 1px solid var(--color-border);
     padding: 0 28px;
     color: var(--color-muted);
     font-size: 0.67rem;

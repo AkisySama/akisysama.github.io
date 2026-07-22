@@ -1,11 +1,10 @@
 ---
 title: "明世宗嘉靖皇帝生平简述"
-pubDate: "2026-03-27T10:00:00+08:00"
+pubDate: "2026-03-27"
 tags: 
   - "历史"
 categories: []
 draft: false
-slug: "jiajing-emperor"
 ---
 ## 嘉靖皇帝的生平事迹
 

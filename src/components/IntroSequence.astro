@@ -1,8 +1,30 @@
 ---
-import portraitSource from "../assets/anime_character_ascii_v2.txt?raw";
-
-const command = "render anime_character_ascii_v2.txt --stream";
-const portraitAscii = portraitSource.trimEnd();
+const terminalSequence = [
+  {
+    command: "journalctl --boot --priority=notice --no-pager",
+    output: [
+      { text: "Jul 23 09:41:08 kernel: entropy pool synchronized", tone: "muted" },
+      { text: "Jul 23 09:41:08 systemd: mounted /dev/ideas on /mnt/archive", tone: "muted" },
+      { text: "Jul 23 09:41:09 chronicle[2048]: temporal cache warmed", tone: "success" },
+    ],
+  },
+  {
+    command: "npx vectorize ./memory --dimensions=1536 --incremental",
+    output: [
+      { text: "[01/04] resolving semantic topology ........ done", tone: "muted" },
+      { text: "[02/04] calibrating latent coordinates ..... done", tone: "muted" },
+      { text: "[03/04] folding narrative tensors .......... done", tone: "muted" },
+      { text: "[04/04] committing ephemeral index .......... done", tone: "success" },
+    ],
+  },
+  {
+    command: "curl -s localhost:4321/health | jq -C",
+    output: [
+      { text: '{ "status": "nominal", "signal": 0.9987, "meaning": null }', tone: "json" },
+      { text: "handshake complete · observer channel ready", tone: "success" },
+    ],
+  },
+];
 ---
 
 <section class="intro-sequence" data-intro-sequence aria-label="博客开场动画">
@@ -21,17 +43,16 @@ const portraitAscii = portraitSource.trimEnd();
       </div>
 
       <div class="terminal-body">
-        <p class="terminal-command" aria-label={`执行命令 ${command}`}>
+        <div
+          class="terminal-transcript"
+          data-terminal-transcript
+          aria-label="正在运行系统初始化命令"
+        ></div>
+        <p class="terminal-command terminal-active-command">
           <span class="terminal-prompt">akisy@journal ~ %</span>
           <span data-command-output></span><span class="terminal-cursor" aria-hidden="true"></span>
         </p>
-        <pre
-          class="ascii-portrait"
-          data-ascii-portrait
-          aria-live="off"
-          aria-label="人物 ASCII 肖像正在逐行生成"
-        ></pre>
-        <p class="terminal-status" data-terminal-status aria-live="polite">waiting for source...</p>
+        <p class="terminal-status" data-terminal-status aria-live="polite">awaiting bootstrap signal...</p>
       </div>
     </div>
 
@@ -44,9 +65,7 @@ const portraitAscii = portraitSource.trimEnd();
   </div>
 </section>
 
-<script is:inline define:vars={{ command, portraitAscii }}>
-  const portraitLines = portraitAscii.split(/\r?\n/);
-
+<script is:inline define:vars={{ terminalSequence }}>
   const sleep = (duration) => new Promise((resolve) => window.setTimeout(resolve, duration));
 
   const setupIntro = () => {
@@ -65,8 +84,8 @@ const portraitAscii = portraitSource.trimEnd();
 
     const stage = intro.querySelector("[data-intro-stage]");
     const windowElement = intro.querySelector("[data-terminal-window]");
+    const transcript = intro.querySelector("[data-terminal-transcript]");
     const commandOutput = intro.querySelector("[data-command-output]");
-    const portrait = intro.querySelector("[data-ascii-portrait]");
     const status = intro.querySelector("[data-terminal-status]");
     const skip = intro.querySelector("[data-intro-skip]");
     const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -74,8 +93,8 @@ const portraitAscii = portraitSource.trimEnd();
     if (
       !(stage instanceof HTMLElement) ||
       !(windowElement instanceof HTMLElement) ||
+      !(transcript instanceof HTMLElement) ||
       !(commandOutput instanceof HTMLElement) ||
-      !(portrait instanceof HTMLElement) ||
       !(status instanceof HTMLElement) ||
       !(skip instanceof HTMLButtonElement)
     ) {
@@ -89,6 +108,37 @@ const portraitAscii = portraitSource.trimEnd();
     let touchStartY = 0;
     root.dataset.intro = "playing";
     intro.hidden = false;
+
+    const appendCommand = (command) => {
+      const line = document.createElement("p");
+      line.className = "terminal-command terminal-command-history";
+
+      const prompt = document.createElement("span");
+      prompt.className = "terminal-prompt";
+      prompt.textContent = "akisy@journal ~ %";
+
+      const value = document.createElement("span");
+      value.textContent = command;
+      line.append(prompt, value);
+      transcript.append(line);
+    };
+
+    const appendOutput = ({ text, tone }) => {
+      const line = document.createElement("p");
+      line.className = "terminal-output-line";
+      line.dataset.tone = tone;
+      line.textContent = text;
+      transcript.append(line);
+      transcript.scrollTop = transcript.scrollHeight;
+    };
+
+    const renderCompleteTranscript = () => {
+      transcript.replaceChildren();
+      for (const step of terminalSequence) {
+        appendCommand(step.command);
+        for (const output of step.output) appendOutput(output);
+      }
+    };
 
     if ("scrollRestoration" in history) history.scrollRestoration = "manual";
     window.scrollTo({ top: 0, behavior: "auto" });
@@ -147,10 +197,10 @@ const portraitAscii = portraitSource.trimEnd();
     const finish = (shouldEnter = false) => {
       if (finished) return;
       finished = true;
-      commandOutput.textContent = command;
-      portrait.textContent = portraitLines.join("\n");
-      portrait.setAttribute("aria-label", "已经生成的人物 ASCII 肖像");
-      status.textContent = "portrait complete — journal ready";
+      commandOutput.textContent = "";
+      renderCompleteTranscript();
+      transcript.setAttribute("aria-label", "系统初始化完成，博客已就绪");
+      status.textContent = "all systems nominal — journal ready";
       intro.classList.add("is-complete");
       root.dataset.intro = "complete";
       window.addEventListener("scroll", updateScrollProgress, { passive: true });
@@ -177,24 +227,31 @@ const portraitAscii = portraitSource.trimEnd();
 
       await sleep(520);
 
-      for (const character of command) {
-        if (cancelled || !intro.isConnected) return;
-        commandOutput.textContent += character;
-        await sleep(character === " " ? 72 : 46);
+      for (let stepIndex = 0; stepIndex < terminalSequence.length; stepIndex += 1) {
+        const step = terminalSequence[stepIndex];
+        status.textContent = `executing pipeline ${stepIndex + 1}/${terminalSequence.length}`;
+
+        for (const character of step.command) {
+          if (cancelled || !intro.isConnected) return;
+          commandOutput.textContent += character;
+          await sleep(character === " " ? 34 : 19);
+        }
+
+        await sleep(120);
+        appendCommand(step.command);
+        commandOutput.textContent = "";
+
+        for (const output of step.output) {
+          if (cancelled || !intro.isConnected) return;
+          appendOutput(output);
+          await sleep(170);
+        }
+
+        await sleep(130);
       }
 
-      status.textContent = "reading anime_character_ascii_v2.txt...";
-      await sleep(320);
-
-      for (let index = 0; index < portraitLines.length; index += 1) {
-        if (cancelled || !intro.isConnected) return;
-        portrait.textContent += `${index === 0 ? "" : "\n"}${portraitLines[index]}`;
-        status.textContent = `rendering line ${String(index + 1).padStart(2, "0")}/${portraitLines.length}`;
-        await sleep(67);
-      }
-
-      status.textContent = "portrait complete";
-      await sleep(620);
+      status.textContent = "validating observer channel...";
+      await sleep(480);
 
       if (!cancelled && intro.isConnected) finish(false);
     };
@@ -250,7 +307,8 @@ const portraitAscii = portraitSource.trimEnd();
 
   .terminal-window {
     width: min(84vw, 760px);
-    min-height: 530px;
+    height: min(74svh, 530px);
+    min-height: 470px;
     overflow: hidden;
     border: 1px solid #313337;
     border-radius: 11px;
@@ -297,9 +355,20 @@ const portraitAscii = portraitSource.trimEnd();
 
   .terminal-body {
     position: relative;
-    min-height: 488px;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    height: calc(100% - 42px);
+    min-height: 0;
     padding: 26px 30px 24px;
     font-family: var(--font-mono);
+  }
+
+  .terminal-transcript {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    scrollbar-width: none;
   }
 
   .terminal-command {
@@ -312,7 +381,21 @@ const portraitAscii = portraitSource.trimEnd();
     white-space: pre-wrap;
   }
 
+  .terminal-command-history {
+    margin-top: 14px;
+  }
+
+  .terminal-command-history:first-child {
+    margin-top: 0;
+  }
+
+  .terminal-active-command {
+    flex: 0 0 auto;
+    margin-top: 14px;
+  }
+
   .terminal-prompt {
+    flex: 0 0 auto;
     margin-right: 9px;
     color: #8e9a83;
   }
@@ -325,20 +408,20 @@ const portraitAscii = portraitSource.trimEnd();
     animation: cursor-blink 880ms steps(1) infinite;
   }
 
-  .ascii-portrait {
-    display: grid;
-    place-items: center;
-    min-height: 350px;
-    margin: 3px 0 0;
-    color: #cfc7b7;
-    font-family: var(--font-mono);
-    font-size: clamp(0.42rem, 0.74vw, 0.56rem);
-    font-weight: 400;
-    line-height: 0.88;
-    letter-spacing: 0;
-    text-align: left;
-    text-shadow: 0 0 18px rgb(207 199 183 / 12%);
-    white-space: pre;
+  .terminal-output-line {
+    margin: 4px 0 0;
+    color: #777c83;
+    font-size: 0.72rem;
+    line-height: 1.55;
+    white-space: pre-wrap;
+  }
+
+  .terminal-output-line[data-tone="success"] {
+    color: #8e9a83;
+  }
+
+  .terminal-output-line[data-tone="json"] {
+    color: #a7a18f;
   }
 
   .terminal-status {
@@ -374,13 +457,9 @@ const portraitAscii = portraitSource.trimEnd();
   }
 
   .is-complete .terminal-window {
-    animation: terminal-breathe 5s ease-in-out infinite;
+    animation: none;
     opacity: 1;
     transform: none;
-  }
-
-  .is-complete .ascii-portrait {
-    animation: portrait-breathe 5.8s ease-in-out infinite;
   }
 
   .is-complete .terminal-cursor {
@@ -428,16 +507,6 @@ const portraitAscii = portraitSource.trimEnd();
     }
   }
 
-  @keyframes terminal-breathe {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-4px); }
-  }
-
-  @keyframes portrait-breathe {
-    0%, 100% { opacity: 0.86; text-shadow: 0 0 15px rgb(207 199 183 / 8%); }
-    50% { opacity: 1; text-shadow: 0 0 24px rgb(207 199 183 / 22%); }
-  }
-
   @keyframes cursor-blink {
     0%, 48% { opacity: 1; }
     49%, 100% { opacity: 0; }
@@ -463,6 +532,7 @@ const portraitAscii = portraitSource.trimEnd();
 
     .terminal-window {
       width: calc(100vw - 36px);
+      height: min(72svh, 540px);
       min-height: 470px;
     }
 
@@ -476,7 +546,6 @@ const portraitAscii = portraitSource.trimEnd();
     }
 
     .terminal-body {
-      min-height: 428px;
       padding: 22px 16px 20px;
     }
 
@@ -484,9 +553,14 @@ const portraitAscii = portraitSource.trimEnd();
       font-size: 0.62rem;
     }
 
-    .ascii-portrait {
-      min-height: 286px;
-      font-size: clamp(0.31rem, 1.28vw, 0.42rem);
+    .terminal-transcript {
+      -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px);
+      mask-image: linear-gradient(to bottom, transparent 0, #000 18px);
+    }
+
+    .terminal-output-line {
+      font-size: 0.58rem;
+      line-height: 1.5;
     }
 
     .terminal-status {
@@ -507,7 +581,6 @@ const portraitAscii = portraitSource.trimEnd();
   @media (prefers-reduced-motion: reduce) {
     .intro-stage,
     .terminal-window,
-    .ascii-portrait,
     .terminal-cursor,
     .entry-cue,
     .entry-line,

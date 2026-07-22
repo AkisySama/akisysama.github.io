@@ -1,11 +1,10 @@
 ---
 title: "在使用GitHub Pages时的小问题"
-pubDate: "2024-03-26T22:14:13+08:00"
+pubDate: "2024-03-26"
 tags: 
   - "技术"
 categories: []
 draft: false
-slug: "github-page"
 ---
 ## 问题：GitHub pages迟迟不更新我的文章。
 我已经向我的仓库提交最新的文章了，GitHub pages却一直都不更新我最近这篇文章。我当时很是迷惑：😨这又出什么问题？？

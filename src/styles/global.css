@@ -459,11 +459,13 @@ img {
 }
 
 .featured-list li {
+  position: relative;
   display: grid;
   grid-template-columns: 28px 1fr 18px;
   gap: 10px;
   align-items: start;
   padding: 0 0 14px;
+  cursor: pointer;
 }
 
 .featured-list li + li {
@@ -490,6 +492,17 @@ img {
   text-decoration: none;
 }
 
+.featured-list h2 a::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+}
+
+.featured-list li:hover h2 a,
+.featured-list li:focus-within h2 a {
+  color: var(--color-accent);
+}
+
 .featured-list li > div > p:not(.article-meta) {
   display: -webkit-box;
   overflow: hidden;
@@ -511,15 +524,29 @@ img {
 .article-arrow {
   align-self: center;
   color: var(--color-accent-soft);
+  transition: transform 180ms ease;
+}
+
+.featured-list li:hover .article-arrow,
+.featured-list li:focus-within .article-arrow {
+  transform: translateX(3px);
 }
 
 .journal-card {
   position: relative;
+  display: block;
   min-height: 252px;
   overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   background: var(--color-surface-soft);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.journal-card:hover .text-link,
+.journal-card:focus-visible .text-link {
+  color: var(--color-heading);
 }
 
 .journal-card > img {
@@ -654,6 +681,10 @@ img {
   grid-template-columns: 1fr;
 }
 
+.post-list .post-card-cover {
+  align-self: center;
+}
+
 .post-card:hover {
   border-color: var(--color-accent-soft);
   transform: translateY(-2px);
@@ -746,7 +777,7 @@ img {
 .post-detail {
   width: min(100% - 48px, 820px);
   margin-inline: auto;
-  padding-block: 42px 56px;
+  padding-block: 24px 56px;
 }
 
 .post-detail .page-header {
@@ -754,22 +785,27 @@ img {
 }
 
 .post-hero {
-  margin-bottom: 34px;
+  margin-bottom: 24px;
   border-radius: var(--radius-md);
-  padding: clamp(28px, 5vw, 48px);
+  padding: clamp(22px, 3.5vw, 32px);
+}
+
+.post-hero h1 {
+  font-size: clamp(2.2rem, 5vw, 3.65rem);
+  line-height: 1.06;
 }
 
 .post-meta {
   display: flex;
   flex-wrap: wrap;
   gap: 8px 18px;
-  margin: 16px 0;
+  margin: 12px 0;
 }
 
 .post-cover {
   width: 100%;
-  max-height: 430px;
-  margin-top: 26px;
+  height: clamp(200px, 26vw, 250px);
+  margin-top: 18px;
   border-radius: var(--radius-md);
   object-fit: cover;
 }
@@ -779,6 +815,10 @@ img {
   font-family: var(--font-serif);
   font-size: 1.05rem;
   line-height: 1.9;
+}
+
+.prose > :first-child {
+  margin-top: 0;
 }
 
 .prose :where(h2, h3, h4) {
@@ -792,6 +832,11 @@ img {
 .prose ul,
 .prose ol {
   margin-block: 1em;
+}
+
+/* Traditional Chinese first-line indentation for top-level body paragraphs. */
+.prose > p {
+  text-indent: 2em;
 }
 
 .prose img {

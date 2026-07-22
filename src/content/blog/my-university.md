@@ -1,12 +1,11 @@
 ---
 title: "我的大学"
-pubDate: "2024-10-15T22:55:52+08:00"
+pubDate: "2024-10-15"
 tags: 
   - "回忆"
 categories: []
 draft: false
-slug: "my-university"
-cover: "/assets/4F00A571-EC2A-461E-8818-08088894EAE4_1_201_a.jpeg"
+cover: "/images/my-university/cover.jpeg"
 ---
 ## 我的大学生活结束了
 **（受限于本网站服务器的位置或您的网络状况，可能会导致图片加载缓慢或失败）**
@@ -16,17 +15,17 @@ cover: "/assets/4F00A571-EC2A-461E-8818-08088894EAE4_1_201_a.jpeg"
 我这个人其实挺怕翻照片的，我总是对现在有些不满，感觉照片里的日子是多么无忧无虑，不由得有种落差感。但是我又想去拍照片，无论拍的好不好我总是去拍。
 
 - 我大学的第一张照片，我第一次坐摩天轮，能看到整座城市。
-![Ferris Wheel](/images/my%20university/1.jpeg)
+![Ferris Wheel](/images/my-university/1.jpeg)
 
 - 第一次一起吃自助餐，去吃自助餐几乎成了我们周末的固定节目。
-![eating](/images/my%20university/2.jpeg)
+![eating](/images/my-university/2.jpeg)
 
 
 - 北方真是一望无际的平。
-![flatlands](/images/my%20university/4.jpeg)
+![flatlands](/images/my-university/4.jpeg)
 
 - 去南京玩，我的耳机有些问题，没想到工程师在检验后直接给我换新了。
-![applestore](/images/my%20university/3.jpeg)
+![applestore](/images/my-university/3.jpeg)
 
 
 

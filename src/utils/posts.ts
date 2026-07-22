@@ -6,7 +6,7 @@ export type BlogPost = CollectionEntry<"blog">;
 export const DEFAULT_POST_COVER = "/images/default-post-cover.jpeg";
 
 export function getPostSlug(post: BlogPost): string {
-  return post.data.slug ?? stripMarkdownExtension(post.id);
+  return stripMarkdownExtension(post.id);
 }
 
 export function getPostUrl(post: BlogPost): string {

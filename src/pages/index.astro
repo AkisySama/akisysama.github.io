@@ -145,18 +145,22 @@ const signalNodes = [
       </div>
       {
         journalPost && (
-          <article class="journal-card">
+          <a
+            class="journal-card"
+            href={getPostUrl(journalPost)}
+            aria-label={`阅读 ${journalPost.data.title}`}
+          >
             <img src={journalPost.data.cover ?? "/images/default-post-cover.jpeg"} alt="" loading="lazy" />
             <div class="journal-card-overlay">
               <time datetime={journalPost.data.pubDate.toISOString()}>{formatDate(journalPost.data.pubDate)}</time>
               <h2>{journalPost.data.title}</h2>
               <p>{getPostDescription(journalPost)}</p>
-              <a class="text-link" href={getPostUrl(journalPost)}>
+              <span class="text-link">
                 继续阅读
                 <ArrowRight size={15} stroke-width={1.35} aria-hidden="true" />
-              </a>
+              </span>
             </div>
-          </article>
+          </a>
         )
       }
     </div>

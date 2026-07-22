@@ -1,11 +1,10 @@
 ---
 title: "Git的常用命令"
-pubDate: "2024-03-28T09:41:02+08:00"
+pubDate: "2024-03-28"
 tags: 
   - "技术"
 categories: []
 draft: false
-slug: "git-commands"
 ---
 不得不说Git真是个伟大的发明。在我很早以前就在想，难道需要很多人开发的程序，最后是通过微信或者QQ把代码发来发去吗？Git完美的解答了我的烦恼。
 ### Git的常用命令行

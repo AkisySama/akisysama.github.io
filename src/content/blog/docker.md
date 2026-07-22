@@ -1,11 +1,10 @@
 ---
 title: "关于Docker"
-pubDate: "2024-03-24T18:15:08+08:00"
+pubDate: "2024-03-24"
 tags: 
   - "技术"
 categories: []
 draft: false
-slug: "docker"
 ---
 ## Docker是一种容器技术,它可以让开发者更高效地创建、部署和运行应用程序。
 
