@@ -63,3 +63,59 @@ The desktop implementation screenshot shows the supplied island occupying the or
 - [x] Focused side-by-side visual comparison
 
 final result: passed
+
+---
+
+# Design QA — Animated Metro Interlude
+
+Source visual truth: `/var/folders/mt/rshsz8nd0094xnfyrh1drl5c0000gn/T/TemporaryItems/NSIRD_screencaptureui_teOibE/Screenshot 2026-07-24 at 1.44.14 AM.png`
+
+Generated source assets:
+
+- `/Users/akisy/Downloads/Projects/blog/public/images/metro/subway-interior.png`
+- `/Users/akisy/Downloads/Projects/blog/public/images/metro/city-panorama.png`
+- `/Users/akisy/Downloads/Projects/blog/public/images/metro/girl-seated.png`
+
+Implementation composition proof: `/Users/akisy/Downloads/Projects/blog/design-qa-assets/metro-composition.png`
+
+Mobile composition proof: `/Users/akisy/Downloads/Projects/blog/design-qa-assets/metro-composition-mobile.png`
+
+Focused comparison: `/Users/akisy/Downloads/Projects/blog/design-qa-assets/metro-reference-comparison.png`
+
+Intended viewport/state: homepage after the intro sequence, dark theme; 1366 × 292 desktop scene and centered 390 × 230 mobile crop.
+
+## Findings
+
+- No visible P0, P1, or P2 issue remains in the layer composition proof.
+- The generated subway interior preserves the reference's centered bench, wide window, hanging straps, symmetric doors, and restrained violet-gray palette.
+- The city panorama fills the measured window aperture without stretching. Two copies move in a continuous loop, with a second light-cycle animation to make the view evolve over time.
+- The seated character remains centered on the bench at both desktop and mobile widths.
+- A restrained inset shadow restores the reference's dark vignette while leaving the pixel art legible.
+- P3: the new girl faces forward instead of using the reference's three-quarter pose. This is an intentional asset variation rather than a layout defect.
+
+## Interaction and Runtime Checks
+
+- The motion control toggles the city and character animations together and updates its icon, label, `aria-label`, and `aria-pressed` state.
+- Reduced-motion mode disables both animations and hides the redundant motion control.
+- `npm test` passes with zero Astro diagnostics; the theme contract now asserts the metro component and its reduced-motion behavior.
+- The local service responds with HTTP 200.
+- Browser-based runtime inspection could not be completed because the configured in-app browser policy rejected access to the local preview and explicitly prohibited alternate browser workarounds. Console, live interaction, and true browser-layout screenshots therefore remain unverified.
+
+## Comparison History
+
+1. The initial static layer composite matched the source hierarchy but lacked its edge falloff.
+2. A non-interactive inset vignette was added; the focused comparison then showed the intended wide-car composition, centered girl, and unobstructed animated window.
+3. A 390px centered crop confirmed that the bench, girl, and full window remain readable on mobile.
+
+## Implementation Checklist
+
+- [x] Real raster interior, city, and character assets
+- [x] Seamless city movement and evolving light treatment
+- [x] Pixel-crisp rendering
+- [x] Working pause/play control
+- [x] Reduced-motion fallback
+- [x] Desktop and mobile layer-composition checks
+- [x] Automated tests
+- [ ] Live in-app browser verification
+
+final result: blocked

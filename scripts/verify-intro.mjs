@@ -19,6 +19,7 @@ assert.ok(homepage.includes('<IntroSequence slot="intro" />'), "Homepage should 
 for (const contract of [
   "terminal-window",
   "terminal-titlebar",
+  "terminal-session",
   "terminal-transcript",
   "terminal-output-line",
   "entry-line",
@@ -54,5 +55,10 @@ assert.match(intro, /line-bob 2\.4s ease-in-out 2\.5s infinite/, "Completed entr
 assert.ok(!intro.includes("ascii-portrait"), "Intro should no longer render an ASCII portrait");
 assert.ok(!intro.includes("anime_character_ascii"), "Intro should no longer load the portrait source");
 assert.match(intro, /terminalSequence\.length/, "Terminal should play the complete command pipeline");
+assert.match(
+  intro,
+  /session\.scrollTop\s*=\s*session\.scrollHeight/,
+  "The active command should follow the transcript instead of staying pinned to the terminal bottom",
+);
 
 console.log("Verified simulated terminal intro contract.");

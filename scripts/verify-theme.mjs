@@ -10,6 +10,7 @@ const homepage = read("src/pages/index.astro");
 const styles = read("src/styles/global.css");
 const header = read("src/components/Header.astro");
 const footer = read("src/components/Footer.astro");
+const metroScene = read("src/components/MetroScene.astro");
 
 assert.match(baseLayout, /import\s+\{\s*ClientRouter\s*\}\s+from\s+["']astro:transitions["']/);
 assert.match(baseLayout, /<ClientRouter\s*\/>/);
@@ -20,8 +21,6 @@ for (const className of [
   "editorial-hero",
   "hero-copy",
   "hero-portrait",
-  "focus-strip",
-  "focus-grid",
   "editorial-grid",
   "featured-list",
   "journal-feature",
@@ -29,6 +28,16 @@ for (const className of [
 ]) {
   assert.ok(homepage.includes(className), `Homepage missing ${className}`);
 }
+
+assert.ok(homepage.includes("<MetroScene />"), "Homepage should include the animated metro interlude");
+for (const className of ["metro-scene", "metro-window", "metro-city-track", "metro-girl"]) {
+  assert.ok(metroScene.includes(className), `Metro scene missing ${className}`);
+}
+assert.ok(!metroScene.includes("data-metro-motion"), "Metro scene should not expose a motion toggle");
+assert.ok(
+  metroScene.includes("@media (prefers-reduced-motion: reduce)"),
+  "Metro scene should respect reduced motion",
+);
 
 assert.ok(
   homepage.includes("/images/digital-island-signal.webp"),

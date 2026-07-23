@@ -1,0 +1,159 @@
+<section class="metro-scene" aria-labelledby="metro-scene-title" data-metro-scene>
+  <h2 class="metro-title" id="metro-scene-title">移动中的城市片段</h2>
+
+  <div class="metro-stage" aria-hidden="true">
+    <img
+      class="metro-interior"
+      src="/images/metro/subway-interior.png"
+      alt=""
+      width="2176"
+      height="720"
+      loading="eager"
+    />
+
+    <div class="metro-window">
+      <div class="metro-city-track">
+        <img src="/images/metro/city-panorama.png" alt="" />
+        <img src="/images/metro/city-panorama.png" alt="" />
+      </div>
+    </div>
+
+    <img
+      class="metro-girl"
+      src="/images/metro/girl-seated.png"
+      alt=""
+      loading="eager"
+    />
+  </div>
+
+</section>
+
+<style>
+  .metro-scene {
+    position: relative;
+    height: clamp(230px, 23vw, 292px);
+    overflow: hidden;
+    border-bottom: 1px solid var(--color-border);
+    background: #08070a;
+    isolation: isolate;
+  }
+
+  .metro-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .metro-scene::after {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    box-shadow: inset 0 0 68px 20px rgb(3 4 5 / 64%);
+    content: "";
+    pointer-events: none;
+  }
+
+  .metro-stage {
+    position: absolute;
+    inset: 0;
+    min-width: 760px;
+    overflow: hidden;
+  }
+
+  .metro-interior {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: fill;
+    image-rendering: pixelated;
+  }
+
+  .metro-window {
+    position: absolute;
+    top: 29%;
+    left: 29.15%;
+    z-index: 2;
+    width: 42.45%;
+    height: 28.5%;
+    overflow: hidden;
+    border-radius: 4% / 18%;
+    background: #171328;
+  }
+
+  .metro-city-track {
+    display: flex;
+    width: 200%;
+    height: 100%;
+    animation:
+      metro-city-scroll 18s linear infinite,
+      metro-city-light 24s ease-in-out infinite alternate;
+    will-change: transform, filter;
+  }
+
+  .metro-city-track img {
+    flex: 0 0 50%;
+    width: 50%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+    image-rendering: pixelated;
+  }
+
+  .metro-girl {
+    position: absolute;
+    bottom: 8.2%;
+    left: 50%;
+    z-index: 3;
+    width: auto;
+    height: 37%;
+    max-width: none;
+    image-rendering: pixelated;
+    transform: translateX(-50%);
+    transform-origin: 50% 100%;
+    animation: metro-girl-idle 2.8s steps(2, end) infinite;
+    will-change: transform;
+  }
+
+  @keyframes metro-city-scroll {
+    to { transform: translateX(-50%); }
+  }
+
+  @keyframes metro-city-light {
+    0% { filter: brightness(0.82) saturate(0.8) hue-rotate(-8deg); }
+    48% { filter: brightness(1.06) saturate(1.05) hue-rotate(5deg); }
+    100% { filter: brightness(0.72) saturate(0.9) hue-rotate(18deg); }
+  }
+
+  @keyframes metro-girl-idle {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-2px); }
+  }
+
+  @media (max-width: 720px) {
+    .metro-scene {
+      height: 230px;
+    }
+
+    .metro-stage {
+      right: auto;
+      left: 50%;
+      width: 760px;
+      transform: translateX(-50%);
+    }
+
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .metro-city-track,
+    .metro-girl {
+      animation: none;
+    }
+  }
+</style>

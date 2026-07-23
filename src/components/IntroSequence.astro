@@ -43,15 +43,17 @@ const terminalSequence = [
       </div>
 
       <div class="terminal-body">
-        <div
-          class="terminal-transcript"
-          data-terminal-transcript
-          aria-label="正在运行系统初始化命令"
-        ></div>
-        <p class="terminal-command terminal-active-command">
-          <span class="terminal-prompt">akisy@journal ~ %</span>
-          <span data-command-output></span><span class="terminal-cursor" aria-hidden="true"></span>
-        </p>
+        <div class="terminal-session" data-terminal-session>
+          <div
+            class="terminal-transcript"
+            data-terminal-transcript
+            aria-label="正在运行系统初始化命令"
+          ></div>
+          <p class="terminal-command terminal-active-command">
+            <span class="terminal-prompt">akisy@journal ~ %</span>
+            <span data-command-output></span><span class="terminal-cursor" aria-hidden="true"></span>
+          </p>
+        </div>
         <p class="terminal-status" data-terminal-status aria-live="polite">awaiting bootstrap signal...</p>
       </div>
     </div>
@@ -84,6 +86,7 @@ const terminalSequence = [
 
     const stage = intro.querySelector("[data-intro-stage]");
     const windowElement = intro.querySelector("[data-terminal-window]");
+    const session = intro.querySelector("[data-terminal-session]");
     const transcript = intro.querySelector("[data-terminal-transcript]");
     const commandOutput = intro.querySelector("[data-command-output]");
     const status = intro.querySelector("[data-terminal-status]");
@@ -93,6 +96,7 @@ const terminalSequence = [
     if (
       !(stage instanceof HTMLElement) ||
       !(windowElement instanceof HTMLElement) ||
+      !(session instanceof HTMLElement) ||
       !(transcript instanceof HTMLElement) ||
       !(commandOutput instanceof HTMLElement) ||
       !(status instanceof HTMLElement) ||
@@ -109,6 +113,10 @@ const terminalSequence = [
     root.dataset.intro = "playing";
     intro.hidden = false;
 
+    const followCursor = () => {
+      session.scrollTop = session.scrollHeight;
+    };
+
     const appendCommand = (command) => {
       const line = document.createElement("p");
       line.className = "terminal-command terminal-command-history";
@@ -121,6 +129,7 @@ const terminalSequence = [
       value.textContent = command;
       line.append(prompt, value);
       transcript.append(line);
+      followCursor();
     };
 
     const appendOutput = ({ text, tone }) => {
@@ -129,7 +138,7 @@ const terminalSequence = [
       line.dataset.tone = tone;
       line.textContent = text;
       transcript.append(line);
-      transcript.scrollTop = transcript.scrollHeight;
+      followCursor();
     };
 
     const renderCompleteTranscript = () => {
@@ -234,6 +243,7 @@ const terminalSequence = [
         for (const character of step.command) {
           if (cancelled || !intro.isConnected) return;
           commandOutput.textContent += character;
+          followCursor();
           await sleep(character === " " ? 34 : 19);
         }
 
@@ -364,11 +374,15 @@ const terminalSequence = [
     font-family: var(--font-mono);
   }
 
-  .terminal-transcript {
+  .terminal-session {
     flex: 1;
     min-height: 0;
     overflow: hidden;
     scrollbar-width: none;
+  }
+
+  .terminal-transcript {
+    overflow: visible;
   }
 
   .terminal-command {
@@ -553,7 +567,7 @@ const terminalSequence = [
       font-size: 0.62rem;
     }
 
-    .terminal-transcript {
+    .terminal-session {
       -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px);
       mask-image: linear-gradient(to bottom, transparent 0, #000 18px);
     }
