@@ -41,13 +41,20 @@ const signalNodes = [
     </div>
 
     <figure class="hero-portrait" aria-label="数字孤岛信号图主视觉">
-      <img
-        src="/images/digital-island-signal.webp"
-        alt="由等高线、信号节点与扫描轨迹组成的数字孤岛"
-        width="1774"
-        height="887"
-        loading="eager"
-      />
+      <picture>
+        <source
+          media="(max-width: 720px)"
+          srcset="/images/digital-island-signal-mobile.png"
+          type="image/png"
+        />
+        <img
+          src="/images/digital-island-signal.webp"
+          alt="由等高线、信号节点与扫描轨迹组成的数字孤岛"
+          width="1774"
+          height="887"
+          loading="eager"
+        />
+      </picture>
       <span class="hero-signal-field" data-signal-field aria-hidden="true">
         {
           signalNodes.map(({ x, mobileX, y }) => (
