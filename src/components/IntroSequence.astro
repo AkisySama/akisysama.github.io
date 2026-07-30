@@ -1,75 +1,105 @@
----
-const terminalSequence = [
-  {
-    command: "journalctl --boot --priority=notice --no-pager",
-    output: [
-      { text: "Jul 23 09:41:08 kernel: entropy pool synchronized", tone: "muted" },
-      { text: "Jul 23 09:41:08 systemd: mounted /dev/ideas on /mnt/archive", tone: "muted" },
-      { text: "Jul 23 09:41:09 chronicle[2048]: temporal cache warmed", tone: "success" },
-    ],
-  },
-  {
-    command: "npx vectorize ./memory --dimensions=1536 --incremental",
-    output: [
-      { text: "[01/04] resolving semantic topology ........ done", tone: "muted" },
-      { text: "[02/04] calibrating latent coordinates ..... done", tone: "muted" },
-      { text: "[03/04] folding narrative tensors .......... done", tone: "muted" },
-      { text: "[04/04] committing ephemeral index .......... done", tone: "success" },
-    ],
-  },
-  {
-    command: "curl -s localhost:4321/health | jq -C",
-    output: [
-      { text: '{ "status": "nominal", "signal": 0.9987, "meaning": null }', tone: "json" },
-      { text: "handshake complete · observer channel ready", tone: "success" },
-    ],
-  },
-];
----
-
-<section class="intro-sequence" data-intro-sequence aria-label="博客开场动画">
+<section
+  class="intro-sequence"
+  data-intro-sequence
+  aria-label="博客开场：下着雨的蓝色夜城前，白发像素女孩抱膝坐在床上"
+>
   <div class="intro-stage" data-intro-stage>
-    <p class="intro-kicker" aria-hidden="true">A.K. / PRIVATE JOURNAL</p>
+    <audio
+      src="/audio/rain-window-loop.m4a"
+      preload="auto"
+      loop
+      data-rain-audio
+      aria-hidden="true"
+    ></audio>
 
-    <div class="terminal-window" data-terminal-window>
-      <div class="terminal-titlebar" aria-hidden="true">
-        <div class="terminal-lights">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-        <span class="terminal-title">akisy — zsh — 96×45</span>
-        <span class="terminal-spacer"></span>
-      </div>
+    <div class="pixel-scene">
+      <img
+        class="pixel-scene-frame pixel-scene-open"
+        src="/images/intro/pixel-room-side-enter.webp"
+        alt="蓝色霓虹夜景中，白发像素女孩抱膝坐在床上望向窗外，窗前有一只猫，右下角笔记本屏幕显示“进入”"
+        width="1672"
+        height="941"
+        loading="eager"
+        fetchpriority="high"
+      />
+      <canvas
+        class="pixel-rain"
+        width="1672"
+        height="941"
+        data-pixel-rain
+        aria-hidden="true"
+      ></canvas>
+      <img
+        class="pixel-scene-frame pixel-scene-blink"
+        src="/images/intro/pixel-room-side-blink.webp"
+        alt=""
+        width="1672"
+        height="941"
+        loading="eager"
+        aria-hidden="true"
+        data-blink-frame
+      />
+      <div class="scene-coordinate-space">
+        <button
+          class="intro-enter"
+          type="button"
+          data-intro-enter
+          aria-label="进入博客"
+        ></button>
 
-      <div class="terminal-body">
-        <div class="terminal-session" data-terminal-session>
-          <div
-            class="terminal-transcript"
-            data-terminal-transcript
-            aria-label="正在运行系统初始化命令"
-          ></div>
-          <p class="terminal-command terminal-active-command">
-            <span class="terminal-prompt">akisy@journal ~ %</span>
-            <span data-command-output></span><span class="terminal-cursor" aria-hidden="true"></span>
-          </p>
-        </div>
-        <p class="terminal-status" data-terminal-status aria-live="polite">awaiting bootstrap signal...</p>
+        <button
+          class="intro-sound intro-sound-clock"
+          type="button"
+          data-rain-sound
+          data-sound-state="wait"
+          aria-label="播放雨声"
+          aria-pressed="false"
+        >
+          <span class="intro-sound-screen" aria-hidden="true">
+            <span>RAIN:</span>
+            <span data-rain-sound-state>TAP</span>
+          </span>
+        </button>
       </div>
     </div>
 
-    <div class="entry-cue" data-entry-cue aria-hidden="true">
-      <span class="entry-line"></span>
-      <span class="entry-label">SCROLL TO ENTER</span>
-    </div>
+    <div class="intro-chrome">
+      <p class="intro-signature" aria-hidden="true">
+        <span>AKISY</span>
+        <span>NIGHT SIGNAL / 01</span>
+      </p>
 
-    <button class="intro-skip" type="button" data-intro-skip>跳过序章</button>
+      <button
+        class="intro-sound intro-sound-mobile"
+        type="button"
+        data-rain-sound
+        data-sound-state="wait"
+        aria-label="播放雨声"
+        aria-pressed="false"
+      >
+        <img
+          class="intro-sound-device"
+          src="/images/intro/rain-clock-device.webp"
+          alt=""
+          width="144"
+          height="80"
+          aria-hidden="true"
+        />
+        <span class="intro-sound-screen" aria-hidden="true">
+          <span>RAIN:</span>
+          <span data-rain-sound-state>TAP</span>
+        </span>
+      </button>
+
+      <p class="intro-hint" aria-hidden="true">
+        <span class="intro-hint-wide">CLICK SCREEN · SCROLL DOWN</span>
+        <span class="intro-hint-narrow">SWIPE UP · ENTER</span>
+      </p>
+    </div>
   </div>
 </section>
 
-<script is:inline define:vars={{ terminalSequence }}>
-  const sleep = (duration) => new Promise((resolve) => window.setTimeout(resolve, duration));
-
+<script is:inline>
   const setupIntro = () => {
     const intro = document.querySelector("[data-intro-sequence]");
     if (!(intro instanceof HTMLElement) || intro.dataset.bound === "true") return;
@@ -77,7 +107,6 @@ const terminalSequence = [
     intro.dataset.bound = "true";
 
     const root = document.documentElement;
-
     if (root.dataset.intro !== "pending") {
       root.dataset.blogEntered = "true";
       intro.hidden = true;
@@ -85,105 +114,446 @@ const terminalSequence = [
     }
 
     const stage = intro.querySelector("[data-intro-stage]");
-    const windowElement = intro.querySelector("[data-terminal-window]");
-    const session = intro.querySelector("[data-terminal-session]");
-    const transcript = intro.querySelector("[data-terminal-transcript]");
-    const commandOutput = intro.querySelector("[data-command-output]");
-    const status = intro.querySelector("[data-terminal-status]");
-    const skip = intro.querySelector("[data-intro-skip]");
-    const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const blinkFrame = intro.querySelector("[data-blink-frame]");
+    const rainCanvas = intro.querySelector("[data-pixel-rain]");
+    const rainAudio = intro.querySelector("[data-rain-audio]");
+    const soundButtons = Array.from(intro.querySelectorAll("[data-rain-sound]"));
+    const soundStates = Array.from(
+      intro.querySelectorAll("[data-rain-sound-state]"),
+    );
+    const enterButton = intro.querySelector("[data-intro-enter]");
 
     if (
       !(stage instanceof HTMLElement) ||
-      !(windowElement instanceof HTMLElement) ||
-      !(session instanceof HTMLElement) ||
-      !(transcript instanceof HTMLElement) ||
-      !(commandOutput instanceof HTMLElement) ||
-      !(status instanceof HTMLElement) ||
-      !(skip instanceof HTMLButtonElement)
+      !(blinkFrame instanceof HTMLImageElement) ||
+      !(rainCanvas instanceof HTMLCanvasElement) ||
+      !(rainAudio instanceof HTMLAudioElement) ||
+      soundButtons.length !== 2 ||
+      soundStates.length !== soundButtons.length ||
+      !soundButtons.every((button) => button instanceof HTMLButtonElement) ||
+      !soundStates.every((state) => state instanceof HTMLElement) ||
+      !(enterButton instanceof HTMLButtonElement)
     ) {
       root.dataset.intro = "seen";
       return;
     }
 
-    let finished = false;
-    let cancelled = false;
-    let entering = false;
+    const motionQuery = matchMedia("(prefers-reduced-motion: reduce)");
+    const entryController = new AbortController();
+    const rainContext = rainCanvas.getContext("2d", { alpha: true });
+    const rainFrameInterval = 1000 / 16;
+    const rainGlassMask = new Path2D();
+    const rainForegroundMask = new Path2D();
+    const rainColors = [
+      "rgb(96 216 255 / 34%)",
+      "rgb(126 162 255 / 28%)",
+      "rgb(58 145 255 / 24%)",
+    ];
+    let blinkScheduleTimer = 0;
+    let blinkReleaseTimer = 0;
+    let enterScrollTimer = 0;
+    let soundFadeFrame = 0;
+    let soundPlayAttempt = 0;
+    let setupFrame = 0;
+    let rainAnimationFrame = 0;
+    let rainLastFrame = 0;
+    let rainSeed = 0xa51c9;
+    let rainObserver = null;
+    let reducedMotion = motionQuery.matches;
+    let introVisible = true;
+    let introAudible = true;
+    let documentVisible = !document.hidden;
+    let soundDesired = true;
+    let soundStatus = "wait";
+    let soundUnlocked = false;
     let touchStartY = 0;
+    let disposed = false;
+
+    const addPolygon = (path, points) => {
+      const [first, ...rest] = points;
+      path.moveTo(first[0], first[1]);
+      for (const [x, y] of rest) path.lineTo(x, y);
+      path.closePath();
+    };
+
+    // Rain is first clipped to the glass, then erased behind foreground
+    // silhouettes. Keeping these paths separate prevents an even-odd mask
+    // from turning the parts of the girl or cat outside the glass into rain.
+    addPolygon(rainGlassMask, [[751, 55], [976, 34], [976, 632], [751, 632]]);
+    addPolygon(rainGlassMask, [[1002, 33], [1240, 12], [1240, 632], [1002, 632]]);
+    addPolygon(rainGlassMask, [
+      [1272, 3],
+      [1590, 3],
+      [1590, 412],
+      [1513, 412],
+      [1513, 487],
+      [1466, 487],
+      [1466, 632],
+      [1272, 632],
+    ]);
+    addPolygon(rainForegroundMask, [
+      [581, 274],
+      [621, 269],
+      [663, 275],
+      [702, 290],
+      [731, 317],
+      [750, 349],
+      [757, 375],
+      [750, 386],
+      [737, 390],
+      [731, 397],
+      [741, 403],
+      [740, 421],
+      [729, 440],
+      [708, 451],
+      [746, 465],
+      [778, 482],
+      [806, 496],
+      [822, 493],
+      [843, 501],
+      [860, 518],
+      [868, 541],
+      [867, 559],
+      [856, 576],
+      [873, 602],
+      [890, 646],
+      [912, 694],
+      [943, 733],
+      [976, 753],
+      [1009, 765],
+      [1007, 776],
+      [985, 782],
+      [947, 783],
+      [916, 780],
+      [868, 773],
+      [704, 773],
+      [568, 771],
+      [567, 710],
+      [552, 675],
+      [531, 647],
+      [500, 631],
+      [480, 612],
+      [464, 585],
+      [465, 553],
+      [476, 523],
+      [483, 486],
+      [489, 455],
+      [504, 428],
+      [517, 395],
+      [524, 356],
+      [539, 318],
+      [558, 291],
+    ]);
+    addPolygon(rainForegroundMask, [
+      [1056, 712],
+      [1065, 690],
+      [1072, 661],
+      [1073, 618],
+      [1080, 614],
+      [1080, 586],
+      [1097, 599],
+      [1113, 596],
+      [1127, 582],
+      [1130, 616],
+      [1141, 630],
+      [1168, 638],
+      [1186, 649],
+      [1196, 668],
+      [1197, 701],
+      [1204, 685],
+      [1212, 677],
+      [1222, 677],
+      [1229, 684],
+      [1228, 693],
+      [1220, 699],
+      [1230, 705],
+      [1230, 714],
+      [1218, 719],
+      [1198, 715],
+      [1169, 714],
+      [1136, 714],
+      [1100, 715],
+      [1071, 715],
+    ]);
+
+    const randomRain = () => {
+      rainSeed = (rainSeed * 1664525 + 1013904223) >>> 0;
+      return rainSeed / 4294967296;
+    };
+
+    const resetDrop = (drop, initial = false) => {
+      drop.x = 716 + randomRain() * 872;
+      drop.y = initial ? randomRain() * 680 - 40 : -24 - randomRain() * 180;
+      drop.length = 16 + Math.floor(randomRain() * 5) * 4;
+      drop.width = randomRain() > 0.78 ? 4 : 3;
+      drop.speed = 13 + Math.floor(randomRain() * 5) * 3;
+      drop.drift = randomRain() > 0.22 ? -1 : 0;
+      drop.color = rainColors[Math.floor(randomRain() * rainColors.length)];
+      return drop;
+    };
+
+    const rainDrops = Array.from({ length: 104 }, () => resetDrop({}, true));
+
+    const drawRain = (advance = true) => {
+      if (!rainContext) return;
+
+      rainContext.setTransform(1, 0, 0, 1, 0, 0);
+      rainContext.clearRect(0, 0, rainCanvas.width, rainCanvas.height);
+      rainContext.save();
+      rainContext.clip(rainGlassMask);
+      rainContext.globalCompositeOperation = "screen";
+      rainContext.imageSmoothingEnabled = false;
+
+      for (const drop of rainDrops) {
+        rainContext.fillStyle = drop.color;
+
+        for (let offset = 0; offset < drop.length; offset += 4) {
+          rainContext.fillRect(
+            Math.round(drop.x - offset * 0.22),
+            Math.round(drop.y + offset),
+            drop.width,
+            Math.min(4, drop.length - offset),
+          );
+        }
+
+        if (!advance) continue;
+        drop.x += drop.drift;
+        drop.y += drop.speed;
+        if (drop.y > 664) resetDrop(drop);
+      }
+
+      rainContext.restore();
+      rainContext.save();
+      rainContext.globalCompositeOperation = "destination-out";
+      rainContext.fillStyle = "#000";
+      rainContext.fill(rainForegroundMask);
+      rainContext.restore();
+      rainCanvas.dataset.rainFrame = String(Number(rainCanvas.dataset.rainFrame ?? 0) + 1);
+    };
+
+    const shouldAnimateRain = () =>
+      !disposed && !reducedMotion && introVisible && documentVisible;
+
+    const drawRainFrame = (timestamp) => {
+      rainAnimationFrame = 0;
+      if (!shouldAnimateRain()) return;
+
+      if (timestamp - rainLastFrame >= rainFrameInterval) {
+        rainLastFrame = timestamp - ((timestamp - rainLastFrame) % rainFrameInterval);
+        drawRain(true);
+      }
+
+      rainAnimationFrame = requestAnimationFrame(drawRainFrame);
+    };
+
+    const stopRain = () => {
+      window.cancelAnimationFrame(rainAnimationFrame);
+      rainAnimationFrame = 0;
+    };
+
+    const startRain = () => {
+      if (!rainContext || rainAnimationFrame || !shouldAnimateRain()) return;
+      rainLastFrame = 0;
+      rainAnimationFrame = requestAnimationFrame(drawRainFrame);
+    };
+
     root.dataset.intro = "playing";
-    intro.hidden = false;
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
 
-    const followCursor = () => {
-      session.scrollTop = session.scrollHeight;
+    const setRainSoundState = (state) => {
+      soundStatus = state;
+      const stateText = state === "on" ? "ON" : state === "off" ? "OFF" : "TAP";
+
+      const isOn = state === "on";
+      const label =
+        isOn ? "关闭雨声" : state === "wait" ? "播放雨声" : "开启雨声";
+
+      soundButtons.forEach((button) => {
+        button.dataset.soundState = state;
+        button.setAttribute("aria-pressed", String(isOn));
+        button.setAttribute("aria-label", label);
+      });
+      soundStates.forEach((stateNode) => {
+        stateNode.textContent = stateText;
+      });
     };
 
-    const appendCommand = (command) => {
-      const line = document.createElement("p");
-      line.className = "terminal-command terminal-command-history";
+    const soundControlAvailable = () =>
+      soundButtons.some((button) => button.getClientRects().length > 0);
 
-      const prompt = document.createElement("span");
-      prompt.className = "terminal-prompt";
-      prompt.textContent = "akisy@journal ~ %";
+    const fadeRainSound = (targetVolume, pauseAtEnd = false) => {
+      window.cancelAnimationFrame(soundFadeFrame);
+      soundFadeFrame = 0;
 
-      const value = document.createElement("span");
-      value.textContent = command;
-      line.append(prompt, value);
-      transcript.append(line);
-      followCursor();
+      const startVolume = rainAudio.volume;
+      const startedAt = performance.now();
+      const duration = targetVolume > startVolume ? 520 : 360;
+
+      const step = (timestamp) => {
+        if (disposed) return;
+
+        const progress = Math.min(1, (timestamp - startedAt) / duration);
+        const eased = 1 - (1 - progress) ** 3;
+        rainAudio.volume =
+          startVolume + (targetVolume - startVolume) * eased;
+
+        if (progress < 1) {
+          soundFadeFrame = requestAnimationFrame(step);
+          return;
+        }
+
+        soundFadeFrame = 0;
+        if (pauseAtEnd) rainAudio.pause();
+      };
+
+      soundFadeFrame = requestAnimationFrame(step);
     };
 
-    const appendOutput = ({ text, tone }) => {
-      const line = document.createElement("p");
-      line.className = "terminal-output-line";
-      line.dataset.tone = tone;
-      line.textContent = text;
-      transcript.append(line);
-      followCursor();
+    const shouldPlayRainSound = () =>
+      soundDesired &&
+      soundControlAvailable() &&
+      introAudible &&
+      documentVisible &&
+      !disposed;
+
+    const pauseRainSound = (immediate = false) => {
+      soundPlayAttempt += 1;
+      window.cancelAnimationFrame(soundFadeFrame);
+      soundFadeFrame = 0;
+
+      if (immediate) {
+        rainAudio.volume = 0;
+        rainAudio.pause();
+        return;
+      }
+
+      fadeRainSound(0, true);
     };
 
-    const renderCompleteTranscript = () => {
-      transcript.replaceChildren();
-      for (const step of terminalSequence) {
-        appendCommand(step.command);
-        for (const output of step.output) appendOutput(output);
+    const startRainSound = async () => {
+      if (!shouldPlayRainSound()) return;
+
+      const playAttempt = ++soundPlayAttempt;
+
+      try {
+        if (rainAudio.paused) {
+          rainAudio.volume = Math.max(0.01, Math.min(rainAudio.volume, 0.04));
+          await rainAudio.play();
+        }
+
+        if (playAttempt !== soundPlayAttempt) {
+          if (!shouldPlayRainSound()) pauseRainSound(true);
+          return;
+        }
+
+        soundUnlocked = true;
+        if (!shouldPlayRainSound()) {
+          pauseRainSound(true);
+          return;
+        }
+
+        setRainSoundState("on");
+        fadeRainSound(0.38);
+      } catch {
+        if (playAttempt === soundPlayAttempt && shouldPlayRainSound()) {
+          setRainSoundState("wait");
+        }
       }
     };
 
-    if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-    window.scrollTo({ top: 0, behavior: "auto" });
+    const syncRainSound = () => {
+      if (shouldPlayRainSound() && soundUnlocked) {
+        void startRainSound();
+      } else if (
+        !soundControlAvailable() ||
+        !introAudible ||
+        !documentVisible ||
+        !soundDesired
+      ) {
+        pauseRainSound(!documentVisible);
+      }
+    };
 
-    const updateScrollProgress = () => {
-      if (!finished) return;
-      const progress = Math.min(window.scrollY / Math.max(window.innerHeight * 0.38, 1), 1);
-      stage.style.setProperty("--intro-shift", `${progress * -48}px`);
-      stage.style.setProperty("--intro-opacity", String(1 - progress * 0.92));
+    const handleRainSoundToggle = () => {
+      if (soundStatus === "on") {
+        soundDesired = false;
+        setRainSoundState("off");
+        pauseRainSound();
+        return;
+      }
+
+      soundDesired = true;
+      void startRainSound();
+    };
+
+    const handleRainSoundUnlock = (event) => {
+      const target = event.target;
+      if (
+        target instanceof Node &&
+        soundButtons.some((button) => button.contains(target))
+      ) {
+        return;
+      }
+      if (soundDesired && soundStatus === "wait") {
+        void startRainSound();
+      }
+    };
+
+    const resetBlink = () => {
+      window.clearTimeout(blinkScheduleTimer);
+      window.clearTimeout(blinkReleaseTimer);
+      blinkFrame.classList.remove("is-blinking");
+      blinkFrame.dataset.blinkState = "open";
+    };
+
+    const blink = () => {
+      if (reducedMotion || disposed) return;
+
+      window.clearTimeout(blinkReleaseTimer);
+      blinkFrame.classList.add("is-blinking");
+      blinkFrame.dataset.blinkState = "closed";
+
+      blinkReleaseTimer = window.setTimeout(() => {
+        blinkFrame.classList.remove("is-blinking");
+        blinkFrame.dataset.blinkState = "open";
+      }, 165);
+    };
+
+    const scheduleBlink = (initial = false) => {
+      if (reducedMotion || disposed) return;
+      const delay = initial
+        ? 5000 + Math.random() * 3000
+        : 9000 + Math.random() * 6000;
+
+      window.clearTimeout(blinkScheduleTimer);
+      blinkScheduleTimer = window.setTimeout(() => {
+        blink();
+        scheduleBlink(false);
+      }, delay);
+    };
+
+    const markEntered = () => {
+      root.dataset.blogEntered = "true";
     };
 
     const enterBlog = () => {
-      if (!finished || entering) return;
-      entering = true;
-      root.dataset.blogEntered = "true";
-      window.removeEventListener("wheel", handleWheel);
-      window.removeEventListener("touchstart", handleTouchStart);
-      window.removeEventListener("touchend", handleTouchEnd);
-      window.removeEventListener("keydown", handleKeydown);
-      const blogTop = intro.offsetHeight;
-      window.scrollTo({
-        top: blogTop,
-        behavior: reducedMotion ? "auto" : "smooth",
-      });
+      if (enterScrollTimer) return;
+      markEntered();
 
-      if (!reducedMotion) {
-        window.setTimeout(() => {
-          if (Math.abs(window.scrollY - blogTop) > 2) {
-            window.scrollTo({ top: blogTop, behavior: "auto" });
-          }
-        }, 900);
-      }
+      enterScrollTimer = window.setTimeout(
+        () => {
+          enterScrollTimer = 0;
+          window.scrollTo({
+            top: intro.offsetHeight,
+            behavior: reducedMotion ? "auto" : "smooth",
+          });
+        },
+        reducedMotion ? 0 : 140,
+      );
     };
 
     const handleWheel = (event) => {
-      if (event.deltaY <= 6 || window.scrollY >= intro.offsetHeight) return;
+      if (event.deltaY <= 5 || window.scrollY >= intro.offsetHeight * 0.6) return;
       event.preventDefault();
       enterBlog();
     };
@@ -194,79 +564,136 @@ const terminalSequence = [
 
     const handleTouchEnd = (event) => {
       const touchEndY = event.changedTouches[0]?.clientY ?? touchStartY;
-      if (touchStartY - touchEndY >= 36) enterBlog();
+      if (touchStartY - touchEndY >= 34) enterBlog();
     };
 
     const handleKeydown = (event) => {
-      if (!["ArrowDown", "PageDown", " "].includes(event.key)) return;
+      const interactiveTarget =
+        event.target instanceof Element
+          ? event.target.closest("a, button, input, textarea, select, [contenteditable='true']")
+          : null;
+
+      if (interactiveTarget && interactiveTarget !== enterButton) return;
+      if (!["ArrowDown", "PageDown", " ", "Enter"].includes(event.key)) return;
       event.preventDefault();
       enterBlog();
     };
 
-    const finish = (shouldEnter = false) => {
-      if (finished) return;
-      finished = true;
-      commandOutput.textContent = "";
-      renderCompleteTranscript();
-      transcript.setAttribute("aria-label", "系统初始化完成，博客已就绪");
-      status.textContent = "all systems nominal — journal ready";
-      intro.classList.add("is-complete");
-      root.dataset.intro = "complete";
-      window.addEventListener("scroll", updateScrollProgress, { passive: true });
-      window.addEventListener("wheel", handleWheel, { passive: false });
-      window.addEventListener("touchstart", handleTouchStart, { passive: true });
-      window.addEventListener("touchend", handleTouchEnd, { passive: true });
-      window.addEventListener("keydown", handleKeydown);
+    const handleScroll = () => {
+      if (window.scrollY >= intro.offsetHeight * 0.55) markEntered();
+    };
 
-      if (shouldEnter) {
-        window.setTimeout(enterBlog, reducedMotion ? 0 : 180);
+    const handleVisibilityChange = () => {
+      documentVisible = !document.hidden;
+      if (documentVisible) {
+        startRain();
+        syncRainSound();
+      } else {
+        stopRain();
+        pauseRainSound(true);
       }
     };
 
-    skip.addEventListener("click", () => {
-      cancelled = true;
-      finish(true);
+    const handleMotionChange = (event) => {
+      reducedMotion = event.matches;
+      resetBlink();
+      stopRain();
+      drawRain(false);
+
+      if (!reducedMotion) {
+        startRain();
+        scheduleBlink(true);
+      }
+    };
+
+    const cleanup = () => {
+      disposed = true;
+      entryController.abort();
+      resetBlink();
+      window.clearTimeout(enterScrollTimer);
+      window.cancelAnimationFrame(soundFadeFrame);
+      window.cancelAnimationFrame(setupFrame);
+      stopRain();
+      rainAudio.pause();
+      rainAudio.currentTime = 0;
+      rainObserver?.disconnect();
+      motionQuery.removeEventListener("change", handleMotionChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+
+    soundButtons.forEach((button) => {
+      button.addEventListener("click", handleRainSoundToggle, {
+        signal: entryController.signal,
+      });
     });
+    window.addEventListener("pointerdown", handleRainSoundUnlock, {
+      capture: true,
+      signal: entryController.signal,
+    });
+    window.addEventListener("click", handleRainSoundUnlock, {
+      capture: true,
+      signal: entryController.signal,
+    });
+    window.addEventListener("keydown", handleRainSoundUnlock, {
+      capture: true,
+      signal: entryController.signal,
+    });
+    enterButton.addEventListener("click", enterBlog, { signal: entryController.signal });
+    window.addEventListener("wheel", handleWheel, {
+      passive: false,
+      signal: entryController.signal,
+    });
+    window.addEventListener("touchstart", handleTouchStart, {
+      passive: true,
+      signal: entryController.signal,
+    });
+    window.addEventListener("touchend", handleTouchEnd, {
+      passive: true,
+      signal: entryController.signal,
+    });
+    window.addEventListener("keydown", handleKeydown, { signal: entryController.signal });
+    window.addEventListener("scroll", handleScroll, {
+      passive: true,
+      signal: entryController.signal,
+    });
+    window.addEventListener("resize", syncRainSound, {
+      passive: true,
+      signal: entryController.signal,
+    });
+    motionQuery.addEventListener("change", handleMotionChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener("astro:before-swap", cleanup, { once: true });
 
-    const play = async () => {
-      if (reducedMotion) {
-        finish(false);
-        return;
-      }
+    if ("IntersectionObserver" in window) {
+      rainObserver = new IntersectionObserver(
+        ([entry]) => {
+          introVisible = entry?.isIntersecting ?? true;
+          introAudible = (entry?.intersectionRatio ?? 1) >= 0.18;
+          if (introVisible) {
+            startRain();
+          } else {
+            stopRain();
+          }
+          syncRainSound();
+        },
+        { threshold: [0.01, 0.18] },
+      );
+      rainObserver.observe(intro);
+    }
 
-      await sleep(520);
+    setupFrame = requestAnimationFrame(() => {
+      intro.classList.add("is-ready");
+      root.dataset.intro = "complete";
+      blinkFrame.dataset.blinkState = "open";
+      drawRain(!reducedMotion);
+      startRain();
+      setRainSoundState("wait");
+      void startRainSound();
 
-      for (let stepIndex = 0; stepIndex < terminalSequence.length; stepIndex += 1) {
-        const step = terminalSequence[stepIndex];
-        status.textContent = `executing pipeline ${stepIndex + 1}/${terminalSequence.length}`;
-
-        for (const character of step.command) {
-          if (cancelled || !intro.isConnected) return;
-          commandOutput.textContent += character;
-          followCursor();
-          await sleep(character === " " ? 34 : 19);
-        }
-
-        await sleep(120);
-        appendCommand(step.command);
-        commandOutput.textContent = "";
-
-        for (const output of step.output) {
-          if (cancelled || !intro.isConnected) return;
-          appendOutput(output);
-          await sleep(170);
-        }
-
-        await sleep(130);
-      }
-
-      status.textContent = "validating observer channel...";
-      await sleep(480);
-
-      if (!cancelled && intro.isConnected) finish(false);
-    };
-
-    play();
+      const blinkReady =
+        typeof blinkFrame.decode === "function" ? blinkFrame.decode() : Promise.resolve();
+      blinkReady.catch(() => {}).then(() => scheduleBlink(true));
+    });
   };
 
   document.addEventListener("astro:page-load", setupIntro);
@@ -274,9 +701,12 @@ const terminalSequence = [
 </script>
 
 <style>
-  :global(html[data-page="home"][data-intro="pending"]),
-  :global(html[data-page="home"][data-intro="playing"]) {
-    overflow: hidden;
+  @font-face {
+    font-family: "Press Start 2P";
+    src: url("/fonts/PressStart2P-Regular.ttf") format("truetype");
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
   }
 
   :global(html[data-page="home"][data-intro="seen"]) .intro-sequence {
@@ -284,342 +714,362 @@ const terminalSequence = [
   }
 
   .intro-sequence {
-    min-height: 135svh;
-    border-bottom: 1px solid var(--color-border);
-    background: var(--color-bg);
-    color: var(--color-text);
+    position: relative;
+    height: 100svh;
+    min-height: 560px;
+    overflow: hidden;
+    background: #020616;
+    color: #eef3ff;
+  }
+
+  .intro-stage,
+  .pixel-scene,
+  .pixel-scene-frame,
+  .pixel-rain {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
   }
 
   .intro-stage {
-    --intro-shift: 0px;
-    --intro-opacity: 1;
-    position: sticky;
-    top: 0;
-    display: grid;
-    place-items: center;
-    height: 100svh;
-    min-height: 620px;
     overflow: hidden;
-    opacity: var(--intro-opacity);
-    transform: translateY(var(--intro-shift));
-    transition: opacity 120ms linear, transform 120ms linear;
+    background: #020616;
   }
 
-  .intro-kicker {
+  .pixel-scene {
+    --scene-position-x: 50%;
+    --scene-translate-x: -50%;
+    cursor: default;
+    opacity: 0;
+    transform: scale(1.015);
+    transition:
+      opacity 900ms ease,
+      transform 1800ms cubic-bezier(0.2, 0.72, 0.22, 1);
+  }
+
+  .is-ready .pixel-scene {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  .pixel-scene-frame,
+  .pixel-rain {
+    max-width: none;
+    object-fit: cover;
+    object-position: var(--scene-position-x) center;
+    image-rendering: pixelated;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  .pixel-scene-open {
+    z-index: 0;
+  }
+
+  .pixel-rain {
+    z-index: 1;
+    display: block;
+    pointer-events: none;
+  }
+
+  .pixel-scene-blink {
+    z-index: 2;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .pixel-scene-blink.is-blinking {
+    opacity: 1;
+  }
+
+  .scene-coordinate-space {
     position: absolute;
-    top: 34px;
-    left: clamp(24px, 5vw, 72px);
-    margin: 0;
-    color: var(--color-faint);
-    font-size: 0.6rem;
-    letter-spacing: 0.2em;
+    top: 50%;
+    left: var(--scene-position-x);
+    z-index: 3;
+    width: max(100%, calc(100svh * 1.7768331562));
+    height: max(100%, calc(100vw * 0.5627990431));
+    container-type: size;
+    pointer-events: none;
+    transform: translate(var(--scene-translate-x), -50%);
   }
 
-  .terminal-window {
-    width: min(84vw, 760px);
-    height: min(74svh, 530px);
-    min-height: 470px;
-    overflow: hidden;
-    border: 1px solid #313337;
-    border-radius: 11px;
-    background: #090b0d;
-    box-shadow: 0 28px 80px rgb(0 0 0 / 52%);
-    opacity: 0;
-    transform: translateY(22px) scale(0.985);
-    animation: terminal-enter 900ms cubic-bezier(0.2, 0.75, 0.25, 1) 120ms forwards;
-  }
-
-  .terminal-titlebar {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    height: 42px;
-    padding: 0 15px;
-    border-bottom: 1px solid #282a2d;
-    background: #131518;
-  }
-
-  .terminal-lights {
-    display: flex;
-    gap: 8px;
-  }
-
-  .terminal-lights span {
-    width: 10px;
-    height: 10px;
-    border: 1px solid #5b5a56;
-    border-radius: 50%;
-    background: #242528;
-  }
-
-  .terminal-title,
-  .terminal-status {
-    color: #74767a;
-    font-family: var(--font-mono);
-    font-size: 0.67rem;
-  }
-
-  .terminal-spacer {
-    min-width: 42px;
-  }
-
-  .terminal-body {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-    height: calc(100% - 42px);
-    min-height: 0;
-    padding: 26px 30px 24px;
-    font-family: var(--font-mono);
-  }
-
-  .terminal-session {
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
-    scrollbar-width: none;
-  }
-
-  .terminal-transcript {
-    overflow: visible;
-  }
-
-  .terminal-command {
-    display: flex;
-    align-items: center;
-    min-height: 22px;
-    margin: 0;
-    color: #d8d4ca;
-    font-size: 0.78rem;
-    white-space: pre-wrap;
-  }
-
-  .terminal-command-history {
-    margin-top: 14px;
-  }
-
-  .terminal-command-history:first-child {
-    margin-top: 0;
-  }
-
-  .terminal-active-command {
-    flex: 0 0 auto;
-    margin-top: 14px;
-  }
-
-  .terminal-prompt {
-    flex: 0 0 auto;
-    margin-right: 9px;
-    color: #8e9a83;
-  }
-
-  .terminal-cursor {
-    width: 7px;
-    height: 1.1em;
-    margin-left: 3px;
-    background: #bfb7a6;
-    animation: cursor-blink 880ms steps(1) infinite;
-  }
-
-  .terminal-output-line {
-    margin: 4px 0 0;
-    color: #777c83;
-    font-size: 0.72rem;
-    line-height: 1.55;
-    white-space: pre-wrap;
-  }
-
-  .terminal-output-line[data-tone="success"] {
-    color: #8e9a83;
-  }
-
-  .terminal-output-line[data-tone="json"] {
-    color: #a7a18f;
-  }
-
-  .terminal-status {
-    margin: 6px 0 0;
-    letter-spacing: 0.04em;
-    text-align: right;
-  }
-
-  .entry-cue {
+  .intro-chrome {
     position: absolute;
-    bottom: 18px;
-    left: 50%;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+  }
+
+  .intro-signature {
+    position: absolute;
+    top: clamp(22px, 4vw, 50px);
+    left: clamp(22px, 4.5vw, 68px);
     display: grid;
-    justify-items: center;
-    gap: 9px;
-    color: var(--color-faint);
+    gap: 3px;
+    margin: 0;
+    color: rgb(226 235 255 / 82%);
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.18em;
+    line-height: 1.5;
     opacity: 0;
-    transform: translateX(-50%) translateY(12px);
+    transform: translateY(-8px);
+    transition: opacity 700ms ease 520ms, transform 700ms ease 520ms;
   }
 
-  .entry-line {
-    width: 1px;
-    height: 0;
-    background: var(--color-accent-soft);
+  .intro-signature span:last-child {
+    color: rgb(136 164 238 / 68%);
   }
 
-  .entry-label {
-    opacity: 0;
-    transform: translateY(5px);
-    font-size: 0.55rem;
-    letter-spacing: 0.22em;
-    white-space: nowrap;
-  }
-
-  .is-complete .terminal-window {
-    animation: none;
+  .is-ready .intro-signature {
     opacity: 1;
     transform: none;
   }
 
-  .is-complete .terminal-cursor {
-    opacity: 0;
-  }
-
-  .is-complete .entry-cue {
-    opacity: 1;
-    transform: translateX(-50%);
-  }
-
-  .is-complete .entry-line {
-    animation:
-      line-grow 2.5s cubic-bezier(0.22, 0.7, 0.28, 1) forwards,
-      line-bob 2.4s ease-in-out 2.5s infinite;
-  }
-
-  .is-complete .entry-label {
-    animation: label-reveal 900ms ease 2s forwards;
-  }
-
-  .intro-skip {
+  .intro-sound {
     position: absolute;
-    right: clamp(24px, 5vw, 72px);
-    bottom: 34px;
     border: 0;
-    border-bottom: 1px solid transparent;
-    padding: 3px 0;
+    padding: 0;
     background: transparent;
-    color: var(--color-faint);
-    font-family: var(--font-sans);
-    font-size: 0.68rem;
     cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: opacity 420ms steps(3, end) 620ms;
   }
 
-  .intro-skip:hover {
-    border-color: var(--color-faint);
-    color: var(--color-text);
+  .intro-sound-clock {
+    top: 43.7832%;
+    left: 90.4306%;
+    width: 8.6124%;
+    height: 8.5016%;
+    clip-path: polygon(5.5% 3%, 93.5% 3%, 100% 15%, 100% 88%, 94% 98%, 5% 98%, 0 88%, 0 15%);
   }
 
-  @keyframes terminal-enter {
-    to {
-      opacity: 1;
-      transform: none;
+  .intro-sound-mobile {
+    display: none;
+  }
+
+  .intro-sound-device {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    image-rendering: pixelated;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  .intro-sound-screen {
+    position: absolute;
+    top: 22.5%;
+    left: 11.1111%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 77.7778%;
+    height: 61.25%;
+    overflow: hidden;
+    background: #010a36;
+    color: rgb(71 178 255 / 84%);
+    font-family: "Press Start 2P", monospace;
+    font-size: clamp(6px, 1.05cqh, 10px);
+    line-height: 1;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    text-shadow: 0 0 0.45em rgb(28 185 255 / 78%);
+    clip-path: polygon(4% 0, 96% 0, 100% 10%, 100% 90%, 96% 100%, 4% 100%, 0 90%, 0 10%);
+    box-shadow: inset 0 0 0 1px rgb(45 94 232 / 36%);
+    image-rendering: pixelated;
+    transition:
+      background 120ms steps(2, end),
+      color 120ms steps(2, end),
+      filter 120ms steps(2, end),
+      box-shadow 120ms steps(2, end);
+  }
+
+  .intro-sound:hover .intro-sound-screen,
+  .intro-sound:focus-visible .intro-sound-screen {
+    color: rgb(108 218 255 / 98%);
+    filter: brightness(1.18);
+    box-shadow:
+      inset 0 0 0 1px rgb(87 164 255 / 66%),
+      0 0 0.7em rgb(37 138 255 / 42%);
+  }
+
+  .intro-sound:focus-visible {
+    outline: none;
+  }
+
+  .intro-sound:active .intro-sound-screen {
+    filter: brightness(1.34);
+  }
+
+  .intro-sound[data-sound-state="on"] .intro-sound-screen {
+    background: #021247;
+    color: #73ebff;
+    text-shadow:
+      0 0 0.35em rgb(42 216 255 / 92%),
+      0 0 0.8em rgb(32 109 255 / 64%);
+  }
+
+  .intro-sound[data-sound-state="off"] .intro-sound-screen {
+    background: #01082d;
+    color: rgb(61 116 199 / 58%);
+    text-shadow: none;
+  }
+
+  .is-ready .intro-sound {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .intro-enter {
+    position: absolute;
+    top: 70.03%;
+    left: 75.18%;
+    width: 10.53%;
+    height: 12.54%;
+    border: 0;
+    padding: 0;
+    background: rgb(78 112 255 / 0%);
+    clip-path: polygon(18.75% 0, 100% 3.4%, 83.5% 100%, 0 86.4%);
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      background 160ms steps(2, end),
+      filter 160ms steps(2, end),
+      opacity 500ms steps(2, end) 1100ms;
+  }
+
+  .is-ready .intro-enter {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .intro-enter:hover {
+    background: rgb(86 132 255 / 10%);
+    filter: brightness(1.12) drop-shadow(0 0 10px rgb(75 157 255 / 50%));
+  }
+
+  .intro-enter:focus-visible {
+    outline: 2px solid rgb(148 201 255 / 82%);
+    outline-offset: -7px;
+    background: rgb(86 132 255 / 14%);
+    filter: brightness(1.15) drop-shadow(0 0 12px rgb(75 157 255 / 62%));
+  }
+
+  .intro-enter:active {
+    background: rgb(112 151 255 / 18%);
+    filter: brightness(1.18) drop-shadow(0 0 8px rgb(75 157 255 / 56%));
+  }
+
+  .intro-hint {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    margin: 0;
+    color: rgb(142 168 238 / 54%);
+    font-family: var(--font-mono);
+    font-size: 0.47rem;
+    letter-spacing: 0.2em;
+    opacity: 0;
+    transform: translateX(-50%);
+    transition: opacity 700ms ease 900ms;
+  }
+
+  .is-ready .intro-hint {
+    opacity: 1;
+  }
+
+  .intro-hint-narrow {
+    display: none;
+  }
+
+  @media (min-aspect-ratio: 1249 / 1000) and (max-aspect-ratio: 16 / 9) {
+    .pixel-scene {
+      --scene-position-x: 98%;
+      --scene-translate-x: -98%;
     }
-  }
-
-  @keyframes cursor-blink {
-    0%, 48% { opacity: 1; }
-    49%, 100% { opacity: 0; }
-  }
-
-  @keyframes line-grow {
-    to { height: 54px; }
-  }
-
-  @keyframes line-bob {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(4px); }
-  }
-
-  @keyframes label-reveal {
-    to { opacity: 1; transform: translateY(0); }
   }
 
   @media (max-width: 720px) {
-    .intro-stage {
-      min-height: 560px;
+    .intro-signature {
+      top: 22px;
+      left: 20px;
     }
 
-    .terminal-window {
-      width: calc(100vw - 36px);
-      height: min(72svh, 540px);
-      min-height: 470px;
+    .intro-hint {
+      bottom: max(20px, env(safe-area-inset-bottom));
+    }
+  }
+
+  @media (max-aspect-ratio: 1249 / 1000) {
+    .pixel-scene {
+      --scene-position-x: 43%;
+      --scene-translate-x: -43%;
     }
 
-    .terminal-titlebar {
-      grid-template-columns: 1fr auto 1fr;
-      padding-inline: 12px;
+    .intro-enter {
+      display: none;
     }
 
-    .terminal-title {
-      font-size: 0.58rem;
+    .intro-sound-clock {
+      display: none;
     }
 
-    .terminal-body {
-      padding: 22px 16px 20px;
+    .intro-sound-mobile {
+      right: 14px;
+      bottom: max(58px, calc(env(safe-area-inset-bottom) + 52px));
+      display: block;
+      width: 116px;
+      height: 64px;
+      clip-path: polygon(5.5% 3%, 93.5% 3%, 100% 15%, 100% 88%, 94% 98%, 5% 98%, 0 88%, 0 15%);
     }
 
-    .terminal-command {
-      font-size: 0.62rem;
+    .intro-sound-mobile .intro-sound-screen {
+      font-size: 0.54rem;
     }
 
-    .terminal-session {
-      -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 18px);
-      mask-image: linear-gradient(to bottom, transparent 0, #000 18px);
+    .intro-hint-wide {
+      display: none;
     }
 
-    .terminal-output-line {
-      font-size: 0.58rem;
-      line-height: 1.5;
-    }
-
-    .terminal-status {
-      margin-top: 5px;
-      font-size: 0.56rem;
-    }
-
-    .intro-kicker {
-      top: 24px;
-    }
-
-    .intro-skip {
-      right: 22px;
-      bottom: 24px;
+    .intro-hint-narrow {
+      display: inline;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .intro-stage,
-    .terminal-window,
-    .terminal-cursor,
-    .entry-cue,
-    .entry-line,
-    .entry-label {
-      animation: none !important;
-      transition: none !important;
+    .pixel-scene,
+    .intro-signature,
+    .intro-sound,
+    .intro-enter,
+    .intro-hint {
+      transition: none;
     }
 
-    .terminal-window {
+    .pixel-scene {
       opacity: 1;
       transform: none;
     }
 
-    .is-complete .entry-cue {
+    .intro-signature,
+    .intro-enter,
+    .intro-hint {
       opacity: 1;
-      transform: translateX(-50%);
     }
 
-    .is-complete .entry-line {
-      height: 54px;
-    }
-
-    .is-complete .entry-label {
-      opacity: 1;
-      transform: none;
+    .pixel-rain {
+      opacity: 0.58;
     }
   }
 </style>

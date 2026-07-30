@@ -53,15 +53,33 @@ const isHome = Astro.url.pathname === "/";
           if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 
           const resetIntroScroll = () => {
-            if (root.dataset.intro === "pending" || root.dataset.intro === "playing") {
-              window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+            const currentRoot = document.documentElement;
+            if (
+              currentRoot.dataset.page !== "home" ||
+              currentRoot.dataset.blogEntered === "true" ||
+              currentRoot.dataset.intro === "seen"
+            ) {
+              return;
             }
+
+            window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+          };
+
+          const resetBeforeUnload = () => {
+            if (document.documentElement.dataset.page === "home") window.scrollTo(0, 0);
+          };
+
+          const cleanupHomeScroll = () => {
+            window.removeEventListener("pageshow", resetIntroScroll);
+            window.removeEventListener("load", resetIntroScroll);
+            window.removeEventListener("beforeunload", resetBeforeUnload, { capture: true });
           };
 
           resetIntroScroll();
           window.addEventListener("pageshow", resetIntroScroll);
           window.addEventListener("load", resetIntroScroll, { once: true });
-          window.addEventListener("beforeunload", () => window.scrollTo(0, 0), { capture: true });
+          window.addEventListener("beforeunload", resetBeforeUnload, { capture: true });
+          document.addEventListener("astro:before-swap", cleanupHomeScroll, { once: true });
         }
 
         let savedTheme = null;

@@ -9,5 +9,8 @@ tmp/
 .deploy*/
 _multiconfig.yml
 
+# Keep the large source recording local; the browser-ready loop is in public/audio/.
+/raining sound effects.mp4
+
 # Internal planning and specification artifacts should not be published.
 /docs/superpowers/
