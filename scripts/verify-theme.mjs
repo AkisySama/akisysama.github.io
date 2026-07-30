@@ -66,6 +66,17 @@ for (const selector of [".journal-card > img", ".photo-grid img", ".post-card-co
   const rule = styles.match(new RegExp(`${escaped}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
   assert.ok(!rule.includes("grayscale"), `${selector} should preserve the original image colors`);
 }
+const proseImageRule = styles.match(/\.prose img\s*\{([^}]*)\}/)?.[1] ?? "";
+assert.match(
+  proseImageRule,
+  /width:\s*auto;[\s\S]*max-width:\s*min\(100%,\s*640px\)/,
+  "Article images should remain at their natural size and stay narrower than the reading column",
+);
+assert.match(
+  proseImageRule,
+  /max-height:\s*min\(70svh,\s*720px\)/,
+  "Article images should not dominate the reading viewport",
+);
 
 assert.match(header, /aria-current=\{[^}]*["']page["'][^}]*\}/);
 assert.match(header, /<button[^>]+class=["']theme-toggle["'][^>]+aria-label=/);
