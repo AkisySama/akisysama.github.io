@@ -204,6 +204,16 @@ assert.match(
 );
 assert.match(
   intro,
+  /const handleTouchEnd = \(event\) => \{[\s\S]*?isIntroEntryActive\(\)[\s\S]*?enterBlog\(\);[\s\S]*?\};/,
+  "Mobile swipes should only trigger entry while the opening scene is still active",
+);
+assert.match(
+  intro,
+  /enterScrollTimer = 0;[\s\S]*?if \(window\.scrollY >= intro\.offsetHeight\) return;[\s\S]*?window\.scrollTo\(/,
+  "A delayed entry scroll should never pull the visitor backward from the blog",
+);
+assert.match(
+  intro,
   /const handleScroll = \(\) => \{[\s\S]*?markEntered\(\);[\s\S]*?\};/,
   "Manual scrolling should reveal blog utilities without disabling entry",
 );

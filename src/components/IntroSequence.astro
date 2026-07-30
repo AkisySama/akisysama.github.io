@@ -536,6 +536,9 @@
       root.dataset.blogEntered = "true";
     };
 
+    const isIntroEntryActive = () =>
+      window.scrollY < intro.offsetHeight * 0.6;
+
     const enterBlog = () => {
       if (enterScrollTimer) return;
       markEntered();
@@ -543,6 +546,8 @@
       enterScrollTimer = window.setTimeout(
         () => {
           enterScrollTimer = 0;
+          if (window.scrollY >= intro.offsetHeight) return;
+
           window.scrollTo({
             top: intro.offsetHeight,
             behavior: reducedMotion ? "auto" : "smooth",
@@ -553,7 +558,7 @@
     };
 
     const handleWheel = (event) => {
-      if (event.deltaY <= 5 || window.scrollY >= intro.offsetHeight * 0.6) return;
+      if (event.deltaY <= 5 || !isIntroEntryActive()) return;
       event.preventDefault();
       enterBlog();
     };
@@ -564,7 +569,7 @@
 
     const handleTouchEnd = (event) => {
       const touchEndY = event.changedTouches[0]?.clientY ?? touchStartY;
-      if (touchStartY - touchEndY >= 34) enterBlog();
+      if (touchStartY - touchEndY >= 34 && isIntroEntryActive()) enterBlog();
     };
 
     const handleKeydown = (event) => {
@@ -575,6 +580,7 @@
 
       if (interactiveTarget && interactiveTarget !== enterButton) return;
       if (!["ArrowDown", "PageDown", " ", "Enter"].includes(event.key)) return;
+      if (!isIntroEntryActive()) return;
       event.preventDefault();
       enterBlog();
     };
