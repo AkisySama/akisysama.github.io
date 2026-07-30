@@ -153,8 +153,8 @@ assert.match(
 );
 assert.match(
   intro,
-  /fadeRainSound\(0\.38\)/,
-  "The normalized source recording should use a restrained ambient volume",
+  /fadeRainSound\(0\.228\)/,
+  "The normalized source recording should use the reduced ambient volume",
 );
 assert.match(
   intro,
