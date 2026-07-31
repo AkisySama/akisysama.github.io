@@ -1,5 +1,5 @@
 ---
-import { ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
+import { ChevronLeft, ChevronRight, ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
 ---
 
 <div class="timeline-shell" data-timeline-shell>
@@ -46,6 +46,37 @@ import { ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
       </a>
     </footer>
   </aside>
+
+  <dialog class="timeline-lightbox" aria-label="动态图片预览" data-timeline-lightbox>
+    <button
+      class="timeline-lightbox-close"
+      type="button"
+      aria-label="关闭图片预览"
+      data-timeline-lightbox-close
+    >
+      <X size={22} stroke-width={1.5} aria-hidden="true" />
+    </button>
+    <button
+      class="timeline-lightbox-nav timeline-lightbox-previous"
+      type="button"
+      aria-label="查看上一张图片"
+      data-timeline-lightbox-previous
+      hidden
+    >
+      <ChevronLeft size={26} stroke-width={1.4} aria-hidden="true" />
+    </button>
+    <img class="timeline-lightbox-image" alt="" data-timeline-lightbox-image />
+    <button
+      class="timeline-lightbox-nav timeline-lightbox-next"
+      type="button"
+      aria-label="查看下一张图片"
+      data-timeline-lightbox-next
+      hidden
+    >
+      <ChevronRight size={26} stroke-width={1.4} aria-hidden="true" />
+    </button>
+    <p class="timeline-lightbox-counter" aria-live="polite" data-timeline-lightbox-counter hidden></p>
+  </dialog>
 </div>
 
 <script>
@@ -143,8 +174,11 @@ import { ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
 
     main.append(author, title);
 
-    const imagePattern = /!\[[^\]]*]\((https?:\/\/[^\s)]+)(?:\s+["'][^"']*["'])?\)/g;
-    const images = Array.from(issue.body?.matchAll(imagePattern) ?? [], (match) => match[1]).slice(0, 4);
+    const imagePattern = /!\[([^\]]*)]\((https?:\/\/[^\s)]+)(?:\s+["'][^"']*["'])?\)/g;
+    const images = Array.from(issue.body?.matchAll(imagePattern) ?? [], (match) => ({
+      alt: match[1].trim() || "动态配图",
+      src: match[2],
+    })).slice(0, 4);
     const cleanBody = (issue.body ?? "")
       .replace(imagePattern, "")
       .replace(/^#{1,6}\s+/gm, "")
@@ -161,18 +195,22 @@ import { ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
     if (images.length) {
       const gallery = document.createElement("div");
       gallery.className = `timeline-gallery timeline-gallery-${Math.min(images.length, 4)}`;
-      for (const src of images) {
-        const link = document.createElement("a");
-        link.href = src;
-        link.target = "_blank";
-        link.rel = "noreferrer";
+      images.forEach(({ alt, src }, index) => {
+        const button = document.createElement("button");
+        button.className = "timeline-gallery-button";
+        button.type = "button";
+        button.dataset.timelineImage = "";
+        button.dataset.fullSrc = src;
+        button.dataset.imageAlt = alt;
+        button.setAttribute("aria-haspopup", "dialog");
+        button.setAttribute("aria-label", `查看「${issue.title}」第 ${index + 1} 张配图大图：${alt}`);
         const image = document.createElement("img");
         image.src = src;
-        image.alt = "动态配图";
+        image.alt = alt;
         image.loading = "lazy";
-        link.append(image);
-        gallery.append(link);
-      }
+        button.append(image);
+        gallery.append(button);
+      });
       main.append(gallery);
     }
 
@@ -219,9 +257,74 @@ import { ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
     const content = shell.querySelector<HTMLElement>("[data-timeline-content]");
     const refresh = shell.querySelector<HTMLButtonElement>("[data-timeline-refresh]");
     const closeButton = shell.querySelector<HTMLButtonElement>(".timeline-close");
-    if (!toggle || !drawer || !content || !refresh) return;
+    const lightbox = shell.querySelector<HTMLDialogElement>("[data-timeline-lightbox]");
+    const lightboxImage = shell.querySelector<HTMLImageElement>("[data-timeline-lightbox-image]");
+    const lightboxClose = shell.querySelector<HTMLButtonElement>("[data-timeline-lightbox-close]");
+    const lightboxPrevious = shell.querySelector<HTMLButtonElement>("[data-timeline-lightbox-previous]");
+    const lightboxNext = shell.querySelector<HTMLButtonElement>("[data-timeline-lightbox-next]");
+    const lightboxCounter = shell.querySelector<HTMLElement>("[data-timeline-lightbox-counter]");
+    if (
+      !toggle ||
+      !drawer ||
+      !content ||
+      !refresh ||
+      !lightbox ||
+      !lightboxImage ||
+      !lightboxClose ||
+      !lightboxPrevious ||
+      !lightboxNext ||
+      !lightboxCounter
+    ) return;
 
     let hasLoaded = false;
+    let activeImageIndex = 0;
+    let activeImages: Array<{ alt: string; src: string }> = [];
+    let lightboxTrigger: HTMLButtonElement | null = null;
+
+    const updateLightbox = () => {
+      const activeImage = activeImages[activeImageIndex];
+      if (!activeImage) return;
+
+      lightboxImage.src = activeImage.src;
+      lightboxImage.alt = `${activeImage.alt}（大图）`;
+
+      const hasMultipleImages = activeImages.length > 1;
+      lightboxPrevious.hidden = !hasMultipleImages;
+      lightboxNext.hidden = !hasMultipleImages;
+      lightboxCounter.hidden = !hasMultipleImages;
+      lightboxCounter.textContent = hasMultipleImages
+        ? `${activeImageIndex + 1} / ${activeImages.length}`
+        : "";
+    };
+
+    const stepLightbox = (offset: number) => {
+      if (activeImages.length < 2) return;
+      activeImageIndex = (activeImageIndex + offset + activeImages.length) % activeImages.length;
+      updateLightbox();
+    };
+
+    const openLightbox = (trigger: HTMLButtonElement) => {
+      const gallery = trigger.closest<HTMLElement>(".timeline-gallery");
+      if (!gallery) return;
+
+      const imageButtons = Array.from(
+        gallery.querySelectorAll<HTMLButtonElement>("[data-timeline-image]"),
+      );
+      activeImages = imageButtons.flatMap((button) => {
+        const src = button.dataset.fullSrc;
+        return src ? [{ alt: button.dataset.imageAlt || "动态配图", src }] : [];
+      });
+      activeImageIndex = Math.max(0, imageButtons.indexOf(trigger));
+      lightboxTrigger = trigger;
+      updateLightbox();
+      document.body.classList.add("timeline-lightbox-is-open");
+      if (!lightbox.open) lightbox.showModal();
+      lightboxClose.focus({ preventScroll: true });
+    };
+
+    const closeLightbox = () => {
+      if (lightbox.open) lightbox.close();
+    };
 
     const showMessage = (title: string, detail: string, isError = false) => {
       content.replaceChildren();
@@ -303,9 +406,36 @@ import { ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
     shell.querySelectorAll<HTMLElement>("[data-timeline-close]").forEach((button) => {
       button.addEventListener("click", () => setOpen(false));
     });
+    content.addEventListener("click", (event) => {
+      const trigger = (event.target as Element).closest<HTMLButtonElement>("[data-timeline-image]");
+      if (trigger) openLightbox(trigger);
+    });
+    lightboxClose.addEventListener("click", closeLightbox);
+    lightboxPrevious.addEventListener("click", () => stepLightbox(-1));
+    lightboxNext.addEventListener("click", () => stepLightbox(1));
+    lightbox.addEventListener("click", (event) => {
+      if (event.target === lightbox) closeLightbox();
+    });
+    lightbox.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft") stepLightbox(-1);
+      if (event.key === "ArrowRight") stepLightbox(1);
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        closeLightbox();
+      }
+    });
+    lightbox.addEventListener("close", () => {
+      document.body.classList.remove("timeline-lightbox-is-open");
+      lightboxImage.removeAttribute("src");
+      activeImages = [];
+      const returnFocus = lightboxTrigger?.isConnected ? lightboxTrigger : closeButton;
+      returnFocus?.focus({ preventScroll: true });
+      lightboxTrigger = null;
+    });
     refresh.addEventListener("click", () => void loadIssues(true));
     shell.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape" && !lightbox.open) setOpen(false);
     });
   };
 
@@ -449,6 +579,95 @@ import { ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
     pointer-events: auto;
   }
 
+  .timeline-lightbox {
+    width: 100vw;
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0;
+    border: 0;
+    padding: 64px clamp(14px, 4vw, 60px) 22px;
+    overflow: hidden;
+    background: transparent;
+    color: #fff;
+    pointer-events: auto;
+  }
+
+  .timeline-lightbox[open] {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    grid-template-columns: 48px minmax(0, 1fr) 48px;
+    gap: 14px clamp(8px, 1.7vw, 24px);
+    align-items: center;
+  }
+
+  .timeline-lightbox::backdrop {
+    background: rgb(5 7 10 / 88%);
+    -webkit-backdrop-filter: blur(18px) saturate(90%);
+    backdrop-filter: blur(18px) saturate(90%);
+  }
+
+  .timeline-lightbox-image {
+    grid-row: 1;
+    grid-column: 2;
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: var(--radius-sm);
+    box-shadow: 0 24px 80px rgb(0 0 0 / 38%);
+    object-fit: contain;
+    place-self: center;
+  }
+
+  .timeline-lightbox-close,
+  .timeline-lightbox-nav {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid rgb(255 255 255 / 14%);
+    border-radius: 50%;
+    background: rgb(18 20 24 / 72%);
+    color: rgb(255 255 255 / 84%);
+    cursor: pointer;
+    transition:
+      border-color 160ms ease,
+      background 160ms ease,
+      color 160ms ease,
+      transform 160ms ease;
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+
+  .timeline-lightbox-close {
+    position: absolute;
+    top: max(16px, env(safe-area-inset-top));
+    right: max(16px, env(safe-area-inset-right));
+  }
+
+  .timeline-lightbox-nav:hover,
+  .timeline-lightbox-close:hover {
+    border-color: rgb(255 255 255 / 28%);
+    background: rgb(42 45 50 / 86%);
+    color: #fff;
+    transform: scale(1.05);
+  }
+
+  .timeline-lightbox-nav[hidden],
+  .timeline-lightbox-counter[hidden] { display: none; }
+  .timeline-lightbox-previous { grid-row: 1; grid-column: 1; }
+  .timeline-lightbox-next { grid-row: 1; grid-column: 3; }
+
+  .timeline-lightbox-counter {
+    grid-row: 2;
+    grid-column: 2;
+    margin: 0;
+    color: rgb(255 255 255 / 64%);
+    font-size: 0.7rem;
+    letter-spacing: 0.12em;
+    text-align: center;
+  }
+
   .timeline-header {
     display: flex;
     align-items: flex-start;
@@ -561,8 +780,28 @@ import { ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
   :global(.timeline-gallery-2),
   :global(.timeline-gallery-3),
   :global(.timeline-gallery-4) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  :global(.timeline-gallery-3 a:first-child) { grid-row: span 2; }
-  :global(.timeline-gallery img) { width: 100%; height: 112px; object-fit: cover; }
+  :global(.timeline-gallery-3 button:first-child) { grid-row: span 2; }
+  :global(.timeline-gallery-button) {
+    display: block;
+    width: 100%;
+    border: 0;
+    padding: 0;
+    overflow: hidden;
+    background: transparent;
+    cursor: zoom-in;
+  }
+  :global(.timeline-gallery-button:focus-visible) {
+    outline: 2px solid var(--color-accent);
+    outline-offset: -2px;
+  }
+  :global(.timeline-gallery img) {
+    display: block;
+    width: 100%;
+    height: 112px;
+    object-fit: cover;
+    transition: transform 220ms ease;
+  }
+  :global(.timeline-gallery-button:hover img) { transform: scale(1.025); }
   :global(.timeline-gallery-1 img) { height: auto; max-height: 250px; }
 
   :global(.timeline-labels) { display: flex; flex-wrap: wrap; gap: 5px 10px; margin: 8px 0; }
@@ -611,6 +850,7 @@ import { ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
     visibility: hidden;
     opacity: 0;
   }
+  :global(body.timeline-lightbox-is-open) { overflow: hidden; }
 
   @keyframes timeline-spin { to { transform: rotate(360deg); } }
   @keyframes timeline-pulse { 50% { opacity: 0.48; } }
@@ -629,6 +869,14 @@ import { ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
     .timeline-header { min-height: 98px; padding: 23px 20px 18px; }
     :global(.timeline-list) { padding-right: 24px; padding-left: 20px; }
     .timeline-footer { padding-inline: 20px; }
+    .timeline-lightbox {
+      padding: max(58px, calc(env(safe-area-inset-top) + 48px)) 10px max(14px, env(safe-area-inset-bottom));
+    }
+    .timeline-lightbox[open] {
+      grid-template-columns: 40px minmax(0, 1fr) 40px;
+      gap: 10px 4px;
+    }
+    .timeline-lightbox-nav { width: 38px; height: 38px; }
     :global(body.timeline-is-open) { overflow: hidden; }
   }
 
@@ -636,6 +884,7 @@ import { ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
     .timeline-toggle,
     .timeline-drawer,
     .timeline-backdrop,
-    .timeline-shell { transition: none; }
+    .timeline-shell,
+    :global(.timeline-gallery img) { transition: none; }
   }
 </style>

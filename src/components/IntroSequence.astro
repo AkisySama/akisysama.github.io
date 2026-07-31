@@ -707,14 +707,6 @@
 </script>
 
 <style>
-  @font-face {
-    font-family: "Press Start 2P";
-    src: url("/fonts/PressStart2P-Regular.ttf") format("truetype");
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-  }
-
   :global(html[data-page="home"][data-intro="seen"]) .intro-sequence {
     display: none;
   }
@@ -883,7 +875,7 @@
     overflow: hidden;
     background: #010a36;
     color: rgb(71 178 255 / 84%);
-    font-family: "Press Start 2P", monospace;
+    font-family: var(--font-pixel);
     font-size: clamp(6px, 1.05cqh, 10px);
     line-height: 1;
     letter-spacing: 0.04em;

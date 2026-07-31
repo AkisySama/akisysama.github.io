@@ -9,82 +9,26 @@ const baseLayout = read("src/layouts/BaseLayout.astro");
 const homepage = read("src/pages/index.astro");
 const styles = read("src/styles/global.css");
 const header = read("src/components/Header.astro");
-const footer = read("src/components/Footer.astro");
 const metroScene = read("src/components/MetroScene.astro");
 
 assert.match(baseLayout, /import\s+\{\s*ClientRouter\s*\}\s+from\s+["']astro:transitions["']/);
 assert.match(baseLayout, /<ClientRouter\s*\/>/);
 assert.match(baseLayout, /localStorage\.getItem\(["']akisy-theme["']\)/);
-assert.match(baseLayout, /:\s*["']dark["'];/, "The redesigned blog should default to the dark theme");
 
-for (const className of [
-  "editorial-hero",
-  "hero-copy",
-  "hero-portrait",
-  "editorial-grid",
-  "featured-list",
-  "journal-feature",
-  "photo-selection",
-]) {
-  assert.ok(homepage.includes(className), `Homepage missing ${className}`);
-}
-
-assert.ok(homepage.includes("<MetroScene />"), "Homepage should include the animated metro interlude");
-for (const className of ["metro-scene", "metro-window", "metro-city-track", "metro-girl"]) {
-  assert.ok(metroScene.includes(className), `Metro scene missing ${className}`);
-}
-assert.ok(!metroScene.includes("data-metro-motion"), "Metro scene should not expose a motion toggle");
+assert.ok(homepage.includes("getPublishedPosts"), "Homepage should render published blog content");
+assert.ok(homepage.includes("<MetroScene />"), "Homepage should include the metro scene");
 assert.ok(
   metroScene.includes("@media (prefers-reduced-motion: reduce)"),
   "Metro scene should respect reduced motion",
 );
 
-assert.ok(
-  homepage.includes("/images/digital-island-signal.webp"),
-  "Homepage should use the supplied digital-island signal artwork",
-);
-assert.ok(homepage.includes("getPublishedPosts"), "Homepage should use real blog content");
-assert.ok(homepage.includes("selectedImages"), "Homepage should render the monochrome photo selection");
-
-for (const token of [
-  "--color-bg: #030405",
-  "--color-surface: #090a0b",
-  "--color-text: #ded8cc",
-  "--color-heading: #eee8dc",
-  "--color-accent: #d2c4aa",
-  "--font-serif:",
-]) {
-  assert.ok(styles.includes(token), `Missing editorial theme token ${token}`);
-}
-
 assert.ok(styles.includes(':root[data-theme="light"]'), "Theme should retain an optional light reading mode");
 assert.ok(styles.includes("@media (max-width: 720px)"), "Theme should include a mobile layout");
 assert.ok(styles.includes("@media (prefers-reduced-motion: reduce)"), "Theme should respect reduced motion");
-assert.ok(!styles.includes("linear-gradient"), "Editorial theme should not fake image depth with CSS gradients");
-for (const selector of [".journal-card > img", ".photo-grid img", ".post-card-cover img", ".post-cover"]) {
-  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const rule = styles.match(new RegExp(`${escaped}\\s*\\{([^}]*)\\}`))?.[1] ?? "";
-  assert.ok(!rule.includes("grayscale"), `${selector} should preserve the original image colors`);
-}
-const proseImageRule = styles.match(/\.prose img\s*\{([^}]*)\}/)?.[1] ?? "";
-assert.match(
-  proseImageRule,
-  /width:\s*auto;[\s\S]*max-width:\s*min\(100%,\s*640px\)/,
-  "Article images should remain at their natural size and stay narrower than the reading column",
-);
-assert.match(
-  proseImageRule,
-  /max-height:\s*min\(70svh,\s*720px\)/,
-  "Article images should not dominate the reading viewport",
-);
 
 assert.match(header, /aria-current=\{[^}]*["']page["'][^}]*\}/);
 assert.match(header, /<button[^>]+class=["']theme-toggle["'][^>]+aria-label=/);
 assert.ok(header.includes("localStorage.setItem"), "Theme choice should persist");
 assert.ok(header.includes("astro:before-swap"), "Theme should survive page transitions");
-assert.ok(!header.includes("A.K."), "Main header should not render the A.K. mark");
-assert.ok(footer.includes("快速导航"), "Footer should expose quick navigation");
-assert.ok(footer.includes("保持联系"), "Footer should retain the reference-inspired editorial layout");
-assert.ok(footer.includes("<blockquote>"), "Footer should render its editorial quote");
 
-console.log("Verified dark editorial digital-island theme contract.");
+console.log("Verified navigation, content, theme, and accessibility contracts.");

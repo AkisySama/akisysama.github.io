@@ -1,25 +1,56 @@
 ---
-import { BookOpen, Globe, UserRound } from "@lucide/astro";
+import { BookOpen, Globe } from "@lucide/astro";
+import { getAllTags, getPublishedPosts } from "@utils/posts";
 
 const socialLinks = [
   { href: "https://github.com/akisysama", label: "GitHub", icon: Globe, external: true },
-  { href: "/about/", label: "关于", icon: UserRound },
   { href: "/posts/", label: "文章", icon: BookOpen },
+];
+
+const posts = await getPublishedPosts();
+const siteStartedAt = Date.UTC(2024, 2, 26);
+const daysOnline = Math.max(1, Math.floor((Date.now() - siteStartedAt) / 86_400_000) + 1);
+const latestUpdate = posts.reduce(
+  (latest, post) => {
+    const date = post.data.updatedDate ?? post.data.pubDate;
+    return date > latest ? date : latest;
+  },
+  new Date(siteStartedAt),
+);
+const compactDate = [
+  String(latestUpdate.getFullYear()).slice(-2),
+  String(latestUpdate.getMonth() + 1).padStart(2, "0"),
+  String(latestUpdate.getDate()).padStart(2, "0"),
+].join(".");
+const tagCount = getAllTags(posts).length;
+
+const siteStats = [
+  { label: "POSTS", value: posts.length, description: `${posts.length} 篇文章` },
+  { label: "TAGS", value: tagCount, description: `${tagCount} 个标签` },
+  { label: "DAYS", value: daysOnline, description: `建站第 ${daysOnline} 天` },
+  { label: "UPDATED", value: compactDate, description: `最近更新于 ${compactDate}` },
 ];
 ---
 
 <footer class="site-footer">
-  <div class="footer-intro">
-    <p class="footer-title">保持联系</p>
-    <p>欢迎交换想法，也欢迎分享你正在做的有趣事情。</p>
-    <a class="text-link" href="/about/">关于我 <span aria-hidden="true">→</span></a>
+  <div class="footer-stats" aria-label="站点数据">
+    <p class="footer-title">SITE DATA</p>
+    <dl class="site-stats">
+      {
+        siteStats.map(({ label, value, description }) => (
+          <div aria-label={description}>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))
+      }
+    </dl>
   </div>
   <div class="footer-links">
     <p class="footer-title">快速导航</p>
     <a href="/">首页</a>
     <a href="/posts/">文章</a>
     <a href="/tags/">标签</a>
-    <a href="/about/">关于</a>
   </div>
   <div class="footer-follow">
     <p class="footer-title">关注</p>
@@ -40,10 +71,10 @@ const socialLinks = [
     </nav>
   </div>
   <blockquote>
-    “原本想做个高雅的网站，最后发现我高雅不起来”
+    总觉得盛夏应该发生点什么热烈的事，每次想来却也只不过是些闷热的日子。
   </blockquote>
   <div class="footer-bottom">
     <span>© {new Date().getFullYear()} Akisy. All rights reserved.</span>
-    <span>Built with Astro · Love & Peace</span>
+    <span>Built with Astro</span>
   </div>
 </footer>

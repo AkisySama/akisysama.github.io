@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "Press Start 2P";
+  src: url("/fonts/PressStart2P-Regular.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 :root {
   color-scheme: dark;
   --color-bg: #030405;
@@ -14,9 +22,11 @@
   --color-accent-soft: #a8997e;
   --color-code-bg: #111214;
   --color-icon: #bcb29f;
+  --color-pixel-stat: #9fcde8;
   --font-sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
   --font-serif: "Cormorant Garamond", "Bodoni 72", Didot, "Songti SC", "Noto Serif CJK SC", serif;
   --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  --font-pixel: "Press Start 2P", "SFMono-Regular", Consolas, monospace;
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 10px;
@@ -38,6 +48,7 @@
   --color-accent-soft: #8c806c;
   --color-code-bg: #dfdbd2;
   --color-icon: #706857;
+  --color-pixel-stat: #5c89a3;
 }
 
 * {
@@ -815,7 +826,7 @@ img {
   font-size: 0.7rem;
 }
 
-.footer-intro,
+.footer-stats,
 .footer-links,
 .footer-follow {
   min-width: 0;
@@ -836,9 +847,39 @@ img {
   text-transform: uppercase;
 }
 
-.footer-intro > p:not(.footer-title) {
-  max-width: 230px;
-  margin: 0 0 12px;
+.site-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px 18px;
+  margin: 0;
+}
+
+.site-stats > div {
+  min-width: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+}
+
+.site-stats dt,
+.site-stats dd,
+.footer-stats .footer-title {
+  color: var(--color-pixel-stat);
+  font-family: var(--font-pixel);
+  font-weight: 400;
+}
+
+.site-stats dt {
+  overflow: hidden;
+  font-size: 0.43rem;
+  letter-spacing: 0.08em;
+  line-height: 1.5;
+  text-overflow: ellipsis;
+}
+
+.site-stats dd {
+  margin: 6px 0 0;
+  font-size: clamp(0.66rem, 0.9vw, 0.78rem);
+  line-height: 1.45;
 }
 
 .footer-links {

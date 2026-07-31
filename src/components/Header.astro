@@ -5,7 +5,6 @@ const navItems = [
   { href: "/", label: "首页" },
   { href: "/posts/", label: "文章" },
   { href: "/tags/", label: "标签" },
-  { href: "/about/", label: "关于" },
 ];
 
 const currentPath = Astro.url.pathname;
@@ -31,7 +30,7 @@ const isActive = (href: string) => {
       <Moon class="theme-icon theme-icon-moon" size={18} stroke-width={1.8} aria-hidden="true" />
       <Sun class="theme-icon theme-icon-sun" size={18} stroke-width={1.8} aria-hidden="true" />
     </button>
-    <a class="header-note" href="/about/">个人日志</a>
+    <a class="header-note" href="/about/">我</a>
   </div>
 </header>
 
