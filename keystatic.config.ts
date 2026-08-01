@@ -65,7 +65,7 @@ export default config({
         }),
         cover: fields.image({
           label: "封面图片",
-          description: "不选择时使用博客默认封面。",
+          description: "可选；不选择时文章将不显示封面。",
           directory: "public/images",
           publicPath: "/images/",
         }),

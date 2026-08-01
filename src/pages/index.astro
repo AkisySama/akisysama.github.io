@@ -2,13 +2,13 @@
 import BaseLayout from "@layouts/BaseLayout.astro";
 import IntroSequence from "@components/IntroSequence.astro";
 import MetroScene from "@components/MetroScene.astro";
+import SiteData from "@components/SiteData.astro";
 import { ArrowRight } from "@lucide/astro";
 import { formatDate } from "@utils/dates";
 import { getPostDescription, getPostUrl, getPublishedPosts } from "@utils/posts";
 
 const posts = await getPublishedPosts();
-const featuredPosts = posts.slice(0, 3);
-const journalPost = posts[0];
+const latestPosts = posts.slice(0, 3);
 
 const selectedImages = [
   { src: "/images/209169A8-B52A-4BA1-8F9E-B009E467288E_4_5005_c.jpeg", alt: "海边旅行照片" },
@@ -68,15 +68,15 @@ const signalNodes = [
 
   <MetroScene />
 
-  <section class="editorial-grid" aria-label="博客精选内容">
+  <section class="editorial-grid" aria-label="博客最新内容与站点数据">
     <div class="featured-list">
       <div class="editorial-heading">
-        <span>精选文章</span>
+        <span>最新记录</span>
         <i aria-hidden="true"></i>
       </div>
       <ol>
         {
-          featuredPosts.map((post, index) => (
+          latestPosts.map((post, index) => (
             <li>
               <span class="article-index">{String(index + 1).padStart(2, "0")}</span>
               <div>
@@ -95,32 +95,7 @@ const signalNodes = [
       </ol>
     </div>
 
-    <div class="journal-feature">
-      <div class="editorial-heading">
-        <span>最新记录</span>
-        <i aria-hidden="true"></i>
-      </div>
-      {
-        journalPost && (
-          <a
-            class="journal-card"
-            href={getPostUrl(journalPost)}
-            aria-label={`阅读 ${journalPost.data.title}`}
-          >
-            <img src={journalPost.data.cover ?? "/images/default-post-cover.jpeg"} alt="" loading="lazy" />
-            <div class="journal-card-overlay">
-              <time datetime={journalPost.data.pubDate.toISOString()}>{formatDate(journalPost.data.pubDate)}</time>
-              <h2>{journalPost.data.title}</h2>
-              <p>{getPostDescription(journalPost)}</p>
-              <span class="text-link">
-                继续阅读
-                <ArrowRight size={15} stroke-width={1.35} aria-hidden="true" />
-              </span>
-            </div>
-          </a>
-        )
-      }
-    </div>
+    <SiteData />
 
     <div class="photo-selection">
       <div class="editorial-heading">

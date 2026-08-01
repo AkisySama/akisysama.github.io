@@ -1,5 +1,5 @@
-<section class="metro-scene" aria-labelledby="metro-scene-title" data-metro-scene>
-  <h2 class="metro-title" id="metro-scene-title">移动中的城市片段</h2>
+<section class="metro-scene" aria-labelledby="metro-scene-title" data-metro-scene data-channel="city">
+  <h2 class="metro-title" id="metro-scene-title">移动中的风景片段</h2>
 
   <div class="metro-stage" aria-hidden="true">
     <img
@@ -12,21 +12,67 @@
     />
 
     <div class="metro-window">
-      <div class="metro-city-track">
-        <img src="/images/metro/city-panorama.png" alt="" />
-        <img src="/images/metro/city-panorama.png" alt="" />
+      <div class="metro-view metro-view--city">
+        <div class="metro-scenery-track">
+          <img src="/images/metro/city-panorama.png" alt="" />
+          <img src="/images/metro/city-panorama.png" alt="" />
+        </div>
       </div>
+      <div class="metro-view metro-view--coast">
+        <div class="metro-scenery-track metro-scenery-track--coast">
+          <img src="/images/metro/coast-panorama.png" alt="" />
+          <img src="/images/metro/coast-panorama.png" alt="" />
+          <img src="/images/metro/coast-panorama.png" alt="" />
+        </div>
+      </div>
+      <div class="metro-view metro-view--rain">
+        <div class="metro-scenery-track metro-scenery-track--rain-country">
+          <img src="/images/metro/rain-countryside-panorama.png" alt="" />
+          <img src="/images/metro/rain-countryside-panorama.png" alt="" />
+          <img src="/images/metro/rain-countryside-panorama.png" alt="" />
+        </div>
+        <div class="metro-station-pass">
+          <img src="/images/metro/rain-panorama.png" alt="" />
+        </div>
+      </div>
+      <div class="metro-view metro-view--snow">
+        <div class="metro-scenery-track metro-scenery-track--snow">
+          <img src="/images/metro/snow-panorama.png" alt="" />
+          <img src="/images/metro/snow-panorama.png" alt="" />
+          <img src="/images/metro/snow-panorama.png" alt="" />
+        </div>
+      </div>
+      <canvas class="metro-rain" width="900" height="220" data-metro-rain aria-hidden="true"></canvas>
+      <span class="metro-static" aria-hidden="true"></span>
     </div>
 
     <img
-      class="metro-girl-layer metro-girl-lower"
+      class="metro-girl-layer metro-girl-city metro-girl-lower"
       src="/images/metro/girl-lower.png"
       alt=""
       loading="eager"
     />
     <img
-      class="metro-girl-layer metro-girl-upper"
+      class="metro-girl-layer metro-girl-city metro-girl-upper"
       src="/images/metro/girl-upper.png"
+      alt=""
+      loading="eager"
+    />
+    <img
+      class="metro-girl-layer metro-girl-coast"
+      src="/images/metro/girl-coast-kneeling.png"
+      alt=""
+      loading="eager"
+    />
+    <img
+      class="metro-girl-layer metro-girl-rain"
+      src="/images/metro/girl-rain-sleeping.png"
+      alt=""
+      loading="eager"
+    />
+    <img
+      class="metro-girl-layer metro-girl-snow"
+      src="/images/metro/girl-snow-winter.png"
       alt=""
       loading="eager"
     />
@@ -93,7 +139,27 @@
     background: #171328;
   }
 
-  .metro-city-track {
+  .metro-view {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 240ms steps(3, end);
+  }
+
+  .metro-view--city,
+  .metro-scene[data-channel="coast"] .metro-view--coast,
+  .metro-scene[data-channel="rain"] .metro-view--rain,
+  .metro-scene[data-channel="snow"] .metro-view--snow {
+    opacity: 1;
+  }
+
+  .metro-scene[data-channel="coast"] .metro-view--city,
+  .metro-scene[data-channel="rain"] .metro-view--city,
+  .metro-scene[data-channel="snow"] .metro-view--city {
+    opacity: 0;
+  }
+
+  .metro-scenery-track {
     display: flex;
     width: 200%;
     height: 100%;
@@ -103,7 +169,53 @@
     will-change: transform, filter;
   }
 
-  .metro-city-track img {
+  .metro-scenery-track--coast {
+    width: 300%;
+    animation:
+      metro-coast-scroll 46s linear infinite,
+      metro-city-light 28s ease-in-out infinite alternate;
+  }
+
+  .metro-scenery-track--rain-country {
+    width: 300%;
+    animation:
+      metro-coast-scroll 42s linear infinite,
+      metro-city-light 24s ease-in-out infinite alternate;
+    filter: brightness(0.88) saturate(0.78);
+  }
+
+  .metro-scenery-track--snow {
+    width: 300%;
+    animation: metro-coast-scroll 50s linear infinite;
+    filter: brightness(0.96) saturate(0.88);
+  }
+
+  .metro-station-pass {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(110%);
+    animation: metro-station-pass 88s linear infinite paused;
+    will-change: transform, opacity;
+  }
+
+  .metro-scene[data-channel="rain"] .metro-station-pass {
+    animation-play-state: running;
+  }
+
+  .metro-station-pass img {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+    image-rendering: pixelated;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 7%, #000 93%, transparent 100%);
+  }
+
+  .metro-scenery-track img {
     flex: 0 0 50%;
     width: 50%;
     height: 100%;
@@ -112,16 +224,30 @@
     image-rendering: pixelated;
   }
 
+  .metro-scenery-track--coast img,
+  .metro-scenery-track--rain-country img,
+  .metro-scenery-track--snow img {
+    flex-basis: 33.333333%;
+    width: 33.333333%;
+  }
+
+  .metro-scenery-track--coast img:nth-child(2),
+  .metro-scenery-track--rain-country img:nth-child(2),
+  .metro-scenery-track--snow img:nth-child(2) {
+    transform: scaleX(-1);
+  }
+
   .metro-girl-layer {
     position: absolute;
-    bottom: 8.2%;
-    left: 50%;
+    bottom: calc(12.8% + 2px);
+    left: 50.5%;
     z-index: 3;
     width: auto;
-    height: 37%;
+    height: 31.2%;
     max-width: none;
     image-rendering: pixelated;
     transform: translateX(-50%);
+    transition: opacity 180ms steps(2, end);
   }
 
   .metro-girl-upper {
@@ -130,8 +256,115 @@
     will-change: transform;
   }
 
+  .metro-girl-coast {
+    bottom: 17%;
+    left: 51.5%;
+    height: 32.6%;
+    opacity: 0;
+    animation: metro-girl-coast-breathe 3.2s steps(2, end) infinite;
+    transform-origin: 52% 72%;
+    will-change: transform;
+  }
+
+  .metro-girl-rain {
+    bottom: 11.5%;
+    left: 50.5%;
+    height: 37%;
+    opacity: 0;
+    animation: metro-girl-sleep 4.6s steps(2, end) infinite;
+    transform-origin: 50% 64%;
+    will-change: transform;
+  }
+
+  .metro-girl-snow {
+    bottom: 10.5%;
+    left: 50.5%;
+    height: 39%;
+    opacity: 0;
+    animation: metro-girl-snow-breathe 3.8s steps(2, end) infinite;
+    transform-origin: 50% 58%;
+    will-change: transform;
+  }
+
+  .metro-scene[data-channel="coast"] .metro-girl-city,
+  .metro-scene[data-channel="rain"] .metro-girl-city,
+  .metro-scene[data-channel="snow"] .metro-girl-city {
+    opacity: 0;
+  }
+
+  .metro-scene[data-channel="coast"] .metro-girl-coast {
+    opacity: 1;
+  }
+
+  .metro-scene[data-channel="rain"] .metro-girl-rain {
+    opacity: 1;
+  }
+
+  .metro-scene[data-channel="snow"] .metro-girl-snow {
+    opacity: 1;
+  }
+
+  .metro-rain {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+    image-rendering: pixelated;
+    transition: opacity 180ms steps(2, end);
+  }
+
+  .metro-scene[data-channel="rain"] .metro-rain {
+    opacity: 0.78;
+  }
+
+  .metro-static {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background:
+      repeating-radial-gradient(circle at 18% 31%, rgb(235 232 220 / 30%) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(0deg, rgb(255 255 255 / 9%) 0 1px, transparent 1px 3px),
+      #171328;
+    background-size: 7px 5px, 100% 4px, auto;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .metro-scene.is-tuning .metro-static {
+    animation: metro-static-flash 440ms steps(2, end) both;
+  }
+
   @keyframes metro-city-scroll {
     to { transform: translateX(-50%); }
+  }
+
+  @keyframes metro-coast-scroll {
+    to { transform: translateX(-66.666667%); }
+  }
+
+  @keyframes metro-station-pass {
+    0%, 55% {
+      opacity: 0;
+      transform: translateX(110%);
+    }
+
+    58% {
+      opacity: 1;
+      transform: translateX(100%);
+    }
+
+    80% {
+      opacity: 1;
+      transform: translateX(-100%);
+    }
+
+    83%, 100% {
+      opacity: 0;
+      transform: translateX(-110%);
+    }
   }
 
   @keyframes metro-city-light {
@@ -150,6 +383,27 @@
     }
   }
 
+  @keyframes metro-girl-coast-breathe {
+    0%, 100% { transform: translateX(-50%) translateY(0) rotate(0); }
+    50% { transform: translateX(-50%) translateY(-1px) rotate(-0.15deg); }
+  }
+
+  @keyframes metro-girl-sleep {
+    0%, 100% { transform: translateX(-50%) translateY(0) rotate(0); }
+    50% { transform: translateX(-50%) translateY(1px) rotate(0.12deg); }
+  }
+
+  @keyframes metro-girl-snow-breathe {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-1px); }
+  }
+
+  @keyframes metro-static-flash {
+    0% { opacity: 0; transform: translateX(0); }
+    12%, 58% { opacity: 0.82; transform: translateX(-1px); }
+    100% { opacity: 0; transform: translateX(0); }
+  }
+
   @media (max-width: 720px) {
     .metro-scene {
       height: 230px;
@@ -165,9 +419,233 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .metro-city-track,
-    .metro-girl-upper {
+    .metro-scenery-track,
+    .metro-girl-upper,
+    .metro-girl-coast,
+    .metro-girl-rain,
+    .metro-girl-snow,
+    .metro-station-pass,
+    .metro-scene.is-tuning .metro-static {
       animation: none;
+    }
+
+    .metro-scene[data-channel="rain"] .metro-station-pass {
+      opacity: 1;
+      transform: none;
     }
   }
 </style>
+
+<script>
+  const metroChannels = [
+    { id: "city", key: "A", label: "CITY" },
+    { id: "coast", key: "B", label: "COAST" },
+    { id: "rain", key: "X", label: "RAIN" },
+    { id: "snow", key: "Y", label: "SNOW" },
+  ] as const;
+
+  const setupMetroChannels = () => {
+    document.querySelectorAll<HTMLElement>("[data-metro-scene]").forEach((scene) => {
+      if (scene.dataset.channelBound === "true") return;
+      scene.dataset.channelBound = "true";
+
+      const control = document.querySelector<HTMLElement>("[data-metro-controller]");
+      const display = control?.querySelector<HTMLOutputElement>("[data-channel-display]");
+      const channelNumber = control?.querySelector<HTMLElement>("[data-channel-number]");
+      const buttons = control?.querySelectorAll<HTMLButtonElement>("[data-channel-id]") ?? [];
+      let activeIndex = 0;
+      let tuningTimer = 0;
+
+      try {
+        const savedChannel = localStorage.getItem("akisy-metro-channel");
+        const savedIndex = metroChannels.findIndex(({ id }) => id === savedChannel);
+        if (savedIndex >= 0) activeIndex = savedIndex;
+      } catch {
+        // Storage can be unavailable in privacy-restricted contexts.
+      }
+
+      const renderChannel = (index: number, withStatic = true) => {
+        activeIndex = (index + metroChannels.length) % metroChannels.length;
+        const channel = metroChannels[activeIndex];
+
+        if (withStatic) {
+          scene.classList.remove("is-tuning");
+          void scene.offsetWidth;
+          scene.classList.add("is-tuning");
+        }
+
+        window.clearTimeout(tuningTimer);
+        tuningTimer = window.setTimeout(() => {
+          scene.dataset.channel = channel.id;
+          if (display) display.textContent = `${channel.key} / ${channel.label}`;
+          if (channelNumber) channelNumber.textContent = `SCENE ${String(activeIndex + 1).padStart(2, "0")}`;
+          buttons.forEach((button) => {
+            const selected = button.dataset.channelId === channel.id;
+            button.setAttribute("aria-pressed", String(selected));
+          });
+
+          try {
+            localStorage.setItem("akisy-metro-channel", channel.id);
+          } catch {
+            // Storage can be unavailable in privacy-restricted contexts.
+          }
+        }, withStatic ? 250 : 0);
+      };
+
+      buttons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const nextIndex = metroChannels.findIndex(({ id }) => id === button.dataset.channelId);
+          if (nextIndex >= 0 && nextIndex !== activeIndex) renderChannel(nextIndex);
+        });
+      });
+
+      renderChannel(activeIndex, false);
+    });
+  };
+
+  const setupMetroRain = () => {
+    document.querySelectorAll<HTMLElement>("[data-metro-scene]").forEach((scene) => {
+      const canvas = scene.querySelector<HTMLCanvasElement>("[data-metro-rain]");
+      if (!canvas || canvas.dataset.rainBound === "true") return;
+
+      const context = canvas.getContext("2d", { alpha: true });
+      if (!context) return;
+
+      canvas.dataset.rainBound = "true";
+      const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+      const colors = [
+        "rgb(142 198 232 / 30%)",
+        "rgb(183 211 235 / 24%)",
+        "rgb(102 159 207 / 20%)",
+      ];
+      let seed = 0x1228;
+      let drops: Array<{
+        x: number;
+        y: number;
+        length: number;
+        width: number;
+        speed: number;
+        drift: number;
+        color: string;
+      }> = [];
+      let animationFrame = 0;
+      let lastFrame = 0;
+      let disposed = false;
+
+      const random = () => {
+        seed = (seed * 1664525 + 1013904223) >>> 0;
+        return seed / 4294967296;
+      };
+
+      const resetDrop = (drop: (typeof drops)[number], initial = false) => {
+        const layer = Math.min(2, Math.floor(random() * 3));
+        drop.x = random() * canvas.width;
+        drop.y = initial ? random() * canvas.height : -4 - random() * canvas.height * 0.45;
+        drop.length = 4 + layer * 2 + Math.floor(random() * 4);
+        drop.width = layer === 2 && random() > 0.82 ? 2 : 1;
+        drop.speed = 2.2 + layer * 1.65 + random() * 1.3;
+        drop.drift = -0.2 - layer * 0.16;
+        drop.color = colors[layer];
+        return drop;
+      };
+
+      const resizeRain = () => {
+        const width = Math.max(1, Math.round(canvas.clientWidth));
+        const height = Math.max(1, Math.round(canvas.clientHeight));
+        if (canvas.width === width && canvas.height === height) return;
+
+        canvas.width = width;
+        canvas.height = height;
+        const dropCount = Math.max(44, Math.min(92, Math.round((width * height) / 560)));
+        drops = Array.from({ length: dropCount }, () =>
+          resetDrop({ x: 0, y: 0, length: 0, width: 1, speed: 0, drift: 0, color: colors[0] }, true),
+        );
+      };
+
+      const drawRain = (advance = true) => {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.globalCompositeOperation = "screen";
+        context.imageSmoothingEnabled = false;
+
+        drops.forEach((drop) => {
+          context.fillStyle = drop.color;
+          for (let offset = 0; offset < drop.length; offset += 2) {
+            context.fillRect(
+              Math.round(drop.x - offset * 0.18),
+              Math.round(drop.y + offset),
+              drop.width,
+              Math.min(2, drop.length - offset),
+            );
+          }
+
+          if (!advance) return;
+          drop.x += drop.drift;
+          drop.y += drop.speed;
+          if (drop.y > canvas.height + drop.length) resetDrop(drop);
+        });
+      };
+
+      const shouldAnimate = () =>
+        !disposed &&
+        !motionQuery.matches &&
+        !document.hidden &&
+        scene.dataset.channel === "rain";
+
+      const animate = (timestamp: number) => {
+        animationFrame = 0;
+        if (!shouldAnimate()) return;
+
+        if (timestamp - lastFrame >= 50) {
+          lastFrame = timestamp - ((timestamp - lastFrame) % 50);
+          drawRain(true);
+        }
+        animationFrame = window.requestAnimationFrame(animate);
+      };
+
+      const stop = () => {
+        window.cancelAnimationFrame(animationFrame);
+        animationFrame = 0;
+      };
+
+      const sync = () => {
+        resizeRain();
+        stop();
+        if (shouldAnimate()) {
+          lastFrame = 0;
+          animationFrame = window.requestAnimationFrame(animate);
+        } else {
+          drawRain(false);
+        }
+      };
+
+      const channelObserver = new MutationObserver(sync);
+      const resizeObserver = new ResizeObserver(sync);
+      channelObserver.observe(scene, { attributes: true, attributeFilter: ["data-channel"] });
+      resizeObserver.observe(canvas);
+      motionQuery.addEventListener("change", sync);
+      document.addEventListener("visibilitychange", sync);
+
+      document.addEventListener(
+        "astro:before-swap",
+        () => {
+          disposed = true;
+          stop();
+          channelObserver.disconnect();
+          resizeObserver.disconnect();
+          motionQuery.removeEventListener("change", sync);
+          document.removeEventListener("visibilitychange", sync);
+        },
+        { once: true },
+      );
+
+      sync();
+    });
+  };
+
+  document.addEventListener("astro:page-load", () => {
+    setupMetroChannels();
+    setupMetroRain();
+  });
+  setupMetroChannels();
+  setupMetroRain();
+</script>

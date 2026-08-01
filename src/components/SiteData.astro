@@ -1,0 +1,104 @@
+---
+import { getAllTags, getPublishedPosts } from "@utils/posts";
+
+const posts = await getPublishedPosts();
+const siteStartedOn = "2024-03-26";
+const siteStartedAt = Date.UTC(2024, 2, 26);
+const daysOnline = Math.max(1, Math.floor((Date.now() - siteStartedAt) / 86_400_000) + 1);
+const latestUpdate = posts.reduce(
+  (latest, post) => {
+    const date = post.data.updatedDate ?? post.data.pubDate;
+    return date > latest ? date : latest;
+  },
+  new Date(siteStartedAt),
+);
+const compactDate = [
+  String(latestUpdate.getFullYear()).slice(-2),
+  String(latestUpdate.getMonth() + 1).padStart(2, "0"),
+  String(latestUpdate.getDate()).padStart(2, "0"),
+].join(".");
+const tagCount = getAllTags(posts).length;
+
+const siteStats = [
+  { label: "POSTS", value: posts.length, description: `${posts.length} 篇文章` },
+  { label: "TAGS", value: tagCount, description: `${tagCount} 个标签` },
+  { label: "DAYS", value: daysOnline, description: `建站第 ${daysOnline} 天` },
+  { label: "UPDATED", value: compactDate, description: `最近更新于 ${compactDate}` },
+];
+---
+
+<section class="site-data-panel" aria-label="站点数据">
+  <div class="editorial-heading">
+    <span>SITE DATA</span>
+    <i aria-hidden="true"></i>
+  </div>
+  <dl class="site-stats">
+    {
+      siteStats.map(({ label, value, description }) => (
+        <div aria-label={description}>
+          <dt>{label}</dt>
+          <dd data-days-online={label === "DAYS" ? siteStartedOn : undefined}>{value}</dd>
+        </div>
+      ))
+    }
+  </dl>
+  <div class="metro-controller" role="group" aria-label="列车风景场景选择" data-metro-controller>
+    <div class="metro-controller-header">
+      <span>SCENE PAD / P1</span>
+      <span class="metro-controller-ready" aria-hidden="true"><i></i> READY</span>
+    </div>
+    <div class="metro-controller-body">
+      <div class="metro-controller-screen">
+        <span>WINDOW CHANNEL</span>
+        <output aria-live="polite" data-channel-display>A / CITY</output>
+        <small data-channel-number>SCENE 01</small>
+      </div>
+      <div class="metro-abxy" aria-label="场景按键">
+        <button class="metro-key metro-key--y" type="button" aria-label="雪原清晨场景" aria-controls="metro-scene-title" aria-pressed="false" data-channel-id="snow">Y</button>
+        <button class="metro-key metro-key--x" type="button" aria-label="雨夜郊区场景" aria-controls="metro-scene-title" aria-pressed="false" data-channel-id="rain">X</button>
+        <button class="metro-key metro-key--b" type="button" aria-label="晴朗海岸场景" aria-controls="metro-scene-title" aria-pressed="false" data-channel-id="coast">B</button>
+        <button class="metro-key metro-key--a" type="button" aria-label="城市黄昏场景" aria-controls="metro-scene-title" aria-pressed="true" data-channel-id="city">A</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const dayInMilliseconds = 86_400_000;
+  const shanghaiDate = new Intl.DateTimeFormat("en", {
+    timeZone: "Asia/Shanghai",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  });
+
+  const getShanghaiDay = (date: Date) => {
+    const parts = Object.fromEntries(
+      shanghaiDate
+        .formatToParts(date)
+        .filter(({ type }) => type !== "literal")
+        .map(({ type, value }) => [type, Number(value)]),
+    );
+
+    return Date.UTC(parts.year, parts.month - 1, parts.day) / dayInMilliseconds;
+  };
+
+  const syncDaysOnline = () => {
+    document.querySelectorAll<HTMLElement>("[data-days-online]").forEach((element) => {
+      const [year, month, day] = (element.dataset.daysOnline ?? "").split("-").map(Number);
+      if (!year || !month || !day) return;
+
+      const startedOn = Date.UTC(year, month - 1, day) / dayInMilliseconds;
+      const daysOnline = Math.max(1, Math.floor(getShanghaiDay(new Date()) - startedOn) + 1);
+      element.textContent = String(daysOnline);
+      element.parentElement?.setAttribute("aria-label", `建站第 ${daysOnline} 天`);
+    });
+  };
+
+  const timerWindow = window as Window & { __akisySiteDayTimer?: number };
+  if (timerWindow.__akisySiteDayTimer) window.clearInterval(timerWindow.__akisySiteDayTimer);
+  timerWindow.__akisySiteDayTimer = window.setInterval(syncDaysOnline, 60_000);
+
+  document.addEventListener("astro:page-load", syncDaysOnline);
+  syncDaysOnline();
+</script>

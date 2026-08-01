@@ -475,69 +475,6 @@ img {
   transform: translateX(3px);
 }
 
-.journal-card {
-  position: relative;
-  display: block;
-  min-height: 252px;
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface-soft);
-  text-decoration: none;
-  cursor: pointer;
-}
-
-.journal-card:hover .text-link,
-.journal-card:focus-visible .text-link {
-  color: var(--color-heading);
-}
-
-.journal-card > img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.28;
-}
-
-.journal-card-overlay {
-  position: absolute;
-  inset: auto 0 0;
-  padding: 22px 25px;
-  background: rgb(5 6 7 / 76%);
-}
-
-:root[data-theme="light"] .journal-card-overlay {
-  background: rgb(240 237 230 / 82%);
-}
-
-.journal-card time {
-  color: var(--color-muted);
-  font-size: 0.66rem;
-}
-
-.journal-card h2 {
-  max-width: 230px;
-  margin: 5px 0 6px;
-  color: var(--color-heading);
-  font-family: var(--font-serif);
-  font-size: 1.38rem;
-  font-weight: 500;
-  line-height: 1.05;
-}
-
-.journal-card p {
-  display: -webkit-box;
-  overflow: hidden;
-  max-width: 260px;
-  margin: 0 0 12px;
-  color: var(--color-muted);
-  font-size: 0.69rem;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
 .photo-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -621,6 +558,10 @@ img {
 }
 
 .post-grid .post-card {
+  grid-template-columns: 1fr;
+}
+
+.post-card--no-cover {
   grid-template-columns: 1fr;
 }
 
@@ -826,7 +767,7 @@ img {
   font-size: 0.7rem;
 }
 
-.footer-stats,
+.footer-empty,
 .footer-links,
 .footer-follow {
   min-width: 0;
@@ -862,7 +803,7 @@ img {
 
 .site-stats dt,
 .site-stats dd,
-.footer-stats .footer-title {
+.site-data-panel .editorial-heading span {
   color: var(--color-pixel-stat);
   font-family: var(--font-pixel);
   font-weight: 400;
@@ -880,6 +821,171 @@ img {
   margin: 6px 0 0;
   font-size: clamp(0.66rem, 0.9vw, 0.78rem);
   line-height: 1.45;
+}
+
+.metro-controller {
+  position: relative;
+  width: 100%;
+  margin-top: 18px;
+  padding: 7px;
+  border: 1px solid rgb(155 153 178 / 48%);
+  border-radius: 7px 7px 12px 12px;
+  background: linear-gradient(180deg, rgb(42 41 50 / 98%), rgb(14 14 20 / 98%));
+  box-shadow:
+    inset 0 1px rgb(255 255 255 / 9%),
+    inset 0 0 0 2px rgb(5 5 9 / 62%),
+    0 6px 15px rgb(0 0 0 / 34%);
+  color: #aaa7c1;
+  font-family: var(--font-pixel);
+  image-rendering: pixelated;
+}
+
+.metro-controller::before,
+.metro-controller::after {
+  position: absolute;
+  top: 6px;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #777582;
+  box-shadow: inset 1px 1px rgb(255 255 255 / 20%);
+  content: "";
+}
+
+.metro-controller::before { left: 6px; }
+.metro-controller::after { right: 6px; }
+
+.metro-controller-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 11px;
+  padding: 0 6px 5px;
+  color: #8d8a99;
+  font-size: 0.3rem;
+  letter-spacing: 0.07em;
+}
+
+.metro-controller-ready {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  color: #777483;
+  font-size: 0.27rem;
+}
+
+.metro-controller-ready i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #72c49a;
+  box-shadow: 0 0 5px rgb(93 207 145 / 70%);
+}
+
+.metro-controller-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 100px;
+  gap: 8px;
+  align-items: stretch;
+  min-height: 78px;
+}
+
+.metro-controller-screen {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-width: 0;
+  padding: 7px 9px;
+  border: 1px solid rgb(85 104 157 / 50%);
+  border-radius: 3px 3px 7px 7px;
+  background:
+    repeating-linear-gradient(0deg, rgb(139 173 230 / 5%) 0 1px, transparent 1px 3px),
+    #09101f;
+  box-shadow:
+    inset 0 0 12px rgb(67 101 201 / 25%),
+    0 1px rgb(255 255 255 / 5%);
+}
+
+.metro-controller-screen > span,
+.metro-controller-screen small {
+  overflow: hidden;
+  color: #666d85;
+  font-size: 0.27rem;
+  letter-spacing: 0.05em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metro-controller-screen output {
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  color: #bdd0f3;
+  font-size: clamp(0.48rem, 0.8vw, 0.62rem);
+  line-height: 1;
+  text-overflow: ellipsis;
+  text-shadow: 0 0 7px rgb(101 145 229 / 45%);
+  white-space: nowrap;
+}
+
+.metro-controller-screen small {
+  color: #858da8;
+}
+
+.metro-abxy {
+  display: grid;
+  grid-template-columns: repeat(3, 28px);
+  grid-template-rows: repeat(3, 24px);
+  gap: 2px;
+  place-content: center;
+  border: 1px solid rgb(7 7 11 / 75%);
+  border-radius: 12px 12px 20px 20px;
+  background: radial-gradient(circle at 50% 45%, #282731, #111117 72%);
+  box-shadow:
+    inset 0 0 10px rgb(0 0 0 / 58%),
+    0 1px rgb(255 255 255 / 5%);
+}
+
+.metro-key {
+  display: grid;
+  width: 27px;
+  height: 27px;
+  place-items: center;
+  align-self: center;
+  justify-self: center;
+  border: 1px solid color-mix(in srgb, var(--key-color) 65%, #16161c);
+  border-radius: 50%;
+  padding: 0;
+  background: radial-gradient(circle at 38% 32%, color-mix(in srgb, var(--key-color) 48%, #fff) 0 10%, var(--key-color) 38%, color-mix(in srgb, var(--key-color) 35%, #08080c) 74%);
+  box-shadow:
+    inset 0 0 0 2px rgb(6 6 9 / 48%),
+    0 2px 2px rgb(0 0 0 / 62%);
+  color: rgb(255 255 255 / 88%);
+  font: 400 0.48rem/1 var(--font-pixel);
+  text-shadow: 0 1px rgb(0 0 0 / 55%);
+  cursor: pointer;
+  transition: transform 100ms ease, filter 120ms ease, box-shadow 120ms ease;
+}
+
+.metro-key--y { --key-color: #c8ad48; grid-area: 1 / 2; }
+.metro-key--x { --key-color: #4f8ebd; grid-area: 2 / 1; }
+.metro-key--b { --key-color: #b75b5c; grid-area: 2 / 3; }
+.metro-key--a { --key-color: #4d9a71; grid-area: 3 / 2; }
+
+.metro-key:hover,
+.metro-key:focus-visible {
+  filter: brightness(1.18);
+  outline: none;
+}
+
+.metro-key:active {
+  transform: translateY(1px) scale(0.96);
+}
+
+.metro-key[aria-pressed="true"] {
+  filter: brightness(1.22);
+  box-shadow:
+    inset 0 0 0 2px rgb(255 255 255 / 11%),
+    0 0 9px color-mix(in srgb, var(--key-color) 66%, transparent);
 }
 
 .footer-links {
@@ -1072,6 +1178,10 @@ img {
   .site-footer {
     grid-template-columns: 1fr;
     padding: 30px 30px 0;
+  }
+
+  .footer-empty {
+    display: none;
   }
 
   .footer-links,
