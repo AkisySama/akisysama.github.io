@@ -823,169 +823,128 @@ img {
   line-height: 1.45;
 }
 
+.site-data-panel {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Four bare pixel glyphs arranged like a gamepad's face buttons. */
 .metro-controller {
-  position: relative;
+  --dpad-size: clamp(42px, 4.2vw, 50px);
+
+  display: grid;
+  flex: 1;
+  grid-template-columns: repeat(3, var(--dpad-size));
+  grid-template-rows: repeat(3, var(--dpad-size));
+  place-content: center;
   width: 100%;
-  margin-top: 18px;
-  padding: 7px;
-  border: 1px solid rgb(155 153 178 / 48%);
-  border-radius: 7px 7px 12px 12px;
-  background: linear-gradient(180deg, rgb(42 41 50 / 98%), rgb(14 14 20 / 98%));
-  box-shadow:
-    inset 0 1px rgb(255 255 255 / 9%),
-    inset 0 0 0 2px rgb(5 5 9 / 62%),
-    0 6px 15px rgb(0 0 0 / 34%);
-  color: #aaa7c1;
+  min-height: 148px;
+  margin-top: 14px;
+  padding: 2px clamp(10px, 2vw, 24px) 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
   font-family: var(--font-pixel);
+}
+
+.metro-controller .metro-key {
+  --dpad-face: #aaa8b0;
+
+  display: grid;
+  width: var(--dpad-size);
+  height: var(--dpad-size);
+  min-width: 0;
+  min-height: 0;
+  place-items: center;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: var(--dpad-face);
+  box-shadow:
+    inset 2px 2px rgb(255 255 255 / 4%),
+    inset -2px -2px rgb(0 0 0 / 24%);
+  color: #55545b;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, filter 120ms ease, transform 100ms ease;
+}
+
+.metro-controller .metro-arrow {
+  display: block;
+  width: 22px;
+  height: 22px;
+  background: currentColor;
+  clip-path: polygon(
+    40% 0, 60% 0, 60% 10%, 70% 10%, 70% 20%, 80% 20%, 80% 30%,
+    90% 30%, 90% 40%, 100% 40%, 100% 60%, 60% 60%, 60% 100%,
+    40% 100%, 40% 60%, 0 60%, 0 40%, 10% 40%, 10% 30%, 20% 30%,
+    20% 20%, 30% 20%, 30% 10%, 40% 10%
+  );
   image-rendering: pixelated;
 }
 
-.metro-controller::before,
-.metro-controller::after {
-  position: absolute;
-  top: 6px;
-  width: 3px;
-  height: 3px;
-  border-radius: 50%;
-  background: #777582;
-  box-shadow: inset 1px 1px rgb(255 255 255 / 20%);
-  content: "";
+.metro-controller .metro-key[data-channel-id="snow"] { grid-area: 1 / 2; }
+.metro-controller .metro-key[data-channel-id="rain"] { grid-area: 2 / 1; }
+.metro-controller .metro-key[data-channel-id="coast"] { grid-area: 2 / 3; }
+.metro-controller .metro-key[data-channel-id="city"] { grid-area: 3 / 2; }
+
+.metro-controller .metro-key[data-channel-id="snow"] {
+  clip-path: polygon(14% 0, 86% 0, 100% 14%, 100% 100%, 0 100%, 0 14%);
 }
 
-.metro-controller::before { left: 6px; }
-.metro-controller::after { right: 6px; }
-
-.metro-controller-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 11px;
-  padding: 0 6px 5px;
-  color: #8d8a99;
-  font-size: 0.3rem;
-  letter-spacing: 0.07em;
+.metro-controller .metro-key[data-channel-id="rain"] {
+  clip-path: polygon(0 14%, 14% 0, 100% 0, 100% 100%, 14% 100%, 0 86%);
 }
 
-.metro-controller-ready {
-  display: inline-flex;
-  gap: 4px;
-  align-items: center;
-  color: #777483;
-  font-size: 0.27rem;
+.metro-controller .metro-key[data-channel-id="coast"] {
+  clip-path: polygon(0 0, 86% 0, 100% 14%, 100% 86%, 86% 100%, 0 100%);
 }
 
-.metro-controller-ready i {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: #72c49a;
-  box-shadow: 0 0 5px rgb(93 207 145 / 70%);
+.metro-controller .metro-key[data-channel-id="city"] {
+  clip-path: polygon(0 0, 100% 0, 100% 86%, 86% 100%, 14% 100%, 0 86%);
 }
 
-.metro-controller-body {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 100px;
-  gap: 8px;
-  align-items: stretch;
-  min-height: 78px;
-}
-
-.metro-controller-screen {
-  display: grid;
-  grid-template-rows: auto 1fr auto;
-  min-width: 0;
-  padding: 7px 9px;
-  border: 1px solid rgb(85 104 157 / 50%);
-  border-radius: 3px 3px 7px 7px;
-  background:
-    repeating-linear-gradient(0deg, rgb(139 173 230 / 5%) 0 1px, transparent 1px 3px),
-    #09101f;
-  box-shadow:
-    inset 0 0 12px rgb(67 101 201 / 25%),
-    0 1px rgb(255 255 255 / 5%);
-}
-
-.metro-controller-screen > span,
-.metro-controller-screen small {
-  overflow: hidden;
-  color: #666d85;
-  font-size: 0.27rem;
-  letter-spacing: 0.05em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.metro-controller-screen output {
-  display: flex;
-  align-items: center;
-  overflow: hidden;
-  color: #bdd0f3;
-  font-size: clamp(0.48rem, 0.8vw, 0.62rem);
-  line-height: 1;
-  text-overflow: ellipsis;
-  text-shadow: 0 0 7px rgb(101 145 229 / 45%);
-  white-space: nowrap;
-}
-
-.metro-controller-screen small {
-  color: #858da8;
-}
-
-.metro-abxy {
-  display: grid;
-  grid-template-columns: repeat(3, 28px);
-  grid-template-rows: repeat(3, 24px);
-  gap: 2px;
-  place-content: center;
-  border: 1px solid rgb(7 7 11 / 75%);
-  border-radius: 12px 12px 20px 20px;
-  background: radial-gradient(circle at 50% 45%, #282731, #111117 72%);
-  box-shadow:
-    inset 0 0 10px rgb(0 0 0 / 58%),
-    0 1px rgb(255 255 255 / 5%);
-}
-
-.metro-key {
-  display: grid;
-  width: 27px;
-  height: 27px;
-  place-items: center;
-  align-self: center;
-  justify-self: center;
-  border: 1px solid color-mix(in srgb, var(--key-color) 65%, #16161c);
-  border-radius: 50%;
+.metro-dpad-center {
+  grid-area: 2 / 2;
+  border: 0;
+  border-radius: 0;
   padding: 0;
-  background: radial-gradient(circle at 38% 32%, color-mix(in srgb, var(--key-color) 48%, #fff) 0 10%, var(--key-color) 38%, color-mix(in srgb, var(--key-color) 35%, #08080c) 74%);
+  background: #aaa8b0;
   box-shadow:
-    inset 0 0 0 2px rgb(6 6 9 / 48%),
-    0 2px 2px rgb(0 0 0 / 62%);
-  color: rgb(255 255 255 / 88%);
-  font: 400 0.48rem/1 var(--font-pixel);
-  text-shadow: 0 1px rgb(0 0 0 / 55%);
+    inset 2px 2px rgb(255 255 255 / 20%),
+    inset -2px -2px rgb(0 0 0 / 18%);
   cursor: pointer;
-  transition: transform 100ms ease, filter 120ms ease, box-shadow 120ms ease;
+  transition: background 120ms ease, box-shadow 120ms ease, transform 100ms ease;
 }
 
-.metro-key--y { --key-color: #c8ad48; grid-area: 1 / 2; }
-.metro-key--x { --key-color: #4f8ebd; grid-area: 2 / 1; }
-.metro-key--b { --key-color: #b75b5c; grid-area: 2 / 3; }
-.metro-key--a { --key-color: #4d9a71; grid-area: 3 / 2; }
+.metro-controller .metro-key[data-channel-id="coast"] .metro-arrow { transform: rotate(90deg); }
+.metro-controller .metro-key[data-channel-id="city"] .metro-arrow { transform: rotate(180deg); }
+.metro-controller .metro-key[data-channel-id="rain"] .metro-arrow { transform: rotate(-90deg); }
 
-.metro-key:hover,
-.metro-key:focus-visible {
-  filter: brightness(1.18);
+.metro-controller .metro-key:hover,
+.metro-controller .metro-key:focus-visible,
+.metro-dpad-center:hover,
+.metro-dpad-center:focus-visible {
+  background: #bbb9c1;
   outline: none;
 }
 
-.metro-key:active {
+.metro-controller .metro-key:hover,
+.metro-controller .metro-key:focus-visible {
+  color: #45444a;
+  filter: drop-shadow(0 0 4px rgb(169 166 178 / 13%));
+  box-shadow: none;
+}
+
+.metro-controller .metro-key:active,
+.metro-dpad-center:active {
   transform: translateY(1px) scale(0.96);
 }
 
-.metro-key[aria-pressed="true"] {
-  filter: brightness(1.22);
-  box-shadow:
-    inset 0 0 0 2px rgb(255 255 255 / 11%),
-    0 0 9px color-mix(in srgb, var(--key-color) 66%, transparent);
+.metro-controller .metro-key[aria-pressed="true"] {
+  background: #ceccd3;
+  color: #3e3d43;
+  filter: drop-shadow(0 0 4px rgb(177 174 183 / 12%));
+  box-shadow: none;
 }
 
 .footer-links {

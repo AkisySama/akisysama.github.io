@@ -43,23 +43,11 @@ const siteStats = [
     }
   </dl>
   <div class="metro-controller" role="group" aria-label="列车风景场景选择" data-metro-controller>
-    <div class="metro-controller-header">
-      <span>SCENE PAD / P1</span>
-      <span class="metro-controller-ready" aria-hidden="true"><i></i> READY</span>
-    </div>
-    <div class="metro-controller-body">
-      <div class="metro-controller-screen">
-        <span>WINDOW CHANNEL</span>
-        <output aria-live="polite" data-channel-display>A / CITY</output>
-        <small data-channel-number>SCENE 01</small>
-      </div>
-      <div class="metro-abxy" aria-label="场景按键">
-        <button class="metro-key metro-key--y" type="button" aria-label="雪原清晨场景" aria-controls="metro-scene-title" aria-pressed="false" data-channel-id="snow">Y</button>
-        <button class="metro-key metro-key--x" type="button" aria-label="雨夜郊区场景" aria-controls="metro-scene-title" aria-pressed="false" data-channel-id="rain">X</button>
-        <button class="metro-key metro-key--b" type="button" aria-label="晴朗海岸场景" aria-controls="metro-scene-title" aria-pressed="false" data-channel-id="coast">B</button>
-        <button class="metro-key metro-key--a" type="button" aria-label="城市黄昏场景" aria-controls="metro-scene-title" aria-pressed="true" data-channel-id="city">A</button>
-      </div>
-    </div>
+    <button class="metro-key" type="button" aria-label="向下：城市黄昏场景" aria-controls="metro-scene-title" aria-pressed="true" data-channel-id="city"><span class="metro-arrow" aria-hidden="true"></span></button>
+    <button class="metro-key" type="button" aria-label="向右：晴朗海岸场景" aria-controls="metro-scene-title" aria-pressed="false" data-channel-id="coast"><span class="metro-arrow" aria-hidden="true"></span></button>
+    <button class="metro-key" type="button" aria-label="向左：雨夜郊区场景" aria-controls="metro-scene-title" aria-pressed="false" data-channel-id="rain"><span class="metro-arrow" aria-hidden="true"></span></button>
+    <button class="metro-key" type="button" aria-label="向上：雪原清晨场景" aria-controls="metro-scene-title" aria-pressed="false" data-channel-id="snow"><span class="metro-arrow" aria-hidden="true"></span></button>
+    <button class="metro-dpad-center" type="button" aria-label="随机切换场景" aria-controls="metro-scene-title" data-random-channel></button>
   </div>
 </section>
 

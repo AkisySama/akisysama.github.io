@@ -453,16 +453,9 @@
       const display = control?.querySelector<HTMLOutputElement>("[data-channel-display]");
       const channelNumber = control?.querySelector<HTMLElement>("[data-channel-number]");
       const buttons = control?.querySelectorAll<HTMLButtonElement>("[data-channel-id]") ?? [];
-      let activeIndex = 0;
+      const randomButton = control?.querySelector<HTMLButtonElement>("[data-random-channel]");
+      let activeIndex = Math.floor(Math.random() * metroChannels.length);
       let tuningTimer = 0;
-
-      try {
-        const savedChannel = localStorage.getItem("akisy-metro-channel");
-        const savedIndex = metroChannels.findIndex(({ id }) => id === savedChannel);
-        if (savedIndex >= 0) activeIndex = savedIndex;
-      } catch {
-        // Storage can be unavailable in privacy-restricted contexts.
-      }
 
       const renderChannel = (index: number, withStatic = true) => {
         activeIndex = (index + metroChannels.length) % metroChannels.length;
@@ -484,11 +477,6 @@
             button.setAttribute("aria-pressed", String(selected));
           });
 
-          try {
-            localStorage.setItem("akisy-metro-channel", channel.id);
-          } catch {
-            // Storage can be unavailable in privacy-restricted contexts.
-          }
         }, withStatic ? 250 : 0);
       };
 
@@ -497,6 +485,11 @@
           const nextIndex = metroChannels.findIndex(({ id }) => id === button.dataset.channelId);
           if (nextIndex >= 0 && nextIndex !== activeIndex) renderChannel(nextIndex);
         });
+      });
+
+      randomButton?.addEventListener("click", () => {
+        const offset = 1 + Math.floor(Math.random() * (metroChannels.length - 1));
+        renderChannel(activeIndex + offset);
       });
 
       renderChannel(activeIndex, false);
