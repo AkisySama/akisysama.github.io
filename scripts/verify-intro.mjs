@@ -72,10 +72,17 @@ assert.ok(
   baseLayout.includes('document.addEventListener("astro:before-swap", cleanupHomeScroll'),
   "Homepage-only scroll listeners should be removed during client navigation",
 );
-assert.ok(intro.includes('root.dataset.blogEntered = "true"'), "Entering the blog should reveal homepage utilities");
+assert.ok(
+  intro.includes('root.dataset.blogEntered = blogEntered ? "true" : "false"'),
+  "Homepage utilities should follow the intro scroll position in both directions",
+);
 assert.ok(
   timeline.includes(':not([data-blog-entered="true"]) .timeline-shell'),
   "Timeline should stay hidden until the homepage intro has been entered",
+);
+assert.ok(
+  timeline.includes("translate3d(-110%, -50%, 0) scale(0.86)"),
+  "Timeline toggle should retract beyond the left edge on the intro",
 );
 
 console.log("Verified intro assets, entry controls, audio accessibility, and cleanup contracts.");

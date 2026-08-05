@@ -244,9 +244,9 @@ img {
 
 .hero-intro {
   max-width: 350px;
-  margin: 22px 0 0;
+  margin: 22px 0 0 4px;
   color: var(--color-muted);
-  font-size: 0.82rem;
+  font-size: 1.05rem;
   line-height: 1.8;
 }
 

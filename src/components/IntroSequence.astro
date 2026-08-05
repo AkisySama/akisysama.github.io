@@ -64,11 +64,6 @@
     </div>
 
     <div class="intro-chrome">
-      <p class="intro-signature" aria-hidden="true">
-        <span>AKISY</span>
-        <span>NIGHT SIGNAL / 01</span>
-      </p>
-
       <button
         class="intro-sound intro-sound-mobile"
         type="button"
@@ -453,7 +448,7 @@
         }
 
         setRainSoundState("on");
-        fadeRainSound(0.228);
+        fadeRainSound(0.171);
       } catch {
         if (playAttempt === soundPlayAttempt && shouldPlayRainSound()) {
           setRainSoundState("wait");
@@ -532,8 +527,9 @@
       }, delay);
     };
 
-    const markEntered = () => {
-      root.dataset.blogEntered = "true";
+    const syncBlogEntered = () => {
+      const blogEntered = window.scrollY >= intro.offsetHeight * 0.55;
+      root.dataset.blogEntered = blogEntered ? "true" : "false";
     };
 
     const isIntroEntryActive = () =>
@@ -541,7 +537,6 @@
 
     const enterBlog = () => {
       if (enterScrollTimer) return;
-      markEntered();
 
       enterScrollTimer = window.setTimeout(
         () => {
@@ -586,7 +581,7 @@
     };
 
     const handleScroll = () => {
-      if (window.scrollY >= intro.offsetHeight * 0.55) markEntered();
+      syncBlogEntered();
     };
 
     const handleVisibilityChange = () => {
@@ -666,6 +661,10 @@
       passive: true,
       signal: entryController.signal,
     });
+    window.addEventListener("resize", syncBlogEntered, {
+      passive: true,
+      signal: entryController.signal,
+    });
     motionQuery.addEventListener("change", handleMotionChange);
     document.addEventListener("visibilitychange", handleVisibilityChange);
     document.addEventListener("astro:before-swap", cleanup, { once: true });
@@ -694,6 +693,7 @@
       drawRain(!reducedMotion);
       startRain();
       setRainSoundState("wait");
+      syncBlogEntered();
       void startRainSound();
 
       const blinkReady =
@@ -798,32 +798,6 @@
     inset: 0;
     z-index: 2;
     pointer-events: none;
-  }
-
-  .intro-signature {
-    position: absolute;
-    top: clamp(22px, 4vw, 50px);
-    left: clamp(22px, 4.5vw, 68px);
-    display: grid;
-    gap: 3px;
-    margin: 0;
-    color: rgb(226 235 255 / 82%);
-    font-family: var(--font-mono);
-    font-size: 0.58rem;
-    letter-spacing: 0.18em;
-    line-height: 1.5;
-    opacity: 0;
-    transform: translateY(-8px);
-    transition: opacity 700ms ease 520ms, transform 700ms ease 520ms;
-  }
-
-  .intro-signature span:last-child {
-    color: rgb(136 164 238 / 68%);
-  }
-
-  .is-ready .intro-signature {
-    opacity: 1;
-    transform: none;
   }
 
   .intro-sound {
@@ -1000,11 +974,6 @@
   }
 
   @media (max-width: 720px) {
-    .intro-signature {
-      top: 22px;
-      left: 20px;
-    }
-
     .intro-hint {
       bottom: max(20px, env(safe-area-inset-bottom));
     }
@@ -1048,7 +1017,6 @@
 
   @media (prefers-reduced-motion: reduce) {
     .pixel-scene,
-    .intro-signature,
     .intro-sound,
     .intro-enter,
     .intro-hint {
@@ -1060,7 +1028,6 @@
       transform: none;
     }
 
-    .intro-signature,
     .intro-enter,
     .intro-hint {
       opacity: 1;
