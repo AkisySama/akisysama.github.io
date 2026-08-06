@@ -449,7 +449,7 @@
         }
 
         setRainSoundState("on");
-        fadeRainSound(mobileAudioQuery.matches ? 0.08 : 0.171);
+        fadeRainSound(mobileAudioQuery.matches ? 0.03 : 0.171);
       } catch {
         if (playAttempt === soundPlayAttempt && shouldPlayRainSound()) {
           setRainSoundState("wait");
