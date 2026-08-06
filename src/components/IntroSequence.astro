@@ -134,6 +134,7 @@
     }
 
     const motionQuery = matchMedia("(prefers-reduced-motion: reduce)");
+    const mobileAudioQuery = matchMedia("(max-width: 720px), (pointer: coarse)");
     const entryController = new AbortController();
     const rainContext = rainCanvas.getContext("2d", { alpha: true });
     const rainFrameInterval = 1000 / 16;
@@ -448,7 +449,7 @@
         }
 
         setRainSoundState("on");
-        fadeRainSound(0.171);
+        fadeRainSound(mobileAudioQuery.matches ? 0.08 : 0.171);
       } catch {
         if (playAttempt === soundPlayAttempt && shouldPlayRainSound()) {
           setRainSoundState("wait");

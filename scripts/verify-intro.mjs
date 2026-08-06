@@ -50,6 +50,10 @@ assert.match(
   /rainAudio\.play\(\)/,
   "The intro should attempt to start its looping rain audio",
 );
+assert.ok(
+  intro.includes("mobileAudioQuery.matches ? 0.08 : 0.171"),
+  "Rain audio should use a quieter target volume on phones and touch devices",
+);
 assert.match(
   intro,
   /window\.addEventListener\("pointerdown", handleRainSoundUnlock/,
