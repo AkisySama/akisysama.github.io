@@ -43,7 +43,48 @@
         </div>
       </div>
       <canvas class="metro-rain" width="900" height="220" data-metro-rain aria-hidden="true"></canvas>
-      <span class="metro-static" aria-hidden="true"></span>
+      <div class="metro-fault" aria-hidden="true">
+        <div class="metro-mini-error" style="--fault-x:2%;--fault-y:4%;--fault-width:44%;--fault-delay:0ms;--fault-z:1">
+          <div class="metro-mini-error-title"><span>WINDOW_FEED.EXE</span><b>×</b></div>
+          <div class="metro-mini-error-body"><i>!</i><strong>ERROR 0x17 / SIGNAL LOST</strong></div>
+        </div>
+        <div class="metro-mini-error" style="--fault-x:54%;--fault-y:7%;--fault-width:43%;--fault-delay:60ms;--fault-z:2">
+          <div class="metro-mini-error-title"><span>MOTION.DLL</span><b>×</b></div>
+          <div class="metro-mini-error-body"><i>!</i><strong>MOTION SOURCE NOT FOUND</strong></div>
+        </div>
+        <div class="metro-mini-error" style="--fault-x:25%;--fault-y:31%;--fault-width:50%;--fault-delay:120ms;--fault-z:5">
+          <div class="metro-mini-error-title"><span>TRAIN_CORE.SYS</span><b>×</b></div>
+          <div class="metro-mini-error-body"><i>!</i><strong>TRAIN STATE / IDLE</strong></div>
+        </div>
+        <div class="metro-mini-error" style="--fault-x:1%;--fault-y:56%;--fault-width:39%;--fault-delay:180ms;--fault-z:3">
+          <div class="metro-mini-error-title"><span>ROUTE_CACHE</span><b>×</b></div>
+          <div class="metro-mini-error-body"><i>!</i><strong>PATH VALUE: NULL</strong></div>
+        </div>
+        <div class="metro-mini-error" style="--fault-x:60%;--fault-y:54%;--fault-width:39%;--fault-delay:240ms;--fault-z:6">
+          <div class="metro-mini-error-title"><span>OUTSIDE_RENDER</span><b>×</b></div>
+          <div class="metro-mini-error-body"><i>!</i><strong>RECOVERY FAILED</strong></div>
+        </div>
+        <div class="metro-mini-error" style="--fault-x:42%;--fault-y:72%;--fault-width:43%;--fault-delay:300ms;--fault-z:7">
+          <div class="metro-mini-error-title"><span>VELOCITY.LOG</span><b>×</b></div>
+          <div class="metro-mini-error-body"><i>!</i><strong>0.00 KM/H</strong></div>
+        </div>
+        <div class="metro-mini-error" style="--fault-x:8%;--fault-y:76%;--fault-width:37%;--fault-delay:360ms;--fault-z:8">
+          <div class="metro-mini-error-title"><span>FATAL ERROR</span><b>×</b></div>
+          <div class="metro-mini-error-body"><i>!</i><strong>SIMULATION DESYNC</strong></div>
+        </div>
+      </div>
+      <div class="metro-glitch" aria-hidden="true">
+        <span class="metro-glitch-noise"></span>
+        <span class="metro-glitch-band" style="--glitch-y:7%;--glitch-h:13%;--glitch-x:-9%;--glitch-delay:0ms"></span>
+        <span class="metro-glitch-band" style="--glitch-y:27%;--glitch-h:8%;--glitch-x:12%;--glitch-delay:45ms"></span>
+        <span class="metro-glitch-band" style="--glitch-y:43%;--glitch-h:17%;--glitch-x:-15%;--glitch-delay:90ms"></span>
+        <span class="metro-glitch-band" style="--glitch-y:68%;--glitch-h:9%;--glitch-x:18%;--glitch-delay:135ms"></span>
+        <span class="metro-glitch-band" style="--glitch-y:82%;--glitch-h:12%;--glitch-x:-6%;--glitch-delay:180ms"></span>
+        <i class="metro-glitch-block metro-glitch-block--one"></i>
+        <i class="metro-glitch-block metro-glitch-block--two"></i>
+        <i class="metro-glitch-block metro-glitch-block--three"></i>
+        <em>FEED_DESYNC // BUFFER CORRUPT</em>
+      </div>
     </div>
 
     <img
@@ -320,21 +361,245 @@
     opacity: 0.78;
   }
 
-  .metro-static {
+  .metro-fault {
     position: absolute;
     inset: 0;
     z-index: 3;
-    background:
-      repeating-radial-gradient(circle at 18% 31%, rgb(235 232 220 / 30%) 0 1px, transparent 1px 3px),
-      repeating-linear-gradient(0deg, rgb(255 255 255 / 9%) 0 1px, transparent 1px 3px),
-      #171328;
-    background-size: 7px 5px, 100% 4px, auto;
+    overflow: hidden;
+    background: #000;
     opacity: 0;
     pointer-events: none;
   }
 
-  .metro-scene.is-tuning .metro-static {
-    animation: metro-static-flash 440ms steps(2, end) both;
+  .metro-mini-error {
+    position: absolute;
+    top: var(--fault-y);
+    left: var(--fault-x);
+    z-index: var(--fault-z);
+    width: var(--fault-width);
+    border: 1px solid #f1eee5;
+    background: #bfc1c4;
+    box-shadow:
+      inset 1px 1px 0 #fff,
+      inset -1px -1px 0 #55585f,
+      2px 2px 0 rgb(0 0 0 / 82%);
+    color: #0a0b0e;
+    font-family: var(--font-pixel);
+    opacity: 0;
+    transform: translateY(4px) scale(0.78);
+    transform-origin: top left;
+  }
+
+  .metro-mini-error-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 9px;
+    padding: 1px 2px 1px 3px;
+    background: linear-gradient(90deg, #711121, #b52638 62%, #df4851);
+    color: #fff7ed;
+    font-size: clamp(4px, 0.38vw, 6px);
+    letter-spacing: 0.03em;
+    line-height: 1;
+  }
+
+  .metro-mini-error-title b {
+    display: grid;
+    place-items: center;
+    width: 8px;
+    height: 7px;
+    background: #c9c9c9;
+    box-shadow:
+      inset 1px 1px 0 #fff,
+      inset -1px -1px 0 #52545a;
+    color: #131313;
+    font-family: var(--font-mono);
+    font-size: 6px;
+    line-height: 1;
+  }
+
+  .metro-mini-error-body {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    min-height: 12px;
+    padding: 2px 3px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .metro-mini-error-body i {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 8px;
+    height: 8px;
+    border: 1px solid #a30f25;
+    border-radius: 50%;
+    color: #8b0e20;
+    font-family: var(--font-mono);
+    font-size: 6px;
+    font-style: normal;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .metro-mini-error-body strong {
+    overflow: hidden;
+    color: #54101a;
+    font-size: clamp(4px, 0.36vw, 5.5px);
+    letter-spacing: 0.01em;
+    text-overflow: clip;
+  }
+
+  .metro-scene.is-faulting .metro-fault {
+    animation: metro-fault-screen 820ms steps(3, end) both;
+  }
+
+  .metro-scene.is-faulting .metro-mini-error {
+    animation: metro-mini-error-popup 160ms steps(2, end) var(--fault-delay) both;
+  }
+
+  .metro-glitch {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    overflow: hidden;
+    background: #000;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .metro-glitch::before,
+  .metro-glitch::after,
+  .metro-glitch-noise {
+    position: absolute;
+    inset: 0;
+    content: "";
+  }
+
+  .metro-glitch::before {
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0 2px,
+      rgb(255 255 255 / 14%) 2px 3px
+    );
+    mix-blend-mode: screen;
+  }
+
+  .metro-glitch::after {
+    background:
+      linear-gradient(90deg, rgb(255 31 89 / 38%), transparent 18% 78%, rgb(34 221 255 / 42%)),
+      repeating-linear-gradient(90deg, transparent 0 17px, rgb(98 122 255 / 14%) 17px 19px);
+    mix-blend-mode: screen;
+    transform: translateX(0);
+  }
+
+  .metro-glitch-noise {
+    background:
+      linear-gradient(to bottom, transparent 0 46%, rgb(255 255 255 / 82%) 46% 48%, transparent 48%),
+      linear-gradient(90deg, #ff174f 0 2px, transparent 2px calc(100% - 3px), #16d9ff calc(100% - 3px));
+    opacity: 0;
+  }
+
+  .metro-glitch-band {
+    position: absolute;
+    top: var(--glitch-y);
+    left: var(--glitch-x);
+    width: 112%;
+    height: var(--glitch-h);
+    background:
+      linear-gradient(90deg, rgb(255 25 80 / 42%), transparent 24% 72%, rgb(21 219 255 / 48%)),
+      repeating-linear-gradient(90deg, #b6c8ff 0 5px, #10142d 5px 11px, #ff315e 11px 14px, #08131f 14px 22px);
+    box-shadow:
+      5px 0 0 rgb(255 24 76 / 36%),
+      -5px 0 0 rgb(23 223 255 / 34%);
+    filter: contrast(1.45) saturate(1.5);
+    opacity: 0;
+    mix-blend-mode: screen;
+  }
+
+  .metro-glitch-block {
+    position: absolute;
+    display: block;
+    background: #dbe5ff;
+    box-shadow:
+      4px 0 0 #ff2557,
+      -4px 0 0 #1ce1ff;
+    opacity: 0;
+    mix-blend-mode: screen;
+  }
+
+  .metro-glitch-block--one {
+    top: 16%;
+    left: 8%;
+    width: 19%;
+    height: 22%;
+  }
+
+  .metro-glitch-block--two {
+    top: 48%;
+    right: 9%;
+    width: 27%;
+    height: 18%;
+  }
+
+  .metro-glitch-block--three {
+    right: 39%;
+    bottom: 7%;
+    width: 14%;
+    height: 27%;
+  }
+
+  .metro-glitch em {
+    position: absolute;
+    right: 4px;
+    bottom: 3px;
+    color: rgb(206 228 255 / 84%);
+    font-family: var(--font-pixel);
+    font-size: clamp(4px, 0.37vw, 6px);
+    font-style: normal;
+    letter-spacing: 0.04em;
+    opacity: 0;
+    text-shadow:
+      2px 0 #ff2457,
+      -2px 0 #19ddff;
+  }
+
+  .metro-scene.is-glitching .metro-glitch {
+    animation: metro-glitch-screen 820ms steps(3, end) both;
+  }
+
+  .metro-scene.is-glitching .metro-glitch::before {
+    animation: metro-glitch-noise 820ms steps(5, end) both;
+  }
+
+  .metro-scene.is-glitching .metro-glitch::after {
+    animation: metro-glitch-rgb 820ms steps(4, end) both;
+  }
+
+  .metro-scene.is-glitching .metro-glitch-noise {
+    animation: metro-glitch-flash 820ms steps(2, end) both;
+  }
+
+  .metro-scene.is-glitching .metro-glitch-band {
+    animation: metro-glitch-band 520ms steps(5, end) var(--glitch-delay) both;
+  }
+
+  .metro-scene.is-glitching .metro-glitch-block {
+    animation: metro-glitch-block 620ms steps(4, end) both;
+  }
+
+  .metro-scene.is-glitching .metro-glitch-block--two {
+    animation-delay: 80ms;
+  }
+
+  .metro-scene.is-glitching .metro-glitch-block--three {
+    animation-delay: 150ms;
+  }
+
+  .metro-scene.is-glitching .metro-glitch em {
+    animation: metro-glitch-label 820ms steps(2, end) both;
   }
 
   @keyframes metro-city-scroll {
@@ -398,10 +663,64 @@
     50% { transform: translateX(-50%) translateY(-1px); }
   }
 
-  @keyframes metro-static-flash {
-    0% { opacity: 0; transform: translateX(0); }
-    12%, 58% { opacity: 0.82; transform: translateX(-1px); }
-    100% { opacity: 0; transform: translateX(0); }
+  @keyframes metro-fault-screen {
+    0%, 88% { opacity: 1; }
+    89%, 96% { opacity: 0.58; }
+    97%, 100% { opacity: 0; }
+  }
+
+  @keyframes metro-mini-error-popup {
+    0%, 34% { opacity: 0; transform: translateY(4px) scale(0.78); }
+    35%, 54% { opacity: 1; transform: translateY(0) scale(1); }
+    55%, 64% { opacity: 1; transform: translate(1px, -1px) scale(1); }
+    65%, 100% { opacity: 1; transform: translate(0) scale(1); }
+  }
+
+  @keyframes metro-glitch-screen {
+    0%, 2%, 97%, 100% { opacity: 0; background-color: #000; }
+    3%, 14% { opacity: 0.82; background-color: #000; }
+    15%, 88% { opacity: 1; background-color: #000; }
+    89%, 96% { opacity: 0.58; background-color: #000; }
+  }
+
+  @keyframes metro-glitch-noise {
+    0%, 100% { transform: translate(0); filter: contrast(1); }
+    18% { transform: translate(-3px, 1px); filter: contrast(1.8); }
+    36% { transform: translate(4px, -1px); filter: contrast(2.3); }
+    58% { transform: translate(-2px, 0); filter: contrast(1.5); }
+    76% { transform: translate(3px, 1px); filter: contrast(2); }
+  }
+
+  @keyframes metro-glitch-rgb {
+    0%, 100% { opacity: 0; transform: translateX(0); }
+    9%, 28% { opacity: 0.92; transform: translateX(-5px); }
+    29%, 61% { opacity: 0.62; transform: translateX(6px); }
+    62%, 89% { opacity: 0.82; transform: translateX(-2px); }
+  }
+
+  @keyframes metro-glitch-flash {
+    0%, 11%, 28%, 46%, 73%, 100% { opacity: 0; }
+    12%, 17%, 47%, 52%, 74%, 78% { opacity: 0.9; }
+  }
+
+  @keyframes metro-glitch-band {
+    0%, 8%, 92%, 100% { opacity: 0; transform: translateX(0) skewX(0); }
+    9%, 30% { opacity: 0.94; transform: translateX(7%) skewX(-5deg); }
+    31%, 52% { opacity: 0.5; transform: translateX(-9%) skewX(4deg); }
+    53%, 74% { opacity: 0.86; transform: translateX(4%) skewX(-2deg); }
+    75%, 91% { opacity: 0.42; transform: translateX(-3%) skewX(1deg); }
+  }
+
+  @keyframes metro-glitch-block {
+    0%, 13%, 84%, 100% { opacity: 0; transform: translate(0); }
+    14%, 34% { opacity: 0.7; transform: translate(6px, -2px); }
+    35%, 56% { opacity: 0.24; transform: translate(-8px, 2px); }
+    57%, 83% { opacity: 0.58; transform: translate(3px, 0); }
+  }
+
+  @keyframes metro-glitch-label {
+    0%, 19%, 76%, 100% { opacity: 0; }
+    20%, 75% { opacity: 1; }
   }
 
   @media (max-width: 720px) {
@@ -424,8 +743,7 @@
     .metro-girl-coast,
     .metro-girl-rain,
     .metro-girl-snow,
-    .metro-station-pass,
-    .metro-scene.is-tuning .metro-static {
+    .metro-station-pass {
       animation: none;
     }
 
@@ -443,6 +761,10 @@
     { id: "rain", key: "X", label: "RAIN" },
     { id: "snow", key: "Y", label: "SNOW" },
   ] as const;
+  type MetroTransition = "fault" | "glitch" | "none";
+  const metroTransitions: Exclude<MetroTransition, "none">[] = ["fault", "glitch"];
+  const randomMetroTransition = () =>
+    metroTransitions[Math.floor(Math.random() * metroTransitions.length)];
 
   const setupMetroChannels = () => {
     document.querySelectorAll<HTMLElement>("[data-metro-scene]").forEach((scene) => {
@@ -454,21 +776,31 @@
       const channelNumber = control?.querySelector<HTMLElement>("[data-channel-number]");
       const buttons = control?.querySelectorAll<HTMLButtonElement>("[data-channel-id]") ?? [];
       const randomButton = control?.querySelector<HTMLButtonElement>("[data-random-channel]");
+      const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
       let activeIndex = Math.floor(Math.random() * metroChannels.length);
-      let tuningTimer = 0;
+      let channelTimer = 0;
+      let transitionResetTimer = 0;
 
-      const renderChannel = (index: number, withStatic = true) => {
+      const renderChannel = (index: number, transition: MetroTransition = "fault") => {
         activeIndex = (index + metroChannels.length) % metroChannels.length;
         const channel = metroChannels[activeIndex];
+        const animateTransition = transition !== "none" && !motionQuery.matches;
+        const transitionClass = transition === "glitch" ? "is-glitching" : "is-faulting";
+        const switchDelay = 420;
+        const resetDelay = 840;
 
-        if (withStatic) {
-          scene.classList.remove("is-tuning");
+        window.clearTimeout(transitionResetTimer);
+        scene.classList.remove("is-faulting", "is-glitching");
+        if (animateTransition) {
           void scene.offsetWidth;
-          scene.classList.add("is-tuning");
+          scene.classList.add(transitionClass);
+          transitionResetTimer = window.setTimeout(() => {
+            scene.classList.remove(transitionClass);
+          }, resetDelay);
         }
 
-        window.clearTimeout(tuningTimer);
-        tuningTimer = window.setTimeout(() => {
+        window.clearTimeout(channelTimer);
+        channelTimer = window.setTimeout(() => {
           scene.dataset.channel = channel.id;
           if (display) display.textContent = `${channel.key} / ${channel.label}`;
           if (channelNumber) channelNumber.textContent = `SCENE ${String(activeIndex + 1).padStart(2, "0")}`;
@@ -476,23 +808,33 @@
             const selected = button.dataset.channelId === channel.id;
             button.setAttribute("aria-pressed", String(selected));
           });
-
-        }, withStatic ? 250 : 0);
+        }, animateTransition ? switchDelay : 0);
       };
 
       buttons.forEach((button) => {
         button.addEventListener("click", () => {
           const nextIndex = metroChannels.findIndex(({ id }) => id === button.dataset.channelId);
-          if (nextIndex >= 0 && nextIndex !== activeIndex) renderChannel(nextIndex);
+          if (nextIndex >= 0 && nextIndex !== activeIndex) {
+            renderChannel(nextIndex, randomMetroTransition());
+          }
         });
       });
 
       randomButton?.addEventListener("click", () => {
         const offset = 1 + Math.floor(Math.random() * (metroChannels.length - 1));
-        renderChannel(activeIndex + offset);
+        renderChannel(activeIndex + offset, randomMetroTransition());
       });
 
-      renderChannel(activeIndex, false);
+      document.addEventListener(
+        "astro:before-swap",
+        () => {
+          window.clearTimeout(channelTimer);
+          window.clearTimeout(transitionResetTimer);
+        },
+        { once: true },
+      );
+
+      renderChannel(activeIndex, "none");
     });
   };
 

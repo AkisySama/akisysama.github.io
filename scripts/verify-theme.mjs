@@ -21,6 +21,32 @@ assert.ok(
   metroScene.includes("@media (prefers-reduced-motion: reduce)"),
   "Metro scene should respect reduced motion",
 );
+assert.ok(
+  metroScene.includes("WINDOW_FEED.EXE") && metroScene.includes("TRAIN STATE / IDLE"),
+  "Metro scene changes should expose the virtual-window fault clue",
+);
+assert.ok(
+  !metroScene.includes('class="metro-static"'),
+  "Metro scene changes should no longer use a television-static overlay",
+);
+assert.equal(
+  metroScene.match(/class="metro-mini-error"/g)?.length,
+  7,
+  "Metro fault state should fill the virtual window with seven staggered error dialogs",
+);
+assert.ok(
+  metroScene.includes("background: #000") && metroScene.includes("--fault-delay"),
+  "Metro fault state should use a pure-black screen and staggered popup timing",
+);
+assert.ok(
+  metroScene.includes('class="metro-glitch"') && metroScene.includes("is-glitching"),
+  "Metro scene should retain an independent glitch transition layer",
+);
+assert.ok(
+  metroScene.includes('["fault", "glitch"]') &&
+    metroScene.includes("renderChannel(activeIndex + offset, randomMetroTransition())"),
+  "Metro scene changes should randomly select between fault popups and glitch transitions",
+);
 
 assert.ok(styles.includes(':root[data-theme="light"]'), "Theme should retain an optional light reading mode");
 assert.ok(styles.includes("@media (max-width: 720px)"), "Theme should include a mobile layout");
