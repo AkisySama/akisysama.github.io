@@ -1,5 +1,6 @@
 ---
 import { BookOpen, Globe } from "@lucide/astro";
+import FortuneCard from "./FortuneCard.astro";
 
 const socialLinks = [
   { href: "https://github.com/akisysama", label: "GitHub", icon: Globe, external: true },
@@ -8,7 +9,7 @@ const socialLinks = [
 ---
 
 <footer class="site-footer">
-  <div class="footer-empty" aria-hidden="true"></div>
+  <FortuneCard />
   <div class="footer-links">
     <p class="footer-title">快速导航</p>
     <a href="/">首页</a>

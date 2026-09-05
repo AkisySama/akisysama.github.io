@@ -1,0 +1,117 @@
+<daily-fortune>
+  <div class="fortune-heading"><span>今日好运</span><span class="fortune-date"></span></div>
+  <div class="fortune-ticket">
+    <div class="fortune-result" aria-hidden="true"><strong></strong><p></p></div>
+    <canvas aria-hidden="true"></canvas>
+    <span class="fortune-invite">刮开，收下今天的好运<span>每天一签 · 好事常在</span></span>
+  </div>
+  <div class="fortune-caption"><span>本站没有凶签，放心刮。</span><button type="button">直接揭晓</button></div>
+  <span class="fortune-announcement" role="status" aria-live="polite"></span>
+  <noscript>开启 JavaScript，收下今天的好运。</noscript>
+</daily-fortune>
+
+<style>
+  daily-fortune { display: block; width: 100%; max-width: 310px; min-width: 0; }
+  .fortune-heading { display: flex; justify-content: space-between; margin-bottom: 10px; color: var(--color-muted); font-size: .68rem; letter-spacing: .12em; }
+  .fortune-date { color: var(--color-faint); font-size: .6rem; letter-spacing: .04em; }
+  .fortune-ticket { position: relative; height: 110px; overflow: hidden; border: 1px solid var(--color-border); border-radius: 5px; background: var(--color-surface-lifted); }
+  .fortune-result { display: grid; align-content: center; justify-items: center; height: 100%; padding: 10px; }
+  .fortune-result strong { color: var(--color-accent); font-family: var(--font-serif); font-size: 1.8rem; font-weight: 500; letter-spacing: .18em; }
+  .fortune-result p { margin: 5px 0 0; color: var(--color-muted); font-size: .65rem; text-align: center; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: none; cursor: crosshair; }
+  .fortune-invite { position: absolute; inset: 0; display: grid; place-content: center; gap: 7px; text-align: center; pointer-events: none; color: #514d45; font-size: .72rem; letter-spacing: .04em; }
+  .fortune-invite span { font-size: .55rem; opacity: .7; letter-spacing: .16em; }
+  .fortune-caption { display: flex; justify-content: space-between; gap: 8px; margin-top: 9px; font-size: .55rem; color: var(--color-faint); }
+  button { padding: 0; border: 0; background: none; color: var(--color-muted); font: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+  [data-scratching] .fortune-invite, [data-revealed] canvas, [data-revealed] .fortune-invite { display: none; }
+  button:disabled { cursor: default; text-decoration: none; color: var(--color-faint); }
+  .fortune-announcement { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+</style>
+
+<script>
+  const fortunes = [
+    ['吉', '今天的小事，会有好结果。'],
+    ['大吉', '大胆一点，好事正在靠近。'],
+    ['上上吉', '心里惦记的事，值得期待。'],
+    ['小吉', '平常的一天，也藏着一点惊喜。'],
+  ];
+  type Fortune = { day: string; index: number; revealed: boolean };
+  let memory: Fortune | undefined;
+  const key = 'akisy-daily-fortune';
+  class DailyFortune extends HTMLElement {
+    cleanup?: () => void;
+    connectedCallback() {
+      const canvas = this.querySelector('canvas')!;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true });
+      const button = this.querySelector('button')!;
+      const result = this.querySelector('.fortune-result')!;
+      const controller = new AbortController();
+      const { signal } = controller;
+      let current: Fortune;
+      let active: number | null = null;
+      let previous: { x: number; y: number } | null = null;
+      const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
+      const save = () => { memory = { ...current }; try { localStorage.setItem(key, JSON.stringify(current)); } catch {} };
+      const paint = () => {
+        if (!ctx) return;
+        canvas.width = 600; canvas.height = 220;
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = '#c5c0b6'; ctx.fillRect(0, 0, 600, 220);
+        ctx.fillStyle = '#b6b0a5';
+        for (let y = 4; y < 220; y += 8) for (let x = 4; x < 600; x += 8) ctx.fillRect(x + (y % 16 ? 4 : 0), y, 1, 1);
+      };
+      const reveal = (persist = true) => {
+        current.revealed = true; this.dataset.revealed = '';
+        result.setAttribute('aria-hidden', 'false');
+        button.disabled = true; button.textContent = '明天再来';
+        this.querySelector('.fortune-announcement')!.textContent = `今日${fortunes[current.index][0]}。${fortunes[current.index][1]}`;
+        if (persist) save();
+      };
+      const load = () => {
+        let saved = memory;
+        try { saved = JSON.parse(localStorage.getItem(key) || 'null') || saved; } catch {}
+        const day = today();
+        current = saved && saved.day === day && Number.isInteger(saved.index) && saved.index >= 0 && saved.index < fortunes.length && typeof saved.revealed === 'boolean'
+          ? { ...saved } : { day, index: Math.floor(Math.random() * fortunes.length), revealed: false };
+        delete this.dataset.revealed; delete this.dataset.scratching;
+        result.setAttribute('aria-hidden', 'true');
+        button.disabled = false; button.textContent = '直接揭晓';
+        this.querySelector('.fortune-date')!.textContent = day.replaceAll('-', '.');
+        result.querySelector('strong')!.textContent = fortunes[current.index][0];
+        result.querySelector('p')!.textContent = fortunes[current.index][1];
+        paint(); save(); if (current.revealed) reveal(false);
+      };
+      const refreshDay = () => { if (current.day !== today()) load(); };
+      const scratch = (event: PointerEvent) => {
+        if (!ctx || current.revealed) return;
+        const rect = canvas.getBoundingClientRect();
+        const point = { x: (event.clientX - rect.left) * 600 / rect.width, y: (event.clientY - rect.top) * 220 / rect.height };
+        ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = 48; ctx.lineCap = 'round';
+        ctx.beginPath(); ctx.moveTo(previous?.x ?? point.x, previous?.y ?? point.y); ctx.lineTo(point.x, point.y); ctx.stroke();
+        ctx.beginPath(); ctx.arc(point.x, point.y, 24, 0, Math.PI * 2); ctx.fill(); previous = point;
+      };
+      const finish = () => {
+        active = null; previous = null;
+        if (!ctx || current.revealed) return;
+        const pixels = ctx.getImageData(0, 0, 600, 220).data;
+        let cleared = 0;
+        for (let i = 3; i < pixels.length; i += 16) if (pixels[i] < 128) cleared++;
+        if (cleared / (pixels.length / 16) > .38) reveal();
+      };
+      canvas.addEventListener('pointerdown', (event) => {
+        refreshDay(); if (current.revealed || active !== null || event.button !== 0) return;
+        active = event.pointerId; previous = null; this.dataset.scratching = '';
+        canvas.setPointerCapture(event.pointerId); scratch(event);
+      }, { signal });
+      canvas.addEventListener('pointermove', (event) => { if (active === event.pointerId) scratch(event); }, { signal });
+      for (const name of ['pointerup', 'pointercancel', 'lostpointercapture']) canvas.addEventListener(name, finish, { signal });
+      button.addEventListener('click', () => { refreshDay(); reveal(); }, { signal });
+      document.addEventListener('visibilitychange', refreshDay, { signal });
+      load();
+      const timer = window.setInterval(refreshDay, 60000);
+      this.cleanup = () => { controller.abort(); clearInterval(timer); };
+    }
+    disconnectedCallback() { this.cleanup?.(); }
+  }
+  if (!customElements.get('daily-fortune')) customElements.define('daily-fortune', DailyFortune);
+</script>
