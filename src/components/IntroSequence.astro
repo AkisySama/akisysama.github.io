@@ -108,7 +108,6 @@
       return;
     }
 
-    const stage = intro.querySelector("[data-intro-stage]");
     const blinkFrame = intro.querySelector("[data-blink-frame]");
     const rainCanvas = intro.querySelector("[data-pixel-rain]");
     const rainAudio = intro.querySelector("[data-rain-audio]");
@@ -117,21 +116,6 @@
       intro.querySelectorAll("[data-rain-sound-state]"),
     );
     const enterButton = intro.querySelector("[data-intro-enter]");
-
-    if (
-      !(stage instanceof HTMLElement) ||
-      !(blinkFrame instanceof HTMLImageElement) ||
-      !(rainCanvas instanceof HTMLCanvasElement) ||
-      !(rainAudio instanceof HTMLAudioElement) ||
-      soundButtons.length !== 2 ||
-      soundStates.length !== soundButtons.length ||
-      !soundButtons.every((button) => button instanceof HTMLButtonElement) ||
-      !soundStates.every((state) => state instanceof HTMLElement) ||
-      !(enterButton instanceof HTMLButtonElement)
-    ) {
-      root.dataset.intro = "seen";
-      return;
-    }
 
     const motionQuery = matchMedia("(prefers-reduced-motion: reduce)");
     const mobileAudioQuery = matchMedia("(max-width: 720px), (pointer: coarse)");
@@ -150,6 +134,9 @@
     let enterScrollTimer = 0;
     let soundFadeFrame = 0;
     let soundPlayAttempt = 0;
+    let soundContext = null;
+    let soundSource = null;
+    let soundGain = null;
     let setupFrame = 0;
     let rainAnimationFrame = 0;
     let rainLastFrame = 0;
@@ -377,11 +364,27 @@
     const soundControlAvailable = () =>
       soundButtons.some((button) => button.getClientRects().length > 0);
 
+    const prepareRainSound = () => {
+      if (soundGain) return;
+
+      // iOS ignores HTMLMediaElement.volume. Route the media through a gain
+      // node, initially silent, before play() so the first frame is quiet too.
+      soundContext ??= new AudioContext();
+      soundSource ??= soundContext.createMediaElementSource(rainAudio);
+      const gain = soundContext.createGain();
+      gain.gain.value = 0;
+      soundSource.connect(gain);
+      gain.connect(soundContext.destination);
+      soundGain = gain;
+      rainAudio.volume = 1;
+    };
+
     const fadeRainSound = (targetVolume, pauseAtEnd = false) => {
       window.cancelAnimationFrame(soundFadeFrame);
       soundFadeFrame = 0;
+      if (!soundGain) return;
 
-      const startVolume = rainAudio.volume;
+      const startVolume = soundGain.gain.value;
       const startedAt = performance.now();
       const duration = targetVolume > startVolume ? 520 : 360;
 
@@ -390,7 +393,7 @@
 
         const progress = Math.min(1, (timestamp - startedAt) / duration);
         const eased = 1 - (1 - progress) ** 3;
-        rainAudio.volume =
+        soundGain.gain.value =
           startVolume + (targetVolume - startVolume) * eased;
 
         if (progress < 1) {
@@ -418,7 +421,7 @@
       soundFadeFrame = 0;
 
       if (immediate) {
-        rainAudio.volume = 0;
+        if (soundGain) soundGain.gain.value = 0;
         rainAudio.pause();
         return;
       }
@@ -432,10 +435,15 @@
       const playAttempt = ++soundPlayAttempt;
 
       try {
+        prepareRainSound();
+        // Invoke both inside the gesture, before awaiting either promise.
+        const resume = soundContext.resume();
+        let play;
         if (rainAudio.paused) {
-          rainAudio.volume = Math.max(0.01, Math.min(rainAudio.volume, 0.04));
-          await rainAudio.play();
+          soundGain.gain.value = 0;
+          play = rainAudio.play();
         }
+        await Promise.all([resume, play]);
 
         if (playAttempt !== soundPlayAttempt) {
           if (!shouldPlayRainSound()) pauseRainSound(true);
@@ -451,8 +459,9 @@
         setRainSoundState("on");
         fadeRainSound(mobileAudioQuery.matches ? 0.03 : 0.171);
       } catch {
-        if (playAttempt === soundPlayAttempt && shouldPlayRainSound()) {
-          setRainSoundState("wait");
+        if (playAttempt === soundPlayAttempt) {
+          pauseRainSound(true);
+          if (shouldPlayRainSound()) setRainSoundState("wait");
         }
       }
     };
@@ -560,11 +569,11 @@
     };
 
     const handleTouchStart = (event) => {
-      touchStartY = event.changedTouches[0]?.clientY ?? 0;
+      touchStartY = event.changedTouches[0].clientY;
     };
 
     const handleTouchEnd = (event) => {
-      const touchEndY = event.changedTouches[0]?.clientY ?? touchStartY;
+      const touchEndY = event.changedTouches[0].clientY;
       if (touchStartY - touchEndY >= 34 && isIntroEntryActive()) enterBlog();
     };
 
@@ -618,6 +627,9 @@
       stopRain();
       rainAudio.pause();
       rainAudio.currentTime = 0;
+      soundSource?.disconnect();
+      soundGain?.disconnect();
+      if (soundContext) void soundContext.close().catch(() => {});
       rainObserver?.disconnect();
       motionQuery.removeEventListener("change", handleMotionChange);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
@@ -673,8 +685,8 @@
     if ("IntersectionObserver" in window) {
       rainObserver = new IntersectionObserver(
         ([entry]) => {
-          introVisible = entry?.isIntersecting ?? true;
-          introAudible = (entry?.intersectionRatio ?? 1) >= 0.18;
+          introVisible = entry.isIntersecting;
+          introAudible = entry.intersectionRatio >= 0.18;
           if (introVisible) {
             startRain();
           } else {
@@ -697,9 +709,11 @@
       syncBlogEntered();
       void startRainSound();
 
-      const blinkReady =
-        typeof blinkFrame.decode === "function" ? blinkFrame.decode() : Promise.resolve();
-      blinkReady.catch(() => {}).then(() => scheduleBlink(true));
+      // A failed image decode should not prevent subsequent blink attempts.
+      blinkFrame.decode().then(
+        () => scheduleBlink(true),
+        () => scheduleBlink(true),
+      );
     });
   };
 

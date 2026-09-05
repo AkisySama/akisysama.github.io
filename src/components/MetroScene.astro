@@ -756,10 +756,10 @@
 
 <script>
   const metroChannels = [
-    { id: "city", key: "A", label: "CITY" },
-    { id: "coast", key: "B", label: "COAST" },
-    { id: "rain", key: "X", label: "RAIN" },
-    { id: "snow", key: "Y", label: "SNOW" },
+    { id: "city" },
+    { id: "coast" },
+    { id: "rain" },
+    { id: "snow" },
   ] as const;
   type MetroTransition = "fault" | "glitch" | "none";
   const metroTransitions: Exclude<MetroTransition, "none">[] = ["fault", "glitch"];
@@ -771,11 +771,9 @@
       if (scene.dataset.channelBound === "true") return;
       scene.dataset.channelBound = "true";
 
-      const control = document.querySelector<HTMLElement>("[data-metro-controller]");
-      const display = control?.querySelector<HTMLOutputElement>("[data-channel-display]");
-      const channelNumber = control?.querySelector<HTMLElement>("[data-channel-number]");
-      const buttons = control?.querySelectorAll<HTMLButtonElement>("[data-channel-id]") ?? [];
-      const randomButton = control?.querySelector<HTMLButtonElement>("[data-random-channel]");
+      const control = document.querySelector<HTMLElement>("[data-metro-controller]")!;
+      const buttons = control.querySelectorAll<HTMLButtonElement>("[data-channel-id]");
+      const randomButton = control.querySelector<HTMLButtonElement>("[data-random-channel]")!;
       const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
       let activeIndex = Math.floor(Math.random() * metroChannels.length);
       let channelTimer = 0;
@@ -802,8 +800,6 @@
         window.clearTimeout(channelTimer);
         channelTimer = window.setTimeout(() => {
           scene.dataset.channel = channel.id;
-          if (display) display.textContent = `${channel.key} / ${channel.label}`;
-          if (channelNumber) channelNumber.textContent = `SCENE ${String(activeIndex + 1).padStart(2, "0")}`;
           buttons.forEach((button) => {
             const selected = button.dataset.channelId === channel.id;
             button.setAttribute("aria-pressed", String(selected));
@@ -820,7 +816,7 @@
         });
       });
 
-      randomButton?.addEventListener("click", () => {
+      randomButton.addEventListener("click", () => {
         const offset = 1 + Math.floor(Math.random() * (metroChannels.length - 1));
         renderChannel(activeIndex + offset, randomMetroTransition());
       });

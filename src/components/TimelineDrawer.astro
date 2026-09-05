@@ -121,7 +121,7 @@ import { ChevronLeft, ChevronRight, ExternalLink, MessageCircle, RefreshCw, X } 
     let cursor = 0;
 
     for (const match of text.matchAll(pattern)) {
-      const index = match.index ?? 0;
+      const index = match.index;
       container.append(document.createTextNode(text.slice(cursor, index)));
 
       const anchor = document.createElement("a");
@@ -252,29 +252,17 @@ import { ChevronLeft, ChevronRight, ExternalLink, MessageCircle, RefreshCw, X } 
     if (!shell || shell.dataset.bound === "true") return;
     shell.dataset.bound = "true";
 
-    const toggle = shell.querySelector<HTMLButtonElement>("[data-timeline-toggle]");
-    const drawer = shell.querySelector<HTMLElement>("[data-timeline-drawer]");
-    const content = shell.querySelector<HTMLElement>("[data-timeline-content]");
-    const refresh = shell.querySelector<HTMLButtonElement>("[data-timeline-refresh]");
-    const closeButton = shell.querySelector<HTMLButtonElement>(".timeline-close");
-    const lightbox = shell.querySelector<HTMLDialogElement>("[data-timeline-lightbox]");
-    const lightboxImage = shell.querySelector<HTMLImageElement>("[data-timeline-lightbox-image]");
-    const lightboxClose = shell.querySelector<HTMLButtonElement>("[data-timeline-lightbox-close]");
-    const lightboxPrevious = shell.querySelector<HTMLButtonElement>("[data-timeline-lightbox-previous]");
-    const lightboxNext = shell.querySelector<HTMLButtonElement>("[data-timeline-lightbox-next]");
-    const lightboxCounter = shell.querySelector<HTMLElement>("[data-timeline-lightbox-counter]");
-    if (
-      !toggle ||
-      !drawer ||
-      !content ||
-      !refresh ||
-      !lightbox ||
-      !lightboxImage ||
-      !lightboxClose ||
-      !lightboxPrevious ||
-      !lightboxNext ||
-      !lightboxCounter
-    ) return;
+    const toggle = shell.querySelector<HTMLButtonElement>("[data-timeline-toggle]")!;
+    const drawer = shell.querySelector<HTMLElement>("[data-timeline-drawer]")!;
+    const content = shell.querySelector<HTMLElement>("[data-timeline-content]")!;
+    const refresh = shell.querySelector<HTMLButtonElement>("[data-timeline-refresh]")!;
+    const closeButton = shell.querySelector<HTMLButtonElement>(".timeline-close")!;
+    const lightbox = shell.querySelector<HTMLDialogElement>("[data-timeline-lightbox]")!;
+    const lightboxImage = shell.querySelector<HTMLImageElement>("[data-timeline-lightbox-image]")!;
+    const lightboxClose = shell.querySelector<HTMLButtonElement>("[data-timeline-lightbox-close]")!;
+    const lightboxPrevious = shell.querySelector<HTMLButtonElement>("[data-timeline-lightbox-previous]")!;
+    const lightboxNext = shell.querySelector<HTMLButtonElement>("[data-timeline-lightbox-next]")!;
+    const lightboxCounter = shell.querySelector<HTMLElement>("[data-timeline-lightbox-counter]")!;
 
     let hasLoaded = false;
     let activeImageIndex = 0;
@@ -398,7 +386,7 @@ import { ChevronLeft, ChevronRight, ExternalLink, MessageCircle, RefreshCw, X } 
       drawer.toggleAttribute("inert", !open);
       document.body.classList.toggle("timeline-is-open", open && window.matchMedia("(max-width: 600px)").matches);
       if (open && !hasLoaded) void loadIssues();
-      if (open) closeButton?.focus({ preventScroll: true });
+      if (open) closeButton.focus({ preventScroll: true });
       else toggle.focus({ preventScroll: true });
     };
 
@@ -430,7 +418,7 @@ import { ChevronLeft, ChevronRight, ExternalLink, MessageCircle, RefreshCw, X } 
       lightboxImage.removeAttribute("src");
       activeImages = [];
       const returnFocus = lightboxTrigger?.isConnected ? lightboxTrigger : closeButton;
-      returnFocus?.focus({ preventScroll: true });
+      returnFocus.focus({ preventScroll: true });
       lightboxTrigger = null;
     });
     refresh.addEventListener("click", () => void loadIssues(true));

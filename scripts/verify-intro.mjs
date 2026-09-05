@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import "./verify-rain-audio.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
 const read = (file) => readFileSync(join(root, file), "utf8");

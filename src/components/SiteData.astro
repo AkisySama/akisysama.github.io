@@ -73,13 +73,12 @@ const siteStats = [
 
   const syncDaysOnline = () => {
     document.querySelectorAll<HTMLElement>("[data-days-online]").forEach((element) => {
-      const [year, month, day] = (element.dataset.daysOnline ?? "").split("-").map(Number);
-      if (!year || !month || !day) return;
+      const [year, month, day] = element.dataset.daysOnline!.split("-").map(Number);
 
       const startedOn = Date.UTC(year, month - 1, day) / dayInMilliseconds;
       const daysOnline = Math.max(1, Math.floor(getShanghaiDay(new Date()) - startedOn) + 1);
       element.textContent = String(daysOnline);
-      element.parentElement?.setAttribute("aria-label", `建站第 ${daysOnline} 天`);
+      element.parentElement!.setAttribute("aria-label", `建站第 ${daysOnline} 天`);
     });
   };
 
