@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "postinstall": "node scripts/fix-keystatic-translations.mjs",
+    "postinstall": "node scripts/fix-keystatic-translations.mjs && node scripts/fix-keystatic-sort.mjs",
     "dev": "astro dev --open /keystatic",
     "write": "astro dev --open /keystatic",
     "build": "astro check && astro build",

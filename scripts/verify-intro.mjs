@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
+import { runInNewContext } from "node:vm";
 import "./verify-rain-audio.mjs";
 
 const root = new URL("..", import.meta.url).pathname;
@@ -11,6 +12,14 @@ const homepage = read("src/pages/index.astro");
 const intro = read("src/components/IntroSequence.astro");
 const timeline = read("src/components/TimelineDrawer.astro");
 
+const daySelection = intro.slice(intro.indexOf("    const isDaytime ="), intro.indexOf("    let daytime ="));
+for (const [hour, expected] of [[0, false], [5, false], [6, true], [12, true], [16, true], [17, false], [23, false]]) {
+  const actual = runInNewContext(`${daySelection}; isDaytime();`, {
+    Date: class { getHours() { return hour; } },
+  });
+  assert.equal(actual, expected, `Local hour ${hour} should select the correct scene`);
+}
+
 assert.ok(baseLayout.includes('<slot name="intro" />'), "Base layout should render the intro before the header");
 assert.ok(baseLayout.includes('data-page={isHome ? "home" : "inner"}'), "Base layout should identify the homepage");
 assert.ok(homepage.includes('<IntroSequence slot="intro" />'), "Homepage should mount the intro sequence");
@@ -20,6 +29,7 @@ for (const asset of [
   "public/fonts/PressStart2P-Regular.ttf",
   "public/images/intro/pixel-room-side-open.webp",
   "public/images/intro/pixel-room-side-enter.webp",
+  "public/images/intro/pixel-room-day-coffee-v2.webp",
   "public/images/intro/pixel-room-side-blink.webp",
   "public/images/intro/rain-clock-device.webp",
 ]) {

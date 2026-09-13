@@ -1,0 +1,7 @@
+# Daytime intro v2
+
+Generated with the built-in image_gen tool, using the previous daytime artwork as the edit target and the nighttime artwork as the pixel-style reference.
+
+Asset: public/images/intro/pixel-room-day-coffee-v2.webp
+
+Edit image 1, the daytime bedroom. Image 2 is the reference for the exact crisp blocky PIXEL ART style, not lighting. Preserve image 1's entire room composition, sunny blue sky, furniture, city, cat, laptop position and Chinese 进入 text, plants, and 16:9 framing. Redraw the daytime image with deliberate crisp square pixels and limited-color pixel shading like image 2, especially the girl: avoid smooth anime linework, painterly texture and finely drawn hair. The same adult white-haired woman with black X hairclip stands behind the foreground bed with her BACK leaning against the window frame, front facing into the room toward viewer and slightly LEFT, BOTH eyes visible. Her expression is completely neutral, emotionless, relaxed brows and blank eyes, no smile, no sadness, no blush. Hold the dark coffee mug at her mouth with rim touching lips, naturally bent elbow. Other arm relaxed by side. Preserve her scale and placement from image 1, oversized white T-shirt, lower legs hidden by bed. Bright soft daytime sunlight, absolutely no rain or rain streaks, no moon. Keep laptop geometry and position exactly intact for an existing clickable hotspot. Output full-bleed landscape 1672x941 if possible.

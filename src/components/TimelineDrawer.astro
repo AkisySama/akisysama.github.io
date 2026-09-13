@@ -857,6 +857,12 @@ import { ChevronLeft, ChevronRight, ExternalLink, MessageCircle, RefreshCw, X } 
     .timeline-backdrop { background: transparent; }
   }
 
+  @media (max-width: 720px) {
+    :global(body:has(.post-detail)) .timeline-toggle {
+      display: none;
+    }
+  }
+
   @media (max-width: 600px) {
     .timeline-shell {
       --timeline-width: calc(100vw - 44px);

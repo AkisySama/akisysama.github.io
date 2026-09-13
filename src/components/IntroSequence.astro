@@ -6,7 +6,7 @@
   <div class="intro-stage" data-intro-stage>
     <audio
       src="/audio/rain-window-loop.m4a"
-      preload="auto"
+      preload="none"
       loop
       data-rain-audio
       aria-hidden="true"
@@ -109,6 +109,24 @@
     }
 
     const blinkFrame = intro.querySelector("[data-blink-frame]");
+    const sceneFrame = intro.querySelector(".pixel-scene-open");
+    const nightDescription = sceneFrame.alt;
+    const dayDescription = "晴朗无雨的白天像素卧室里，白发女孩背靠窗边站着、面朝室内，面无表情地把咖啡杯拿在嘴边，下半身被床沿遮住，身旁有猫，笔记本屏幕显示‘进入’";
+    const isDaytime = () => {
+      const hour = new Date().getHours();
+      return hour >= 6 && hour < 17;
+    };
+    let daytime = isDaytime();
+    let sceneTimer = 0;
+    const renderScene = () => {
+      intro.dataset.scene = daytime ? "day" : "night";
+      sceneFrame.src = daytime
+        ? "/images/intro/pixel-room-day-coffee-v2.webp"
+        : "/images/intro/pixel-room-side-enter.webp";
+      sceneFrame.alt = daytime ? dayDescription : nightDescription;
+      intro.setAttribute("aria-label", `博客开场：${sceneFrame.alt}`);
+    };
+    renderScene();
     const rainCanvas = intro.querySelector("[data-pixel-rain]");
     const rainAudio = intro.querySelector("[data-rain-audio]");
     const soundButtons = Array.from(intro.querySelectorAll("[data-rain-sound]"));
@@ -282,6 +300,7 @@
 
       rainContext.setTransform(1, 0, 0, 1, 0, 0);
       rainContext.clearRect(0, 0, rainCanvas.width, rainCanvas.height);
+      if (daytime) return;
       rainContext.save();
       rainContext.clip(rainGlassMask);
       rainContext.globalCompositeOperation = "screen";
@@ -315,7 +334,7 @@
     };
 
     const shouldAnimateRain = () =>
-      !disposed && !reducedMotion && introVisible && documentVisible;
+      !daytime && !disposed && !reducedMotion && introVisible && documentVisible;
 
     const drawRainFrame = (timestamp) => {
       rainAnimationFrame = 0;
@@ -409,6 +428,7 @@
     };
 
     const shouldPlayRainSound = () =>
+      !daytime &&
       soundDesired &&
       soundControlAvailable() &&
       introAudible &&
@@ -470,6 +490,7 @@
       if (shouldPlayRainSound() && soundUnlocked) {
         void startRainSound();
       } else if (
+        daytime ||
         !soundControlAvailable() ||
         !introAudible ||
         !documentVisible ||
@@ -512,7 +533,7 @@
     };
 
     const blink = () => {
-      if (reducedMotion || disposed) return;
+      if (daytime || reducedMotion || disposed) return;
 
       window.clearTimeout(blinkReleaseTimer);
       blinkFrame.classList.add("is-blinking");
@@ -525,7 +546,7 @@
     };
 
     const scheduleBlink = (initial = false) => {
-      if (reducedMotion || disposed) return;
+      if (daytime || reducedMotion || disposed) return;
       const delay = initial
         ? 5000 + Math.random() * 3000
         : 9000 + Math.random() * 6000;
@@ -594,9 +615,40 @@
       syncBlogEntered();
     };
 
+    // Recheck on focus and at the next local 06:00 / 17:00 boundary.
+    const syncScene = () => {
+      window.clearTimeout(sceneTimer);
+      if (disposed) return;
+      const nextDaytime = isDaytime();
+      if (nextDaytime !== daytime) {
+        daytime = nextDaytime;
+        renderScene();
+        resetBlink();
+        stopRain();
+        drawRain(false);
+        if (daytime) {
+          pauseRainSound(true);
+        } else {
+          startRain();
+          scheduleBlink(true);
+          syncRainSound();
+        }
+      }
+      const now = new Date();
+      const next = new Date(now);
+      if (now.getHours() < 6) next.setHours(6, 0, 0, 0);
+      else if (now.getHours() < 17) next.setHours(17, 0, 0, 0);
+      else {
+        next.setDate(next.getDate() + 1);
+        next.setHours(6, 0, 0, 0);
+      }
+      sceneTimer = window.setTimeout(syncScene, next.getTime() - now.getTime());
+    };
+
     const handleVisibilityChange = () => {
       documentVisible = !document.hidden;
       if (documentVisible) {
+        syncScene();
         startRain();
         syncRainSound();
       } else {
@@ -622,6 +674,7 @@
       entryController.abort();
       resetBlink();
       window.clearTimeout(enterScrollTimer);
+      window.clearTimeout(sceneTimer);
       window.cancelAnimationFrame(soundFadeFrame);
       window.cancelAnimationFrame(setupFrame);
       stopRain();
@@ -679,6 +732,7 @@
       signal: entryController.signal,
     });
     motionQuery.addEventListener("change", handleMotionChange);
+    window.addEventListener("focus", syncScene, { signal: entryController.signal });
     document.addEventListener("visibilitychange", handleVisibilityChange);
     document.addEventListener("astro:before-swap", cleanup, { once: true });
 
@@ -700,6 +754,7 @@
     }
 
     setupFrame = requestAnimationFrame(() => {
+      syncScene();
       intro.classList.add("is-ready");
       root.dataset.intro = "complete";
       blinkFrame.dataset.blinkState = "open";
@@ -733,6 +788,22 @@
     overflow: hidden;
     background: #020616;
     color: #eef3ff;
+  }
+
+  .intro-sequence[data-scene="day"] .pixel-rain,
+  .intro-sequence[data-scene="day"] .pixel-scene-blink,
+  .intro-sequence[data-scene="day"] .intro-sound {
+    display: none;
+  }
+
+  .intro-sequence[data-scene="day"],
+  .intro-sequence[data-scene="day"] .intro-stage {
+    background: #a4b6c7;
+  }
+
+  .intro-sequence[data-scene="day"] .intro-hint {
+    color: #f8f3e6;
+    text-shadow: 0 1px 3px #30384e;
   }
 
   .intro-stage,

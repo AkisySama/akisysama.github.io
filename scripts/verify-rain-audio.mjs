@@ -5,7 +5,7 @@ import { runInNewContext } from "node:vm";
 const intro = readFileSync(new URL("../src/components/IntroSequence.astro", import.meta.url), "utf8");
 const playback = intro.slice(intro.indexOf("    const prepareRainSound ="), intro.indexOf("    const syncRainSound ="));
 
-async function verify(mobile, rejectResume = false) {
+async function verify(mobile, rejectResume = false, daytime = false) {
   let gain;
   let connections = 0;
   let starts = 0;
@@ -41,6 +41,7 @@ async function verify(mobile, rejectResume = false) {
     ${playback}
     ({ startRainSound, pauseRainSound });
   `, {
+    daytime,
     AudioContext,
     window: { cancelAnimationFrame() { frame = null; } },
     rainAudio: audio,
@@ -50,6 +51,11 @@ async function verify(mobile, rejectResume = false) {
     setRainSoundState(value) { state = value; },
   });
   await api.startRainSound();
+  if (daytime) {
+    assert.equal(starts, 0, "Daytime must not initialize rain audio, even after a gesture");
+    assert.equal(audio.paused, true);
+    return;
+  }
   if (rejectResume) {
     assert.equal(state, "wait");
     assert.equal(audio.paused, true);
@@ -73,4 +79,6 @@ async function verify(mobile, rejectResume = false) {
 await verify(true);
 await verify(false);
 await verify(true, true);
+await verify(true, false, true);
+await verify(false, false, true);
 console.log("Verified rain gain with iOS-style fixed media volume, fades, replay, and blocked audio.");

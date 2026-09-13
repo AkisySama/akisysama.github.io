@@ -22,21 +22,21 @@ assert.ok(
   "Metro scene should respect reduced motion",
 );
 assert.ok(
-  metroScene.includes("WINDOW_FEED.EXE") && metroScene.includes("TRAIN STATE / IDLE"),
-  "Metro scene changes should expose the virtual-window fault clue",
+  metroScene.includes("信号暂时中断") && metroScene.includes("正在寻找下一段风景…"),
+  "Metro scene changes should display the signal reconnection message",
 );
 assert.ok(
-  !metroScene.includes('class="metro-static"'),
-  "Metro scene changes should no longer use a television-static overlay",
+  metroScene.includes('class="metro-static"') && metroScene.includes("staticContext.putImageData(frame, 0, 0)"),
+  "Metro glitch transitions should render the television-static overlay",
 );
 assert.equal(
-  metroScene.match(/class="metro-mini-error"/g)?.length,
-  7,
-  "Metro fault state should fill the virtual window with seven staggered error dialogs",
+  metroScene.match(/class="metro-error-window"/g)?.length,
+  1,
+  "Metro fault state should display one reconnection dialog",
 );
 assert.ok(
-  metroScene.includes("background: #000") && metroScene.includes("--fault-delay"),
-  "Metro fault state should use a pure-black screen and staggered popup timing",
+  metroScene.includes('class="metro-error-progress"') && metroScene.includes("metro-error-reconnect"),
+  "Metro fault state should animate the reconnection progress",
 );
 assert.ok(
   metroScene.includes('class="metro-glitch"') && metroScene.includes("is-glitching"),
