@@ -1,96 +1,44 @@
 <section
   class="intro-sequence"
   data-intro-sequence
-  aria-label="博客开场：下着雨的蓝色夜城前，白发像素女孩抱膝坐在床上"
+  aria-label="博客开场：白发女孩抱膝坐在缠满线缆的废墟机房里，她像一段不稳定的投影，不时出现信号故障"
 >
   <div class="intro-stage" data-intro-stage>
-    <audio
-      src="/audio/rain-window-loop.m4a"
-      preload="none"
-      loop
-      data-rain-audio
-      aria-hidden="true"
-    ></audio>
-
-    <div class="pixel-scene">
+    <div class="signal-scene">
       <img
-        class="pixel-scene-frame pixel-scene-open"
-        src="/images/intro/pixel-room-side-enter.webp"
-        alt="蓝色霓虹夜景中，白发像素女孩抱膝坐在床上望向窗外，窗前有一只猫，右下角笔记本屏幕显示“进入”"
+        class="signal-scene-frame"
+        src="/images/intro/signal-girl.webp"
+        alt="白发女孩抱膝坐在缠满线缆的废墟机房里"
         width="1672"
         height="941"
         loading="eager"
         fetchpriority="high"
       />
-      <canvas
-        class="pixel-rain"
+      <video
+        class="signal-scene-frame signal-scene-video"
+        src="/videos/intro/signal-girl-glitch.mp4"
+        poster="/images/intro/signal-girl.webp"
         width="1672"
-        height="941"
-        data-pixel-rain
+        height="940"
+        muted
+        loop
+        playsinline
+        preload="auto"
+        disablepictureinpicture
         aria-hidden="true"
-      ></canvas>
-      <img
-        class="pixel-scene-frame pixel-scene-blink"
-        src="/images/intro/pixel-room-side-blink.webp"
-        alt=""
-        width="1672"
-        height="941"
-        loading="eager"
-        aria-hidden="true"
-        data-blink-frame
-      />
-      <div class="scene-coordinate-space">
-        <button
-          class="intro-enter"
-          type="button"
-          data-intro-enter
-          aria-label="进入博客"
-        ></button>
-
-        <button
-          class="intro-sound intro-sound-clock"
-          type="button"
-          data-rain-sound
-          data-sound-state="wait"
-          aria-label="播放雨声"
-          aria-pressed="false"
-        >
-          <span class="intro-sound-screen" aria-hidden="true">
-            <span>RAIN:</span>
-            <span data-rain-sound-state>TAP</span>
-          </span>
-        </button>
-      </div>
+        data-signal-video
+      ></video>
     </div>
-
-    <div class="intro-chrome">
-      <button
-        class="intro-sound intro-sound-mobile"
-        type="button"
-        data-rain-sound
-        data-sound-state="wait"
-        aria-label="播放雨声"
-        aria-pressed="false"
-      >
-        <img
-          class="intro-sound-device"
-          src="/images/intro/rain-clock-device.webp"
-          alt=""
-          width="144"
-          height="80"
-          aria-hidden="true"
-        />
-        <span class="intro-sound-screen" aria-hidden="true">
-          <span>RAIN:</span>
-          <span data-rain-sound-state>TAP</span>
-        </span>
-      </button>
-
-      <p class="intro-hint" aria-hidden="true">
-        <span class="intro-hint-wide">CLICK SCREEN · SCROLL DOWN</span>
-        <span class="intro-hint-narrow">SWIPE UP · ENTER</span>
-      </p>
-    </div>
+    <button
+      class="intro-enter"
+      type="button"
+      data-intro-enter
+      aria-label="进入博客"
+    ></button>
+    <p class="intro-hint" aria-hidden="true">
+      <span class="intro-hint-wide">CLICK SCREEN · SCROLL DOWN</span>
+      <span class="intro-hint-narrow">TAP · SWIPE UP</span>
+    </p>
   </div>
 </section>
 
@@ -108,454 +56,35 @@
       return;
     }
 
-    const blinkFrame = intro.querySelector("[data-blink-frame]");
-    const sceneFrame = intro.querySelector(".pixel-scene-open");
-    const nightDescription = sceneFrame.alt;
-    const dayDescription = "晴朗无雨的白天像素卧室里，白发女孩背靠窗边站着、面朝室内，面无表情地把咖啡杯拿在嘴边，下半身被床沿遮住，身旁有猫，笔记本屏幕显示‘进入’";
-    const isDaytime = () => {
-      const hour = new Date().getHours();
-      return hour >= 6 && hour < 17;
-    };
-    let daytime = isDaytime();
-    let sceneTimer = 0;
-    const renderScene = () => {
-      intro.dataset.scene = daytime ? "day" : "night";
-      sceneFrame.src = daytime
-        ? "/images/intro/pixel-room-day-coffee-v2.webp"
-        : "/images/intro/pixel-room-side-enter.webp";
-      sceneFrame.alt = daytime ? dayDescription : nightDescription;
-      intro.setAttribute("aria-label", `博客开场：${sceneFrame.alt}`);
-    };
-    renderScene();
-    const rainCanvas = intro.querySelector("[data-pixel-rain]");
-    const rainAudio = intro.querySelector("[data-rain-audio]");
-    const soundButtons = Array.from(intro.querySelectorAll("[data-rain-sound]"));
-    const soundStates = Array.from(
-      intro.querySelectorAll("[data-rain-sound-state]"),
-    );
+    const signalVideo = intro.querySelector("[data-signal-video]");
     const enterButton = intro.querySelector("[data-intro-enter]");
 
     const motionQuery = matchMedia("(prefers-reduced-motion: reduce)");
-    const mobileAudioQuery = matchMedia("(max-width: 720px), (pointer: coarse)");
     const entryController = new AbortController();
-    const rainContext = rainCanvas.getContext("2d", { alpha: true });
-    const rainFrameInterval = 1000 / 16;
-    const rainGlassMask = new Path2D();
-    const rainForegroundMask = new Path2D();
-    const rainColors = [
-      "rgb(96 216 255 / 34%)",
-      "rgb(126 162 255 / 28%)",
-      "rgb(58 145 255 / 24%)",
-    ];
-    let blinkScheduleTimer = 0;
-    let blinkReleaseTimer = 0;
     let enterScrollTimer = 0;
-    let soundFadeFrame = 0;
-    let soundPlayAttempt = 0;
-    let soundContext = null;
-    let soundSource = null;
-    let soundGain = null;
     let setupFrame = 0;
-    let rainAnimationFrame = 0;
-    let rainLastFrame = 0;
-    let rainSeed = 0xa51c9;
-    let rainObserver = null;
+    let visibilityObserver = null;
     let reducedMotion = motionQuery.matches;
     let introVisible = true;
-    let introAudible = true;
     let documentVisible = !document.hidden;
-    let soundDesired = true;
-    let soundStatus = "wait";
-    let soundUnlocked = false;
     let touchStartY = 0;
     let disposed = false;
-
-    const addPolygon = (path, points) => {
-      const [first, ...rest] = points;
-      path.moveTo(first[0], first[1]);
-      for (const [x, y] of rest) path.lineTo(x, y);
-      path.closePath();
-    };
-
-    // Rain is first clipped to the glass, then erased behind foreground
-    // silhouettes. Keeping these paths separate prevents an even-odd mask
-    // from turning the parts of the girl or cat outside the glass into rain.
-    addPolygon(rainGlassMask, [[751, 55], [976, 34], [976, 632], [751, 632]]);
-    addPolygon(rainGlassMask, [[1002, 33], [1240, 12], [1240, 632], [1002, 632]]);
-    addPolygon(rainGlassMask, [
-      [1272, 3],
-      [1590, 3],
-      [1590, 412],
-      [1513, 412],
-      [1513, 487],
-      [1466, 487],
-      [1466, 632],
-      [1272, 632],
-    ]);
-    addPolygon(rainForegroundMask, [
-      [581, 274],
-      [621, 269],
-      [663, 275],
-      [702, 290],
-      [731, 317],
-      [750, 349],
-      [757, 375],
-      [750, 386],
-      [737, 390],
-      [731, 397],
-      [741, 403],
-      [740, 421],
-      [729, 440],
-      [708, 451],
-      [746, 465],
-      [778, 482],
-      [806, 496],
-      [822, 493],
-      [843, 501],
-      [860, 518],
-      [868, 541],
-      [867, 559],
-      [856, 576],
-      [873, 602],
-      [890, 646],
-      [912, 694],
-      [943, 733],
-      [976, 753],
-      [1009, 765],
-      [1007, 776],
-      [985, 782],
-      [947, 783],
-      [916, 780],
-      [868, 773],
-      [704, 773],
-      [568, 771],
-      [567, 710],
-      [552, 675],
-      [531, 647],
-      [500, 631],
-      [480, 612],
-      [464, 585],
-      [465, 553],
-      [476, 523],
-      [483, 486],
-      [489, 455],
-      [504, 428],
-      [517, 395],
-      [524, 356],
-      [539, 318],
-      [558, 291],
-    ]);
-    addPolygon(rainForegroundMask, [
-      [1056, 712],
-      [1065, 690],
-      [1072, 661],
-      [1073, 618],
-      [1080, 614],
-      [1080, 586],
-      [1097, 599],
-      [1113, 596],
-      [1127, 582],
-      [1130, 616],
-      [1141, 630],
-      [1168, 638],
-      [1186, 649],
-      [1196, 668],
-      [1197, 701],
-      [1204, 685],
-      [1212, 677],
-      [1222, 677],
-      [1229, 684],
-      [1228, 693],
-      [1220, 699],
-      [1230, 705],
-      [1230, 714],
-      [1218, 719],
-      [1198, 715],
-      [1169, 714],
-      [1136, 714],
-      [1100, 715],
-      [1071, 715],
-    ]);
-
-    const randomRain = () => {
-      rainSeed = (rainSeed * 1664525 + 1013904223) >>> 0;
-      return rainSeed / 4294967296;
-    };
-
-    const resetDrop = (drop, initial = false) => {
-      drop.x = 716 + randomRain() * 872;
-      drop.y = initial ? randomRain() * 680 - 40 : -24 - randomRain() * 180;
-      drop.length = 16 + Math.floor(randomRain() * 5) * 4;
-      drop.width = randomRain() > 0.78 ? 4 : 3;
-      drop.speed = 13 + Math.floor(randomRain() * 5) * 3;
-      drop.drift = randomRain() > 0.22 ? -1 : 0;
-      drop.color = rainColors[Math.floor(randomRain() * rainColors.length)];
-      return drop;
-    };
-
-    const rainDrops = Array.from({ length: 104 }, () => resetDrop({}, true));
-
-    const drawRain = (advance = true) => {
-      if (!rainContext) return;
-
-      rainContext.setTransform(1, 0, 0, 1, 0, 0);
-      rainContext.clearRect(0, 0, rainCanvas.width, rainCanvas.height);
-      if (daytime) return;
-      rainContext.save();
-      rainContext.clip(rainGlassMask);
-      rainContext.globalCompositeOperation = "screen";
-      rainContext.imageSmoothingEnabled = false;
-
-      for (const drop of rainDrops) {
-        rainContext.fillStyle = drop.color;
-
-        for (let offset = 0; offset < drop.length; offset += 4) {
-          rainContext.fillRect(
-            Math.round(drop.x - offset * 0.22),
-            Math.round(drop.y + offset),
-            drop.width,
-            Math.min(4, drop.length - offset),
-          );
-        }
-
-        if (!advance) continue;
-        drop.x += drop.drift;
-        drop.y += drop.speed;
-        if (drop.y > 664) resetDrop(drop);
-      }
-
-      rainContext.restore();
-      rainContext.save();
-      rainContext.globalCompositeOperation = "destination-out";
-      rainContext.fillStyle = "#000";
-      rainContext.fill(rainForegroundMask);
-      rainContext.restore();
-      rainCanvas.dataset.rainFrame = String(Number(rainCanvas.dataset.rainFrame ?? 0) + 1);
-    };
-
-    const shouldAnimateRain = () =>
-      !daytime && !disposed && !reducedMotion && introVisible && documentVisible;
-
-    const drawRainFrame = (timestamp) => {
-      rainAnimationFrame = 0;
-      if (!shouldAnimateRain()) return;
-
-      if (timestamp - rainLastFrame >= rainFrameInterval) {
-        rainLastFrame = timestamp - ((timestamp - rainLastFrame) % rainFrameInterval);
-        drawRain(true);
-      }
-
-      rainAnimationFrame = requestAnimationFrame(drawRainFrame);
-    };
-
-    const stopRain = () => {
-      window.cancelAnimationFrame(rainAnimationFrame);
-      rainAnimationFrame = 0;
-    };
-
-    const startRain = () => {
-      if (!rainContext || rainAnimationFrame || !shouldAnimateRain()) return;
-      rainLastFrame = 0;
-      rainAnimationFrame = requestAnimationFrame(drawRainFrame);
-    };
 
     root.dataset.intro = "playing";
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
 
-    const setRainSoundState = (state) => {
-      soundStatus = state;
-      const stateText = state === "on" ? "ON" : state === "off" ? "OFF" : "TAP";
-
-      const isOn = state === "on";
-      const label =
-        isOn ? "关闭雨声" : state === "wait" ? "播放雨声" : "开启雨声";
-
-      soundButtons.forEach((button) => {
-        button.dataset.soundState = state;
-        button.setAttribute("aria-pressed", String(isOn));
-        button.setAttribute("aria-label", label);
-      });
-      soundStates.forEach((stateNode) => {
-        stateNode.textContent = stateText;
-      });
-    };
-
-    const soundControlAvailable = () =>
-      soundButtons.some((button) => button.getClientRects().length > 0);
-
-    const prepareRainSound = () => {
-      if (soundGain) return;
-
-      // iOS ignores HTMLMediaElement.volume. Route the media through a gain
-      // node, initially silent, before play() so the first frame is quiet too.
-      soundContext ??= new AudioContext();
-      soundSource ??= soundContext.createMediaElementSource(rainAudio);
-      const gain = soundContext.createGain();
-      gain.gain.value = 0;
-      soundSource.connect(gain);
-      gain.connect(soundContext.destination);
-      soundGain = gain;
-      rainAudio.volume = 1;
-    };
-
-    const fadeRainSound = (targetVolume, pauseAtEnd = false) => {
-      window.cancelAnimationFrame(soundFadeFrame);
-      soundFadeFrame = 0;
-      if (!soundGain) return;
-
-      const startVolume = soundGain.gain.value;
-      const startedAt = performance.now();
-      const duration = targetVolume > startVolume ? 520 : 360;
-
-      const step = (timestamp) => {
-        if (disposed) return;
-
-        const progress = Math.min(1, (timestamp - startedAt) / duration);
-        const eased = 1 - (1 - progress) ** 3;
-        soundGain.gain.value =
-          startVolume + (targetVolume - startVolume) * eased;
-
-        if (progress < 1) {
-          soundFadeFrame = requestAnimationFrame(step);
-          return;
-        }
-
-        soundFadeFrame = 0;
-        if (pauseAtEnd) rainAudio.pause();
-      };
-
-      soundFadeFrame = requestAnimationFrame(step);
-    };
-
-    const shouldPlayRainSound = () =>
-      !daytime &&
-      soundDesired &&
-      soundControlAvailable() &&
-      introAudible &&
-      documentVisible &&
-      !disposed;
-
-    const pauseRainSound = (immediate = false) => {
-      soundPlayAttempt += 1;
-      window.cancelAnimationFrame(soundFadeFrame);
-      soundFadeFrame = 0;
-
-      if (immediate) {
-        if (soundGain) soundGain.gain.value = 0;
-        rainAudio.pause();
-        return;
+    // The glitch loop only runs while the intro is on screen; reduced motion
+    // keeps the still image instead.
+    const syncVideo = () => {
+      if (!disposed && !reducedMotion && introVisible && documentVisible) {
+        signalVideo.play().then(
+          () => intro.classList.add("is-signal-playing"),
+          () => intro.classList.remove("is-signal-playing"),
+        );
+      } else {
+        signalVideo.pause();
+        if (reducedMotion) intro.classList.remove("is-signal-playing");
       }
-
-      fadeRainSound(0, true);
-    };
-
-    const startRainSound = async () => {
-      if (!shouldPlayRainSound()) return;
-
-      const playAttempt = ++soundPlayAttempt;
-
-      try {
-        prepareRainSound();
-        // Invoke both inside the gesture, before awaiting either promise.
-        const resume = soundContext.resume();
-        let play;
-        if (rainAudio.paused) {
-          soundGain.gain.value = 0;
-          play = rainAudio.play();
-        }
-        await Promise.all([resume, play]);
-
-        if (playAttempt !== soundPlayAttempt) {
-          if (!shouldPlayRainSound()) pauseRainSound(true);
-          return;
-        }
-
-        soundUnlocked = true;
-        if (!shouldPlayRainSound()) {
-          pauseRainSound(true);
-          return;
-        }
-
-        setRainSoundState("on");
-        fadeRainSound(mobileAudioQuery.matches ? 0.03 : 0.171);
-      } catch {
-        if (playAttempt === soundPlayAttempt) {
-          pauseRainSound(true);
-          if (shouldPlayRainSound()) setRainSoundState("wait");
-        }
-      }
-    };
-
-    const syncRainSound = () => {
-      if (shouldPlayRainSound() && soundUnlocked) {
-        void startRainSound();
-      } else if (
-        daytime ||
-        !soundControlAvailable() ||
-        !introAudible ||
-        !documentVisible ||
-        !soundDesired
-      ) {
-        pauseRainSound(!documentVisible);
-      }
-    };
-
-    const handleRainSoundToggle = () => {
-      if (soundStatus === "on") {
-        soundDesired = false;
-        setRainSoundState("off");
-        pauseRainSound();
-        return;
-      }
-
-      soundDesired = true;
-      void startRainSound();
-    };
-
-    const handleRainSoundUnlock = (event) => {
-      const target = event.target;
-      if (
-        target instanceof Node &&
-        soundButtons.some((button) => button.contains(target))
-      ) {
-        return;
-      }
-      if (soundDesired && soundStatus === "wait") {
-        void startRainSound();
-      }
-    };
-
-    const resetBlink = () => {
-      window.clearTimeout(blinkScheduleTimer);
-      window.clearTimeout(blinkReleaseTimer);
-      blinkFrame.classList.remove("is-blinking");
-      blinkFrame.dataset.blinkState = "open";
-    };
-
-    const blink = () => {
-      if (daytime || reducedMotion || disposed) return;
-
-      window.clearTimeout(blinkReleaseTimer);
-      blinkFrame.classList.add("is-blinking");
-      blinkFrame.dataset.blinkState = "closed";
-
-      blinkReleaseTimer = window.setTimeout(() => {
-        blinkFrame.classList.remove("is-blinking");
-        blinkFrame.dataset.blinkState = "open";
-      }, 165);
-    };
-
-    const scheduleBlink = (initial = false) => {
-      if (daytime || reducedMotion || disposed) return;
-      const delay = initial
-        ? 5000 + Math.random() * 3000
-        : 9000 + Math.random() * 6000;
-
-      window.clearTimeout(blinkScheduleTimer);
-      blinkScheduleTimer = window.setTimeout(() => {
-        blink();
-        scheduleBlink(false);
-      }, delay);
     };
 
     const syncBlogEntered = () => {
@@ -611,100 +140,27 @@
       enterBlog();
     };
 
-    const handleScroll = () => {
-      syncBlogEntered();
-    };
-
-    // Recheck on focus and at the next local 06:00 / 17:00 boundary.
-    const syncScene = () => {
-      window.clearTimeout(sceneTimer);
-      if (disposed) return;
-      const nextDaytime = isDaytime();
-      if (nextDaytime !== daytime) {
-        daytime = nextDaytime;
-        renderScene();
-        resetBlink();
-        stopRain();
-        drawRain(false);
-        if (daytime) {
-          pauseRainSound(true);
-        } else {
-          startRain();
-          scheduleBlink(true);
-          syncRainSound();
-        }
-      }
-      const now = new Date();
-      const next = new Date(now);
-      if (now.getHours() < 6) next.setHours(6, 0, 0, 0);
-      else if (now.getHours() < 17) next.setHours(17, 0, 0, 0);
-      else {
-        next.setDate(next.getDate() + 1);
-        next.setHours(6, 0, 0, 0);
-      }
-      sceneTimer = window.setTimeout(syncScene, next.getTime() - now.getTime());
-    };
-
     const handleVisibilityChange = () => {
       documentVisible = !document.hidden;
-      if (documentVisible) {
-        syncScene();
-        startRain();
-        syncRainSound();
-      } else {
-        stopRain();
-        pauseRainSound(true);
-      }
+      syncVideo();
     };
 
     const handleMotionChange = (event) => {
       reducedMotion = event.matches;
-      resetBlink();
-      stopRain();
-      drawRain(false);
-
-      if (!reducedMotion) {
-        startRain();
-        scheduleBlink(true);
-      }
+      syncVideo();
     };
 
     const cleanup = () => {
       disposed = true;
       entryController.abort();
-      resetBlink();
       window.clearTimeout(enterScrollTimer);
-      window.clearTimeout(sceneTimer);
-      window.cancelAnimationFrame(soundFadeFrame);
       window.cancelAnimationFrame(setupFrame);
-      stopRain();
-      rainAudio.pause();
-      rainAudio.currentTime = 0;
-      soundSource?.disconnect();
-      soundGain?.disconnect();
-      if (soundContext) void soundContext.close().catch(() => {});
-      rainObserver?.disconnect();
+      signalVideo.pause();
+      visibilityObserver?.disconnect();
       motionQuery.removeEventListener("change", handleMotionChange);
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
 
-    soundButtons.forEach((button) => {
-      button.addEventListener("click", handleRainSoundToggle, {
-        signal: entryController.signal,
-      });
-    });
-    window.addEventListener("pointerdown", handleRainSoundUnlock, {
-      capture: true,
-      signal: entryController.signal,
-    });
-    window.addEventListener("click", handleRainSoundUnlock, {
-      capture: true,
-      signal: entryController.signal,
-    });
-    window.addEventListener("keydown", handleRainSoundUnlock, {
-      capture: true,
-      signal: entryController.signal,
-    });
     enterButton.addEventListener("click", enterBlog, { signal: entryController.signal });
     window.addEventListener("wheel", handleWheel, {
       passive: false,
@@ -719,11 +175,7 @@
       signal: entryController.signal,
     });
     window.addEventListener("keydown", handleKeydown, { signal: entryController.signal });
-    window.addEventListener("scroll", handleScroll, {
-      passive: true,
-      signal: entryController.signal,
-    });
-    window.addEventListener("resize", syncRainSound, {
+    window.addEventListener("scroll", syncBlogEntered, {
       passive: true,
       signal: entryController.signal,
     });
@@ -732,43 +184,25 @@
       signal: entryController.signal,
     });
     motionQuery.addEventListener("change", handleMotionChange);
-    window.addEventListener("focus", syncScene, { signal: entryController.signal });
     document.addEventListener("visibilitychange", handleVisibilityChange);
     document.addEventListener("astro:before-swap", cleanup, { once: true });
 
     if ("IntersectionObserver" in window) {
-      rainObserver = new IntersectionObserver(
+      visibilityObserver = new IntersectionObserver(
         ([entry]) => {
           introVisible = entry.isIntersecting;
-          introAudible = entry.intersectionRatio >= 0.18;
-          if (introVisible) {
-            startRain();
-          } else {
-            stopRain();
-          }
-          syncRainSound();
+          syncVideo();
         },
-        { threshold: [0.01, 0.18] },
+        { threshold: 0.01 },
       );
-      rainObserver.observe(intro);
+      visibilityObserver.observe(intro);
     }
 
     setupFrame = requestAnimationFrame(() => {
-      syncScene();
       intro.classList.add("is-ready");
       root.dataset.intro = "complete";
-      blinkFrame.dataset.blinkState = "open";
-      drawRain(!reducedMotion);
-      startRain();
-      setRainSoundState("wait");
       syncBlogEntered();
-      void startRainSound();
-
-      // A failed image decode should not prevent subsequent blink attempts.
-      blinkFrame.decode().then(
-        () => scheduleBlink(true),
-        () => scheduleBlink(true),
-      );
+      syncVideo();
     });
   };
 
@@ -786,30 +220,13 @@
     height: 100svh;
     min-height: 560px;
     overflow: hidden;
-    background: #020616;
-    color: #eef3ff;
-  }
-
-  .intro-sequence[data-scene="day"] .pixel-rain,
-  .intro-sequence[data-scene="day"] .pixel-scene-blink,
-  .intro-sequence[data-scene="day"] .intro-sound {
-    display: none;
-  }
-
-  .intro-sequence[data-scene="day"],
-  .intro-sequence[data-scene="day"] .intro-stage {
-    background: #a4b6c7;
-  }
-
-  .intro-sequence[data-scene="day"] .intro-hint {
-    color: #f8f3e6;
-    text-shadow: 0 1px 3px #30384e;
+    background: #c7cdc6;
+    color: #26302e;
   }
 
   .intro-stage,
-  .pixel-scene,
-  .pixel-scene-frame,
-  .pixel-rain {
+  .signal-scene,
+  .signal-scene-frame {
     position: absolute;
     inset: 0;
     width: 100%;
@@ -818,13 +235,12 @@
 
   .intro-stage {
     overflow: hidden;
-    background: #020616;
+    background: #c7cdc6;
   }
 
-  .pixel-scene {
-    --scene-position-x: 50%;
-    --scene-translate-x: -50%;
-    cursor: default;
+  .signal-scene {
+    /* Keeps the girl in view as narrower screens crop the 16:9 frame. */
+    --scene-position-x: 40%;
     opacity: 0;
     transform: scale(1.015);
     transition:
@@ -832,214 +248,65 @@
       transform 1800ms cubic-bezier(0.2, 0.72, 0.22, 1);
   }
 
-  .is-ready .pixel-scene {
+  .is-ready .signal-scene {
     opacity: 1;
     transform: scale(1);
   }
 
-  .pixel-scene-frame,
-  .pixel-rain {
+  .signal-scene-frame {
     max-width: none;
     object-fit: cover;
     object-position: var(--scene-position-x) center;
-    image-rendering: pixelated;
     user-select: none;
     -webkit-user-drag: none;
-  }
-
-  .pixel-scene-open {
-    z-index: 0;
-  }
-
-  .pixel-rain {
-    z-index: 1;
-    display: block;
     pointer-events: none;
   }
 
-  .pixel-scene-blink {
-    z-index: 2;
+  /* The video only covers the still once it is actually playing. */
+  .signal-scene-video {
     opacity: 0;
-    pointer-events: none;
   }
 
-  .pixel-scene-blink.is-blinking {
+  .is-signal-playing .signal-scene-video {
     opacity: 1;
-  }
-
-  .scene-coordinate-space {
-    position: absolute;
-    top: 50%;
-    left: var(--scene-position-x);
-    z-index: 3;
-    width: max(100%, calc(100svh * 1.7768331562));
-    height: max(100%, calc(100vw * 0.5627990431));
-    container-type: size;
-    pointer-events: none;
-    transform: translate(var(--scene-translate-x), -50%);
-  }
-
-  .intro-chrome {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    pointer-events: none;
-  }
-
-  .intro-sound {
-    position: absolute;
-    border: 0;
-    padding: 0;
-    background: transparent;
-    cursor: pointer;
-    opacity: 0;
-    pointer-events: none;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    transition: opacity 420ms steps(3, end) 620ms;
-  }
-
-  .intro-sound-clock {
-    top: 43.7832%;
-    left: 90.4306%;
-    width: 8.6124%;
-    height: 8.5016%;
-    clip-path: polygon(5.5% 3%, 93.5% 3%, 100% 15%, 100% 88%, 94% 98%, 5% 98%, 0 88%, 0 15%);
-  }
-
-  .intro-sound-mobile {
-    display: none;
-  }
-
-  .intro-sound-device {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: fill;
-    image-rendering: pixelated;
-    pointer-events: none;
-    user-select: none;
-    -webkit-user-drag: none;
-  }
-
-  .intro-sound-screen {
-    position: absolute;
-    top: 22.5%;
-    left: 11.1111%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 77.7778%;
-    height: 61.25%;
-    overflow: hidden;
-    background: #010a36;
-    color: rgb(71 178 255 / 84%);
-    font-family: var(--font-pixel);
-    font-size: clamp(6px, 1.05cqh, 10px);
-    line-height: 1;
-    letter-spacing: 0.04em;
-    white-space: nowrap;
-    text-shadow: 0 0 0.45em rgb(28 185 255 / 78%);
-    clip-path: polygon(4% 0, 96% 0, 100% 10%, 100% 90%, 96% 100%, 4% 100%, 0 90%, 0 10%);
-    box-shadow: inset 0 0 0 1px rgb(45 94 232 / 36%);
-    image-rendering: pixelated;
-    transition:
-      background 120ms steps(2, end),
-      color 120ms steps(2, end),
-      filter 120ms steps(2, end),
-      box-shadow 120ms steps(2, end);
-  }
-
-  .intro-sound:hover .intro-sound-screen,
-  .intro-sound:focus-visible .intro-sound-screen {
-    color: rgb(108 218 255 / 98%);
-    filter: brightness(1.18);
-    box-shadow:
-      inset 0 0 0 1px rgb(87 164 255 / 66%),
-      0 0 0.7em rgb(37 138 255 / 42%);
-  }
-
-  .intro-sound:focus-visible {
-    outline: none;
-  }
-
-  .intro-sound:active .intro-sound-screen {
-    filter: brightness(1.34);
-  }
-
-  .intro-sound[data-sound-state="on"] .intro-sound-screen {
-    background: #021247;
-    color: #73ebff;
-    text-shadow:
-      0 0 0.35em rgb(42 216 255 / 92%),
-      0 0 0.8em rgb(32 109 255 / 64%);
-  }
-
-  .intro-sound[data-sound-state="off"] .intro-sound-screen {
-    background: #01082d;
-    color: rgb(61 116 199 / 58%);
-    text-shadow: none;
-  }
-
-  .is-ready .intro-sound {
-    opacity: 1;
-    pointer-events: auto;
   }
 
   .intro-enter {
     position: absolute;
-    top: 70.03%;
-    left: 75.18%;
-    width: 10.53%;
-    height: 12.54%;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
     border: 0;
     padding: 0;
-    background: rgb(78 112 255 / 0%);
-    clip-path: polygon(18.75% 0, 100% 3.4%, 83.5% 100%, 0 86.4%);
+    background: transparent;
     cursor: pointer;
-    opacity: 0;
-    pointer-events: none;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-    transition:
-      background 160ms steps(2, end),
-      filter 160ms steps(2, end),
-      opacity 500ms steps(2, end) 1100ms;
-  }
-
-  .is-ready .intro-enter {
-    opacity: 1;
-    pointer-events: auto;
-  }
-
-  .intro-enter:hover {
-    background: rgb(86 132 255 / 10%);
-    filter: brightness(1.12) drop-shadow(0 0 10px rgb(75 157 255 / 50%));
   }
 
   .intro-enter:focus-visible {
-    outline: 2px solid rgb(148 201 255 / 82%);
-    outline-offset: -7px;
-    background: rgb(86 132 255 / 14%);
-    filter: brightness(1.15) drop-shadow(0 0 12px rgb(75 157 255 / 62%));
-  }
-
-  .intro-enter:active {
-    background: rgb(112 151 255 / 18%);
-    filter: brightness(1.18) drop-shadow(0 0 8px rgb(75 157 255 / 56%));
+    outline: 2px solid rgb(38 48 46 / 55%);
+    outline-offset: -10px;
   }
 
   .intro-hint {
     position: absolute;
     bottom: 24px;
     left: 50%;
+    z-index: 2;
     margin: 0;
-    color: rgb(142 168 238 / 54%);
+    padding: 0.5em 0.9em 0.5em 1.1em;
+    border-radius: 2px;
+    background: rgb(232 236 230 / 62%);
+    backdrop-filter: blur(3px);
+    color: rgb(30 38 36 / 82%);
     font-family: var(--font-mono);
     font-size: 0.47rem;
     letter-spacing: 0.2em;
+    white-space: nowrap;
     opacity: 0;
+    pointer-events: none;
     transform: translateX(-50%);
     transition: opacity 700ms ease 900ms;
   }
@@ -1052,13 +319,6 @@
     display: none;
   }
 
-  @media (min-aspect-ratio: 1249 / 1000) and (max-aspect-ratio: 16 / 9) {
-    .pixel-scene {
-      --scene-position-x: 98%;
-      --scene-translate-x: -98%;
-    }
-  }
-
   @media (max-width: 720px) {
     .intro-hint {
       bottom: max(20px, env(safe-area-inset-bottom));
@@ -1066,30 +326,8 @@
   }
 
   @media (max-aspect-ratio: 1249 / 1000) {
-    .pixel-scene {
-      --scene-position-x: 43%;
-      --scene-translate-x: -43%;
-    }
-
-    .intro-enter {
-      display: none;
-    }
-
-    .intro-sound-clock {
-      display: none;
-    }
-
-    .intro-sound-mobile {
-      right: 14px;
-      bottom: max(58px, calc(env(safe-area-inset-bottom) + 52px));
-      display: block;
-      width: 116px;
-      height: 64px;
-      clip-path: polygon(5.5% 3%, 93.5% 3%, 100% 15%, 100% 88%, 94% 98%, 5% 98%, 0 88%, 0 15%);
-    }
-
-    .intro-sound-mobile .intro-sound-screen {
-      font-size: 0.54rem;
+    .signal-scene {
+      --scene-position-x: 38%;
     }
 
     .intro-hint-wide {
@@ -1102,25 +340,18 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .pixel-scene,
-    .intro-sound,
-    .intro-enter,
+    .signal-scene,
     .intro-hint {
       transition: none;
     }
 
-    .pixel-scene {
+    .signal-scene {
       opacity: 1;
       transform: none;
     }
 
-    .intro-enter,
     .intro-hint {
       opacity: 1;
-    }
-
-    .pixel-rain {
-      opacity: 0.58;
     }
   }
 </style>
