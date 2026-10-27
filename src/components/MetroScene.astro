@@ -689,6 +689,7 @@
         window.clearTimeout(channelTimer);
         channelTimer = window.setTimeout(() => {
           scene.dataset.channel = channel.id;
+          control.dataset.channel = channel.id;
           buttons.forEach((button) => {
             const selected = button.dataset.channelId === channel.id;
             button.setAttribute("aria-pressed", String(selected));

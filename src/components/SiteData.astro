@@ -25,6 +25,14 @@ const siteStats = [
   { label: "DAYS", value: daysOnline, description: `建站第 ${daysOnline} 天` },
   { label: "UPDATED", value: compactDate, description: `最近更新于 ${compactDate}` },
 ];
+
+// Keep this order in sync with metroChannels in MetroScene; the train position follows it.
+const metroStations = [
+  { id: "city", name: "城市黄昏" },
+  { id: "coast", name: "晴朗海岸" },
+  { id: "rain", name: "雨夜郊区" },
+  { id: "snow", name: "雪原清晨" },
+];
 ---
 
 <section class="site-data-panel" aria-label="站点数据">
@@ -42,12 +50,41 @@ const siteStats = [
       ))
     }
   </dl>
-  <div class="metro-controller" role="group" aria-label="列车风景场景选择" data-metro-controller>
-    <button class="metro-key" type="button" aria-label="向下：城市黄昏场景" aria-controls="metro-scene-title" aria-pressed="true" data-channel-id="city"><span class="metro-arrow" aria-hidden="true"></span></button>
-    <button class="metro-key" type="button" aria-label="向右：晴朗海岸场景" aria-controls="metro-scene-title" aria-pressed="false" data-channel-id="coast"><span class="metro-arrow" aria-hidden="true"></span></button>
-    <button class="metro-key" type="button" aria-label="向左：雨夜郊区场景" aria-controls="metro-scene-title" aria-pressed="false" data-channel-id="rain"><span class="metro-arrow" aria-hidden="true"></span></button>
-    <button class="metro-key" type="button" aria-label="向上：雪原清晨场景" aria-controls="metro-scene-title" aria-pressed="false" data-channel-id="snow"><span class="metro-arrow" aria-hidden="true"></span></button>
-    <button class="metro-dpad-center" type="button" aria-label="随机切换场景与故障动画" aria-controls="metro-scene-title" data-random-channel></button>
+  <div class="metro-controller" role="group" aria-label="风景线：选择列车停靠站" data-metro-controller data-channel="city">
+    <div class="metro-line-head">
+      <span class="metro-line-badge" aria-hidden="true">L1</span>
+      <span class="metro-line-name">风景线</span>
+      <button class="metro-line-random" type="button" aria-label="随机前往其他站点" aria-controls="metro-scene-title" data-random-channel>
+        <span aria-hidden="true">?</span>随机
+      </button>
+    </div>
+    <div class="metro-line">
+      <svg class="metro-line-train" viewBox="0 0 12 7" aria-hidden="true">
+        <rect x="2" y="0" width="8" height="1" />
+        <rect x="0" y="1" width="12" height="4" />
+        <rect class="metro-line-window" x="2" y="2" width="2" height="1" />
+        <rect class="metro-line-window" x="5" y="2" width="2" height="1" />
+        <rect class="metro-line-window" x="8" y="2" width="2" height="1" />
+        <rect x="1" y="5" width="10" height="1" />
+        <rect x="2" y="6" width="2" height="1" />
+        <rect x="8" y="6" width="2" height="1" />
+      </svg>
+      {
+        metroStations.map(({ id, name }, index) => (
+          <button
+            class="metro-line-stop"
+            type="button"
+            aria-label={`${name}站`}
+            aria-controls="metro-scene-title"
+            aria-pressed={index === 0 ? "true" : "false"}
+            data-channel-id={id}
+          >
+            <i aria-hidden="true"></i>
+            <span>{name}</span>
+          </button>
+        ))
+      }
+    </div>
   </div>
 </section>
 

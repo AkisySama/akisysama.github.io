@@ -798,123 +798,174 @@ img {
   flex-direction: column;
 }
 
-/* Four bare pixel glyphs arranged like a gamepad's face buttons. */
+/* A pixel metro line map: each stop is a scene, the train marks the current one. */
 .metro-controller {
-  --dpad-size: clamp(42px, 4.2vw, 50px);
+  --line-ink: #aaa8b0;
+  --line-rail: #4a4a4f;
+  --line-active: var(--color-pixel-stat);
 
-  display: grid;
+  display: flex;
   flex: 1;
-  grid-template-columns: repeat(3, var(--dpad-size));
-  grid-template-rows: repeat(3, var(--dpad-size));
-  place-content: center;
-  width: 100%;
+  flex-direction: column;
+  justify-content: center;
+  gap: 22px;
   min-height: 148px;
   margin-top: 14px;
-  padding: 2px clamp(10px, 2vw, 24px) 0;
-  border: 0;
-  background: none;
-  box-shadow: none;
+}
+
+:root[data-theme="light"] .metro-controller {
+  --line-ink: #55545b;
+  --line-rail: #b3ada3;
+}
+
+.metro-line-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.metro-line-badge {
+  padding: 4px 5px 3px;
+  background: var(--line-ink);
+  color: var(--color-surface);
   font-family: var(--font-pixel);
+  font-size: 0.45rem;
+  line-height: 1;
 }
 
-.metro-controller .metro-key {
-  --dpad-face: #aaa8b0;
+.metro-line-name {
+  color: var(--color-muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.14em;
+}
 
-  display: grid;
-  width: var(--dpad-size);
-  height: var(--dpad-size);
-  min-width: 0;
-  min-height: 0;
-  place-items: center;
-  border: 0;
+.metro-line-random {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  border: 1px solid var(--color-border);
   border-radius: 0;
-  padding: 0;
-  background: var(--dpad-face);
-  box-shadow:
-    inset 2px 2px rgb(255 255 255 / 4%),
-    inset -2px -2px rgb(0 0 0 / 24%);
-  color: #55545b;
+  padding: 5px 9px;
+  background: none;
+  color: var(--color-muted);
+  font-size: 0.66rem;
   cursor: pointer;
-  transition: background 120ms ease, color 120ms ease, filter 120ms ease, transform 100ms ease;
+  transition: border-color 120ms ease, color 120ms ease;
 }
 
-.metro-controller .metro-arrow {
-  display: block;
-  width: 22px;
-  height: 22px;
-  background: currentColor;
-  clip-path: polygon(
-    40% 0, 60% 0, 60% 10%, 70% 10%, 70% 20%, 80% 20%, 80% 30%,
-    90% 30%, 90% 40%, 100% 40%, 100% 60%, 60% 60%, 60% 100%,
-    40% 100%, 40% 60%, 0 60%, 0 40%, 10% 40%, 10% 30%, 20% 30%,
-    20% 20%, 30% 20%, 30% 10%, 40% 10%
-  );
-  image-rendering: pixelated;
+.metro-line-random span {
+  color: var(--line-active);
+  font-family: var(--font-pixel);
+  font-size: 0.5rem;
 }
 
-.metro-controller .metro-key[data-channel-id="snow"] { grid-area: 1 / 2; }
-.metro-controller .metro-key[data-channel-id="rain"] { grid-area: 2 / 1; }
-.metro-controller .metro-key[data-channel-id="coast"] { grid-area: 2 / 3; }
-.metro-controller .metro-key[data-channel-id="city"] { grid-area: 3 / 2; }
-
-.metro-controller .metro-key[data-channel-id="snow"] {
-  clip-path: polygon(14% 0, 86% 0, 100% 14%, 100% 100%, 0 100%, 0 14%);
-}
-
-.metro-controller .metro-key[data-channel-id="rain"] {
-  clip-path: polygon(0 14%, 14% 0, 100% 0, 100% 100%, 14% 100%, 0 86%);
-}
-
-.metro-controller .metro-key[data-channel-id="coast"] {
-  clip-path: polygon(0 0, 86% 0, 100% 14%, 100% 86%, 86% 100%, 0 100%);
-}
-
-.metro-controller .metro-key[data-channel-id="city"] {
-  clip-path: polygon(0 0, 100% 0, 100% 86%, 86% 100%, 14% 100%, 0 86%);
-}
-
-.metro-dpad-center {
-  grid-area: 2 / 2;
-  border: 0;
-  border-radius: 0;
-  padding: 0;
-  background: #aaa8b0;
-  box-shadow:
-    inset 2px 2px rgb(255 255 255 / 20%),
-    inset -2px -2px rgb(0 0 0 / 18%);
-  cursor: pointer;
-  transition: background 120ms ease, box-shadow 120ms ease, transform 100ms ease;
-}
-
-.metro-controller .metro-key[data-channel-id="coast"] .metro-arrow { transform: rotate(90deg); }
-.metro-controller .metro-key[data-channel-id="city"] .metro-arrow { transform: rotate(180deg); }
-.metro-controller .metro-key[data-channel-id="rain"] .metro-arrow { transform: rotate(-90deg); }
-
-.metro-controller .metro-key:hover,
-.metro-controller .metro-key:focus-visible,
-.metro-dpad-center:hover,
-.metro-dpad-center:focus-visible {
-  background: #bbb9c1;
+.metro-line-random:hover,
+.metro-line-random:focus-visible {
+  border-color: var(--line-ink);
+  color: var(--color-text);
   outline: none;
 }
 
-.metro-controller .metro-key:hover,
-.metro-controller .metro-key:focus-visible {
-  color: #45444a;
-  filter: drop-shadow(0 0 4px rgb(169 166 178 / 13%));
-  box-shadow: none;
+.metro-line-random:active {
+  transform: translateY(1px);
 }
 
-.metro-controller .metro-key:active,
-.metro-dpad-center:active {
-  transform: translateY(1px) scale(0.96);
+.metro-line {
+  --stop: 0;
+
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding-top: 22px;
 }
 
-.metro-controller .metro-key[aria-pressed="true"] {
-  background: #ceccd3;
-  color: #3e3d43;
-  filter: drop-shadow(0 0 4px rgb(177 174 183 / 12%));
-  box-shadow: none;
+.metro-controller[data-channel="coast"] .metro-line { --stop: 1; }
+.metro-controller[data-channel="rain"] .metro-line { --stop: 2; }
+.metro-controller[data-channel="snow"] .metro-line { --stop: 3; }
+
+/* The rail runs between the first and last stop centres. */
+.metro-line::before {
+  position: absolute;
+  top: 27px;
+  right: 12.5%;
+  left: 12.5%;
+  height: 4px;
+  background: var(--line-rail);
+  content: "";
+}
+
+.metro-line-train {
+  position: absolute;
+  top: 0;
+  left: calc(12.5% + var(--stop) * 25%);
+  width: 24px;
+  height: 14px;
+  fill: var(--line-ink);
+  shape-rendering: crispEdges;
+  transform: translateX(-50%);
+  transition: left 520ms steps(8, end);
+  animation: metro-line-idle 1.2s steps(1, end) infinite;
+}
+
+.metro-line-train .metro-line-window {
+  fill: var(--line-active);
+}
+
+@keyframes metro-line-idle {
+  50% { translate: 0 -1px; }
+}
+
+.metro-line-stop {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  background: none;
+  color: var(--color-muted);
+  font-size: 0.66rem;
+  cursor: pointer;
+  transition: color 120ms ease;
+}
+
+.metro-line-stop i {
+  width: 14px;
+  height: 14px;
+  border: 3px solid var(--line-rail);
+  background: var(--color-surface);
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.metro-line-stop span {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.metro-line-stop:hover,
+.metro-line-stop:focus-visible {
+  color: var(--color-text);
+  outline: none;
+}
+
+.metro-line-stop:hover i,
+.metro-line-stop:focus-visible i {
+  border-color: var(--line-ink);
+}
+
+.metro-line-stop[aria-pressed="true"] {
+  color: var(--color-heading);
+}
+
+.metro-line-stop[aria-pressed="true"] i {
+  border-color: var(--line-active);
+  background: var(--line-active);
+  box-shadow: 0 0 0 3px var(--color-surface), 0 0 10px rgb(159 205 232 / 28%);
 }
 
 .footer-links {
