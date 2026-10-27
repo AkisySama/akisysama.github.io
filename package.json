@@ -8,8 +8,7 @@
     "dev": "astro dev --open /keystatic",
     "write": "astro dev --open /keystatic",
     "build": "astro check && astro build",
-    "preview": "astro preview",
-    "test": "astro check && node scripts/verify-migration.mjs && node scripts/verify-theme.mjs && node scripts/verify-intro.mjs"
+    "preview": "astro preview"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",

@@ -3,7 +3,7 @@ name: Pages
 on:
   push:
     branches:
-      - main # default branch
+      - main
 
 concurrency:
   group: pages
@@ -14,10 +14,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          # If your repository depends on submodule, please see: https://github.com/actions/checkout
-          submodules: recursive
       - name: Use Node.js 24.x
         uses: actions/setup-node@v6
         with:
