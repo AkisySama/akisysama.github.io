@@ -1,0 +1,259 @@
+---
+// Line-art construction site in the hero. All geometry is in the 1000×400 viewBox;
+// the ground sits at y=330 and the crane trolley runs along the jib at y=92.
+const ground = 330;
+
+// Tower crane mast: a lattice between x=548 and x=572.
+const mastTop = 86;
+const mastPanels = Array.from({ length: Math.round((ground - mastTop) / 24) }, (_, index) => ground - index * 24);
+
+// Jib truss from the mast to the tip, and the counter-jib behind it.
+const jibPanels = Array.from({ length: 16 }, (_, index) => 572 + index * 22);
+const counterJibPanels = Array.from({ length: 4 }, (_, index) => 548 - (index + 1) * 22);
+
+// Building: four floors, the top one still a bare frame.
+const columns = [630, 678, 726, 774, 822, 870];
+const slabs = [300, 270, 240];
+// Window rows sit on each finished floor's base line.
+const finishedFloors = [330, 300, 270];
+const litWindows = new Set(["678-330", "774-300", "630-270", "822-330"]);
+
+const scaffoldLevels = Array.from({ length: 9 }, (_, index) => ground - index * 15);
+const hatch = Array.from({ length: 70 }, (_, index) => 300 + index * 10);
+const fencePosts = Array.from({ length: 8 }, (_, index) => 380 + index * 20);
+---
+
+<svg
+  class="construction-site"
+  viewBox="0 0 1000 400"
+  preserveAspectRatio="xMaxYMax meet"
+  role="img"
+  aria-label="施工中的工地：塔吊正把钢梁吊上正在搭建的楼层"
+>
+  <defs>
+    <clipPath id="crane-cable-clip">
+      <rect x="-40" y="0" width="80" height="400" />
+    </clipPath>
+  </defs>
+
+  <!-- Survey marks and the building height. -->
+  <g class="site-faint">
+    <path d="M374 120h12M380 114v12M974 40h12M980 34v12M414 360h12M420 354v12" />
+    <path d="M972 330V196M966 330h12M966 196h12" />
+  </g>
+  <text class="site-label" x="958" y="190" text-anchor="end">B-04 · 41.6M</text>
+
+  <!-- Ground, hatching and site fence. -->
+  <line class="site-line" x1="300" y1={ground} x2="1000" y2={ground} />
+  <g class="site-faint">
+    {hatch.map((x) => <line x1={x} y1={ground + 2} x2={x - 8} y2={ground + 10} />)}
+    {fencePosts.map((x) => <line x1={x} y1={ground} x2={x} y2={ground - 18} />)}
+    <path d="M380 316h140M380 322h140" />
+  </g>
+
+  <!-- Building frame. -->
+  <g class="site-line">
+    {columns.map((x) => <line x1={x} y1={ground} x2={x} y2="210" />)}
+    {slabs.map((y) => <line class="site-slab" x1="626" y1={y} x2="874" y2={y} />)}
+    <path d="M626 210H726M774 210H874" />
+    <path d="M630 210v-14M678 210v-14M822 210v-14M870 210v-14" />
+  </g>
+  <g class="site-soft">
+    <path d="M678 240 726 210M678 210 726 240M822 240 870 210M822 210 870 240" />
+    {
+      finishedFloors.flatMap((y) =>
+        columns.slice(0, -1).map((x) => (
+          <rect
+            class:list={{ "site-window-lit": litWindows.has(`${x}-${y}`) }}
+            x={x + 9}
+            y={y - 22}
+            width="30"
+            height="13"
+          />
+        )),
+      )
+    }
+  </g>
+
+  <!-- Scaffolding on the near face. -->
+  <g class="site-soft">
+    <path d="M610 330V195M622 330V195" />
+    {scaffoldLevels.map((y) => <line x1="606" y1={y} x2="626" y2={y} />)}
+    {
+      scaffoldLevels.slice(0, -1).map((y, index) =>
+        index % 2 === 0 ? <line x1="610" y1={y} x2="622" y2={y - 15} /> : <line x1="622" y1={y} x2="610" y2={y - 15} />,
+      )
+    }
+  </g>
+
+  <!-- Steel beam stock waiting under the jib tip. -->
+  <g class="site-line">
+    <rect x="881" y="324" width="48" height="6" />
+    <rect x="884" y="318" width="48" height="6" />
+    <rect x="879" y="312" width="48" height="6" />
+  </g>
+
+  <!-- Tower crane. -->
+  <g class="site-line">
+    <path d={`M548 ${ground}V${mastTop}M572 ${ground}V${mastTop}`} />
+    {mastPanels.map((y) => <line x1="548" y1={y} x2="572" y2={y} />)}
+    {mastPanels.map((y, index) => (index % 2 === 0 ? <line x1="548" y1={y} x2="572" y2={y - 24} /> : <line x1="572" y1={y} x2="548" y2={y - 24} />))}
+    <path d="M540 340h40M544 330h32" />
+
+    <rect x="540" y="74" width="44" height="12" />
+    <rect x="574" y="86" width="20" height="16" />
+    <path d="M578 90h12v6h-12z" />
+
+    <path d="M572 74H930L930 86H572" />
+    {jibPanels.map((x) => <line x1={x} y1="86" x2={x + 11} y2="74" />)}
+    {jibPanels.map((x) => <line x1={x + 11} y1="74" x2={x + 22} y2="86" />)}
+
+    <path d="M548 74H458V86H548" />
+    {counterJibPanels.map((x) => <line x1={x} y1="74" x2={x} y2="86" />)}
+    <rect x="462" y="86" width="20" height="22" />
+    <rect x="484" y="86" width="20" height="22" />
+
+    <path d="M548 74 560 26 572 74" />
+  </g>
+  <g class="site-soft">
+    <path d="M560 26 760 74M560 26 930 74M560 26 460 74" />
+  </g>
+
+  <!-- The beam that lands in the gap of the top frame. -->
+  <rect class="site-line site-beam-placed" x="726" y="204" width="48" height="6" />
+  <g class="site-sparks">
+    <path d="M774 208l7-5M774 208l9 1M774 208l5 7M774 208l-2 8" />
+  </g>
+
+  <!-- Trolley, cable and hook. The trolley slides along the jib; the hook rises and lowers. -->
+  <g transform="translate(905 86)">
+    <g class="site-trolley">
+      <rect class="site-line" x="-9" y="0" width="18" height="6" />
+      <g transform="translate(0 6)">
+        <g clip-path="url(#crane-cable-clip)">
+          <g class="site-hook">
+            <path class="site-soft" d="M-2 -400V0M2 -400V0" />
+            <rect class="site-line" x="-5" y="0" width="10" height="10" />
+            <path class="site-line" d="M0 10v4a3 3 0 0 1-3 3" />
+            <g class="site-beam-hanging">
+              <path class="site-soft" d="M0 12 -22 24M0 12 22 24" />
+              <rect class="site-line" x="-24" y="24" width="48" height="6" />
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>
+
+<style>
+  .construction-site {
+    --site-cycle: 18s;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: square;
+    stroke-width: 1;
+  }
+
+  .construction-site :global(*) {
+    vector-effect: non-scaling-stroke;
+  }
+
+  .site-line {
+    opacity: 0.86;
+  }
+
+  .site-slab {
+    stroke-width: 2;
+  }
+
+  .site-soft {
+    opacity: 0.42;
+  }
+
+  .site-faint {
+    opacity: 0.24;
+  }
+
+  .site-window-lit {
+    fill: currentColor;
+    fill-opacity: 0.18;
+  }
+
+  .site-label {
+    fill: currentColor;
+    stroke: none;
+    opacity: 0.4;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+  }
+
+  .site-sparks {
+    stroke: var(--color-accent);
+    opacity: 0;
+    animation: site-sparks var(--site-cycle) linear infinite;
+  }
+
+  /* One cycle: lift a beam from the stock, carry it in, set it on the frame, return empty. */
+  .site-trolley {
+    animation: site-trolley var(--site-cycle) ease-in-out infinite;
+  }
+
+  .site-hook {
+    transform: translateY(196px);
+    animation: site-hook var(--site-cycle) ease-in-out infinite;
+  }
+
+  .site-beam-hanging {
+    animation: site-beam-hanging var(--site-cycle) linear infinite;
+  }
+
+  .site-beam-placed {
+    opacity: 0;
+    animation: site-beam-placed var(--site-cycle) linear infinite;
+  }
+
+  @keyframes site-trolley {
+    0%, 22% { transform: translateX(0); }
+    40%, 70% { transform: translateX(-155px); }
+    86%, 100% { transform: translateX(0); }
+  }
+
+  @keyframes site-hook {
+    0%, 6% { transform: translateY(196px); }
+    22%, 40% { transform: translateY(40px); }
+    54%, 60% { transform: translateY(88px); }
+    70%, 86% { transform: translateY(40px); }
+    98%, 100% { transform: translateY(196px); }
+  }
+
+  @keyframes site-beam-hanging {
+    0%, 56.9% { opacity: 1; }
+    57%, 98.9% { opacity: 0; }
+    99%, 100% { opacity: 1; }
+  }
+
+  @keyframes site-beam-placed {
+    0%, 56.9% { opacity: 0; }
+    57%, 92% { opacity: 0.86; }
+    100% { opacity: 0; }
+  }
+
+  @keyframes site-sparks {
+    0%, 60% { opacity: 0; }
+    61%, 63%, 66%, 70%, 74% { opacity: 0.9; }
+    62%, 64.5%, 68%, 72%, 76%, 100% { opacity: 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .site-trolley,
+    .site-hook,
+    .site-beam-hanging,
+    .site-beam-placed,
+    .site-sparks {
+      animation: none;
+    }
+  }
+</style>
