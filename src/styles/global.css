@@ -272,27 +272,6 @@ img {
   overflow: hidden;
 }
 
-.hero-portrait svg {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: auto;
-  height: 100%;
-  aspect-ratio: 5 / 2;
-  color: var(--color-heading);
-}
-
-.hero-portrait figcaption {
-  position: absolute;
-  right: 42px;
-  bottom: 28px;
-  z-index: 1;
-  color: var(--color-accent-soft);
-  font-family: var(--font-mono);
-  font-size: 0.6rem;
-  letter-spacing: 0.16em;
-}
-
 .editorial-grid {
   display: grid;
   grid-template-columns: 1.1fr 1fr 0.94fr;
@@ -954,10 +933,6 @@ img {
     margin-left: 70px;
   }
 
-  .hero-portrait svg {
-    right: -18px;
-  }
-
   .editorial-grid {
     grid-template-columns: 1fr 1fr;
   }
@@ -1030,19 +1005,6 @@ img {
     bottom: 0;
     left: 0;
     height: 330px;
-  }
-
-  .hero-portrait svg {
-    top: auto;
-    right: -12px;
-    bottom: 0;
-    height: 250px;
-  }
-
-  .hero-portrait figcaption {
-    right: 24px;
-    bottom: 20px;
-    font-size: 0.54rem;
   }
 
   .editorial-grid {

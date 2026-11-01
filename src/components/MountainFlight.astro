@@ -1,0 +1,369 @@
+---
+// Pixel Claude on a broom, one character per pixel. Palette keys are below.
+const sprite = [
+  ".............KK...............",
+  "..............KKK.............",
+  "...............KKK............",
+  "..............KKKKK...........",
+  ".............KKKKKKK..........",
+  ".............kkkkkkk..........",
+  ".........KKKKKKKKKKKKKKK......",
+  "...........CCCCCCCCCCCC.......",
+  "...........CCCCCCCCCCCC.......",
+  "...........CCCECCCCECCC.......",
+  ".........CCCCCECCCCECCCCC.....",
+  ".........CCCCCCCCCCCCCCCC.....",
+  "..YYyYYYY..CCCCCCCCCCCC.......",
+  "yYYYyYYYbb..C.C....C.C........",
+  "YYyYYYYYbbBBBBBBBBBBBBBBBBBBBB",
+  "yYYYYyYYbb....................",
+  "..YYyYYY......................",
+];
+
+const palette: Record<string, string> = {
+  K: "#2e2d33",
+  k: "#5a5764",
+  C: "#d97757",
+  E: "#1d1c1f",
+  Y: "#e6c36a",
+  y: "#b58a3c",
+  b: "#5b3a21",
+  B: "#8a5a34",
+};
+
+const pixels = sprite.flatMap((row, y) =>
+  [...row].flatMap((key, x) => (palette[key] ? [{ x, y, key, fill: palette[key] }] : [])),
+);
+const isBristle = ({ key }: { key: string }) => key === "Y" || key === "y";
+---
+
+<div class="mountain-flight" data-mountain-flight>
+  <canvas class="mountain-flight-canvas" aria-hidden="true"></canvas>
+  <svg
+    class="mountain-flight-claude"
+    viewBox={`0 0 ${sprite[0].length} ${sprite.length}`}
+    role="img"
+    aria-label="戴着巫师帽的 Claude 骑着扫帚飞过山脉"
+  >
+    <g class="mountain-flight-bristles">
+      {pixels.filter(isBristle).map(({ x, y, fill }) => <rect x={x} y={y} width="1" height="1" fill={fill} />)}
+    </g>
+    {pixels.filter((pixel) => !isBristle(pixel)).map(({ x, y, fill }) => <rect x={x} y={y} width="1" height="1" fill={fill} />)}
+  </svg>
+</div>
+
+<style>
+  .mountain-flight {
+    position: absolute;
+    inset: 0;
+    color: var(--color-heading);
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 24%);
+    mask-image: linear-gradient(to right, transparent, #000 24%);
+  }
+
+  .mountain-flight-canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .mountain-flight-claude {
+    position: absolute;
+    top: 15%;
+    left: 52%;
+    width: 132px;
+    height: auto;
+    shape-rendering: crispEdges;
+    will-change: transform;
+    animation: claude-bob 3.2s ease-in-out infinite alternate;
+  }
+
+  .mountain-flight-bristles {
+    transform-box: fill-box;
+    transform-origin: right center;
+    animation: claude-bristles 0.7s ease-in-out infinite alternate;
+  }
+
+  @keyframes claude-bob {
+    from { transform: translate(-50%, 3px) rotate(-1.2deg); }
+    to { transform: translate(-50%, -7px) rotate(1.2deg); }
+  }
+
+  @keyframes claude-bristles {
+    from { transform: scaleY(0.9) skewY(-2deg); }
+    to { transform: scaleY(1.08) skewY(2deg); }
+  }
+
+  @media (max-width: 720px) {
+    .mountain-flight {
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+
+    .mountain-flight-claude {
+      top: 14%;
+      left: 50%;
+      width: 100px;
+    }
+  }
+</style>
+
+<script>
+  // Every layer is drawn once into a tile PERIOD columns wide, then slid at full
+  // frame rate. All terrain functions repeat every PERIOD columns, so tiles loop.
+  const PERIOD = 600;
+  const FONT_SIZE = 8;
+  const LINE_HEIGHT = 9;
+  const MAX_PIXEL_RATIO = 2;
+
+  // Back to front. base and amplitude are fractions of the canvas height, speed is
+  // CSS px per second, haze flattens contrast with distance, waves are [frequency, weight, phase].
+  const layers = [
+    {
+      base: 0.46, amplitude: 0.24, speed: 5, ink: 0.5, haze: 0.45,
+      waves: [[5, 0.42, 0.3], [11, 0.26, 1.7], [23, 0.16, 4.1], [47, 0.1, 2.4], [97, 0.06, 5.2]],
+    },
+    {
+      base: 0.36, amplitude: 0.25, speed: 10, ink: 0.75, haze: 0.2,
+      waves: [[7, 0.42, 2.2], [13, 0.26, 0.6], [29, 0.16, 3.3], [59, 0.1, 1.1], [113, 0.06, 4.4]],
+    },
+    {
+      base: 0.22, amplitude: 0.18, speed: 18, ink: 1, haze: 0,
+      waves: [[9, 0.42, 5.1], [19, 0.26, 2.8], [37, 0.16, 1.2], [73, 0.1, 3.9], [131, 0.06, 0.7]],
+    },
+  ];
+
+  // Ink strength of each brightness bucket, darkest to brightest.
+  const inkLevels = [0.2, 0.34, 0.52, 0.76, 1];
+
+  const mod = (value: number, size: number) => ((value % size) + size) % size;
+  const clamp = (value: number, low: number, high: number) => Math.min(high, Math.max(low, value));
+  const smooth = (t: number) => t * t * (3 - 2 * t);
+
+  const hash = (x: number, y: number, z: number) => {
+    let h = (x * 374761393 + y * 668265263 + z * 1442695041) | 0;
+    h = Math.imul(h ^ (h >>> 13), 1274126177);
+    h = Math.imul(h ^ (h >>> 15), 1911520717);
+    return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
+  };
+
+  // Value noise that wraps at PERIOD. cellWidth must divide PERIOD exactly.
+  const noise = (x: number, y: number, cellWidth: number, cellHeight: number, seed: number) => {
+    const cells = PERIOD / cellWidth;
+    const gridX = x / cellWidth;
+    const gridY = y / cellHeight;
+    const i = Math.floor(gridX);
+    const j = Math.floor(gridY);
+    const u = smooth(gridX - i);
+    const v = smooth(gridY - j);
+    const at = (a: number, b: number) => hash(mod(a, cells), b, seed);
+    const top = at(i, j) + (at(i + 1, j) - at(i, j)) * u;
+    const bottom = at(i, j + 1) + (at(i + 1, j + 1) - at(i, j + 1)) * u;
+    return top + (bottom - top) * v;
+  };
+
+  const buildHeights = (rows: number) =>
+    layers.map(({ base, amplitude, waves }) => {
+      const total = waves.reduce((sum, [, weight]) => sum + weight, 0);
+      return Float32Array.from({ length: PERIOD }, (_, x) => {
+        const ridge = waves.reduce(
+          (sum, [frequency, weight, phase]) =>
+            sum + weight * (1 - Math.abs(Math.sin((Math.PI * frequency * x) / PERIOD + phase))) ** 2,
+          0,
+        );
+        return rows * (base + amplitude * (ridge / total - 0.3) * 2);
+      });
+    });
+
+  // Light comes from the upper left: left flanks catch it, right flanks fall into
+  // shadow, diagonal creases cut the rock, and high ground carries snow.
+  const shadeCell = (heights: Float32Array, layer: number, x: number, row: number, depth: number, rows: number) => {
+    const reach = Math.round(2 + depth * 1.4);
+    const facet = (heights[mod(x + reach, PERIOD)] - heights[mod(x - reach, PERIOD)]) / reach;
+    const side = clamp(facet * 1.5, -1, 1);
+    const slantedX = x + (side >= 0 ? row : -row) * 1.3;
+    const rock = noise(slantedX, row, 25, 7, layer * 7 + 1) - 0.5;
+    const grain = noise(slantedX, row, 6, 2, layer * 7 + 2) - 0.5;
+    const crease = Math.abs(noise(slantedX, row, 12, 5, layer * 7 + 3) * 2 - 1);
+    const altitude = (rows - row) / rows;
+    const snow = Math.max(0, altitude - 0.42) * 1.1 * Math.max(0, 1 - depth / 7);
+    const rim = Math.max(0, 1 - depth / 3) * 0.14;
+    const light = 0.5 + side * 0.24 + rock * 0.4 + grain * 0.24 + snow + rim - (crease < 0.12 ? 0.16 : 0);
+    // Glyphs keep the rock texture; the ink fades towards the foot of each layer so nearer ridges stand out.
+    const fade = 1 - Math.min(0.6, depth * 0.024);
+    return { light, side, fade };
+  };
+
+  const glyphForLight = (light: number, side: number, roll: number) => {
+    const stroke = side >= 0 ? "/" : "\\";
+    if (light < 0.16) return " ";
+    if (light < 0.3) return roll < 0.75 ? "." : " ";
+    if (light < 0.4) return roll < 0.5 ? ":" : "'";
+    if (light < 0.56) return roll < 0.7 ? stroke : ";";
+    if (light < 0.7) return roll < 0.5 ? stroke : "x";
+    if (light < 0.84) return roll < 0.5 ? "X" : "A";
+    return roll < 0.5 ? "#" : "M";
+  };
+
+  const setupMountainFlight = () => {
+    document.querySelectorAll<HTMLElement>("[data-mountain-flight]").forEach((root) => {
+      if (root.dataset.bound === "true") return;
+      root.dataset.bound = "true";
+
+      const canvas = root.querySelector("canvas")!;
+      const context = canvas.getContext("2d")!;
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+      let tiles: Array<{ image: HTMLCanvasElement; top: number }> = [];
+      let tileKey = "";
+      let lastPositions = "";
+      let ratio = 1;
+      let frame = 0;
+      let visible = false;
+
+      const buildTiles = (height: number) => {
+        const styles = getComputedStyle(root);
+        const font = `${FONT_SIZE}px ${styles.getPropertyValue("--font-mono") || "monospace"}`;
+        const surface = styles.getPropertyValue("--color-surface");
+        context.font = font;
+        const cellWidth = context.measureText("M").width;
+        const rows = Math.ceil(height / LINE_HEIGHT);
+        const heights = buildHeights(rows);
+
+        tiles = layers.map(({ ink, haze }, layer) => {
+          const ridgeRows = Array.from(heights[layer], (value) => clamp(Math.round(rows - value), 0, rows - 1));
+          const topRow = Math.max(0, Math.min(...ridgeRows) - 1);
+          const image = document.createElement("canvas");
+          image.width = Math.round(PERIOD * cellWidth * ratio);
+          image.height = Math.ceil((rows - topRow) * LINE_HEIGHT * ratio);
+          const tile = image.getContext("2d")!;
+          tile.scale(ratio, ratio);
+          tile.translate(0, -topRow * LINE_HEIGHT);
+          tile.font = font;
+          tile.textBaseline = "top";
+
+          // Opaque silhouette, so this layer hides the ridges behind it.
+          tile.fillStyle = surface;
+          ridgeRows.forEach((ridgeRow, x) => {
+            tile.fillRect(x * cellWidth, ridgeRow * LINE_HEIGHT, cellWidth + 0.5, (rows - ridgeRow) * LINE_HEIGHT);
+          });
+
+          const buckets = inkLevels.map(() =>
+            Array.from({ length: rows - topRow }, () => new Array<string>(PERIOD).fill(" ")),
+          );
+          const place = (x: number, row: number, glyph: string, light: number) => {
+            const seen = light * (1 - haze) + 0.4 * haze;
+            const bucket = clamp(Math.floor(seen * inkLevels.length), 0, inkLevels.length - 1);
+            buckets[bucket][row - topRow][x] = glyph;
+          };
+
+          for (let x = 0; x < PERIOD; x++) {
+            const ridgeRow = ridgeRows[x];
+            const left = ridgeRows[mod(x - 1, PERIOD)];
+            const right = ridgeRows[mod(x + 1, PERIOD)];
+            const rimEnd = Math.max(ridgeRow, Math.min(Math.max(left, right), ridgeRow + 4) - 1);
+
+            for (let row = ridgeRow; row < rows; row++) {
+              const depth = row - ridgeRow;
+              const { light, side, fade } = shadeCell(heights[layer], layer, x, row, depth, rows);
+              if (depth === 0 || row < rimEnd) {
+                // A continuous outline, closed down the steep steps of the ridge.
+                let edge = "-";
+                if (ridgeRow <= left && ridgeRow <= right) edge = ridgeRow < left || ridgeRow < right ? "^" : "-";
+                else if (right < ridgeRow) edge = "/";
+                else if (left < ridgeRow) edge = "\\";
+                place(x, row, edge, Math.max(light, side >= 0 ? 0.82 : 0.56));
+              } else {
+                const glyph = glyphForLight(light, side, hash(x, row, layer + 11));
+                if (glyph !== " ") place(x, row, glyph, light * fade);
+              }
+            }
+          }
+
+          tile.fillStyle = styles.color;
+          buckets.forEach((lines, bucket) => {
+            tile.globalAlpha = inkLevels[bucket] * ink;
+            lines.forEach((cells, index) => {
+              const line = cells.join("");
+              if (line.trim()) tile.fillText(line, 0, (index + topRow) * LINE_HEIGHT);
+            });
+          });
+
+          return { image, top: Math.round(topRow * LINE_HEIGHT * ratio) };
+        });
+      };
+
+      const draw = (time: number) => {
+        const positions = tiles.map(({ image }, index) =>
+          Math.round(mod((time / 1000) * layers[index].speed * ratio, image.width)),
+        );
+        const key = positions.join();
+        if (key === lastPositions) return;
+        lastPositions = key;
+
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        tiles.forEach(({ image, top }, index) => {
+          for (let x = -positions[index]; x < canvas.width; x += image.width) {
+            context.drawImage(image, x, top);
+          }
+        });
+      };
+
+      const currentTime = () => (reducedMotion.matches ? 0 : performance.now());
+
+      const resize = (rebuild = false) => {
+        const { width, height } = root.getBoundingClientRect();
+        if (!width || !height) return;
+        ratio = Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO);
+        canvas.width = Math.round(width * ratio);
+        canvas.height = Math.round(height * ratio);
+        // Width only changes how much of a tile shows; tiles depend on height and pixel ratio.
+        const key = `${height}:${ratio}`;
+        if (rebuild || key !== tileKey) {
+          tileKey = key;
+          buildTiles(height);
+        }
+        lastPositions = "";
+        draw(currentTime());
+      };
+
+      const loop = (time: number) => {
+        draw(time);
+        frame = window.requestAnimationFrame(loop);
+      };
+
+      const start = () => {
+        window.cancelAnimationFrame(frame);
+        if (visible && !document.hidden && !reducedMotion.matches) {
+          frame = window.requestAnimationFrame(loop);
+        }
+      };
+
+      const resizeObserver = new ResizeObserver(() => resize());
+      const visibilityObserver = new IntersectionObserver(([entry]) => {
+        visible = entry.isIntersecting;
+        start();
+      });
+      const themeObserver = new MutationObserver(() => resize(true));
+
+      resizeObserver.observe(root);
+      visibilityObserver.observe(root);
+      themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+      document.addEventListener("visibilitychange", start);
+
+      document.addEventListener(
+        "astro:before-swap",
+        () => {
+          window.cancelAnimationFrame(frame);
+          resizeObserver.disconnect();
+          visibilityObserver.disconnect();
+          themeObserver.disconnect();
+          document.removeEventListener("visibilitychange", start);
+        },
+        { once: true },
+      );
+    });
+  };
+
+  document.addEventListener("astro:page-load", setupMountainFlight);
+  setupMountainFlight();
+</script>

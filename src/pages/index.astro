@@ -1,8 +1,8 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
-import ConstructionSite from "@components/ConstructionSite.astro";
 import IntroSequence from "@components/IntroSequence.astro";
 import MetroScene from "@components/MetroScene.astro";
+import MountainFlight from "@components/MountainFlight.astro";
 import SiteData from "@components/SiteData.astro";
 import { ArrowRight } from "@lucide/astro";
 import { formatDate } from "@utils/dates";
@@ -32,10 +32,9 @@ const selectedImages = [
       </p>
     </div>
 
-    <figure class="hero-portrait">
-      <ConstructionSite />
-      <figcaption>UNDER CONSTRUCTION / AKISY’S JOURNAL</figcaption>
-    </figure>
+    <div class="hero-portrait">
+      <MountainFlight />
+    </div>
   </section>
 
   <MetroScene />
