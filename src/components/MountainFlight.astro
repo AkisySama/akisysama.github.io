@@ -34,22 +34,42 @@ const palette: Record<string, string> = {
 const pixels = sprite.flatMap((row, y) =>
   [...row].flatMap((key, x) => (palette[key] ? [{ x, y, key, fill: palette[key] }] : [])),
 );
-const isBristle = ({ key }: { key: string }) => key === "Y" || key === "y";
+const pick = (keys: string) => pixels.filter(({ key }) => keys.includes(key));
+const viewBox = `0 0 ${sprite[0].length} ${sprite.length}`;
+// Claude's own pixels, used as the grab handle and as the broom's seat.
+const seat = { x: 9, y: 0, width: 16, height: 14 };
+// Two X eyes, centred on the columns of the open eyes.
+const dazedEyes = [14, 19].flatMap((column) =>
+  [[-1, 8], [1, 8], [0, 9], [-1, 10], [1, 10]].map(([dx, y]) => ({ x: column + dx, y })),
+);
 ---
 
 <div class="mountain-flight" data-mountain-flight>
   <canvas class="mountain-flight-canvas" aria-hidden="true"></canvas>
   <svg
-    class="mountain-flight-claude"
-    viewBox={`0 0 ${sprite[0].length} ${sprite.length}`}
+    class="mountain-flight-sprite mountain-flight-broom"
+    viewBox={viewBox}
     role="img"
     aria-label="戴着巫师帽的 Claude 骑着扫帚飞过山脉"
   >
     <g class="mountain-flight-bristles">
-      {pixels.filter(isBristle).map(({ x, y, fill }) => <rect x={x} y={y} width="1" height="1" fill={fill} />)}
+      {pick("Yy").map(({ x, y, fill }) => <rect x={x} y={y} width="1" height="1" fill={fill} />)}
     </g>
-    {pixels.filter((pixel) => !isBristle(pixel)).map(({ x, y, fill }) => <rect x={x} y={y} width="1" height="1" fill={fill} />)}
+    {pick("bB").map(({ x, y, fill }) => <rect x={x} y={y} width="1" height="1" fill={fill} />)}
+    <rect data-seat fill="none" {...seat} />
   </svg>
+  <div class="mountain-flight-sprite mountain-flight-claude" data-state="riding">
+    <svg viewBox={viewBox} aria-hidden="true">
+      {pick("KkCE").map(({ x, y, key, fill }) => <rect x={x} y={y} width="1" height="1" fill={key === "E" ? palette.C : fill} />)}
+      <g class="mountain-flight-eyes-open">
+        {pick("E").map(({ x, y, fill }) => <rect x={x} y={y} width="1" height="1" fill={fill} />)}
+      </g>
+      <g class="mountain-flight-eyes-dazed">
+        {dazedEyes.map(({ x, y }) => <rect x={x} y={y} width="1" height="1" fill={palette.E} />)}
+      </g>
+    </svg>
+    <div class="mountain-flight-grab"></div>
+  </div>
 </div>
 
 <style>
@@ -57,25 +77,65 @@ const isBristle = ({ key }: { key: string }) => key === "Y" || key === "y";
     position: absolute;
     inset: 0;
     color: var(--color-heading);
-    -webkit-mask-image: linear-gradient(to right, transparent, #000 24%);
-    mask-image: linear-gradient(to right, transparent, #000 24%);
   }
 
   .mountain-flight-canvas {
     display: block;
     width: 100%;
     height: 100%;
+    -webkit-mask-image: linear-gradient(to right, transparent, #000 24%);
+    mask-image: linear-gradient(to right, transparent, #000 24%);
   }
 
-  .mountain-flight-claude {
+  .mountain-flight-sprite {
     position: absolute;
     top: 15%;
     left: 52%;
     width: 132px;
-    height: auto;
+    aspect-ratio: 30 / 17;
+    pointer-events: none;
     shape-rendering: crispEdges;
     will-change: transform;
     animation: claude-bob 3.2s ease-in-out infinite alternate;
+  }
+
+  .mountain-flight-claude svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Off the broom, JS owns the transform and Claude turns around its own centre. */
+  .mountain-flight-claude:not([data-state="riding"]) {
+    top: 0;
+    left: 0;
+    transform-origin: calc(100% * 17 / 30) calc(100% * 7 / 17);
+    animation: none;
+  }
+
+  /* Same box as the seat in the sprite. */
+  .mountain-flight-grab {
+    position: absolute;
+    top: 0;
+    left: calc(100% * 9 / 30);
+    width: calc(100% * 16 / 30);
+    height: calc(100% * 14 / 17);
+    pointer-events: auto;
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .mountain-flight-claude[data-state="held"] .mountain-flight-grab {
+    cursor: grabbing;
+  }
+
+  .mountain-flight-eyes-dazed,
+  .mountain-flight-claude.is-dazed .mountain-flight-eyes-open {
+    display: none;
+  }
+
+  .mountain-flight-claude.is-dazed .mountain-flight-eyes-dazed {
+    display: inline;
   }
 
   .mountain-flight-bristles {
@@ -95,12 +155,12 @@ const isBristle = ({ key }: { key: string }) => key === "Y" || key === "y";
   }
 
   @media (max-width: 720px) {
-    .mountain-flight {
+    .mountain-flight-canvas {
       -webkit-mask-image: none;
       mask-image: none;
     }
 
-    .mountain-flight-claude {
+    .mountain-flight-sprite {
       top: 14%;
       left: 50%;
       width: 100px;
@@ -205,6 +265,252 @@ const isBristle = ({ key }: { key: string }) => key === "Y" || key === "y";
     return roll < 0.5 ? "#" : "M";
   };
 
+  // Throwing Claude, in CSS px and seconds. Bounce values keep that share of the speed.
+  const GRAVITY = 2000;
+  const WALL_BOUNCE = 0.72;
+  const FLOOR_BOUNCE = 0.58;
+  const FLOOR_GRIP = 0.82;
+  const SETTLE_SPEED = 90;
+  const MAX_THROW = 2600;
+  const THROW_WINDOW_MS = 90;
+  // How close to the seat a drop has to land, as a share of Claude's width.
+  const SEAT_REACH = 0.8;
+
+  const wrapAngle = (angle: number) => Math.atan2(Math.sin(angle), Math.cos(angle));
+
+  const setupClaudeToy = (root: HTMLElement, reducedMotion: MediaQueryList) => {
+    const claude = root.querySelector<HTMLElement>(".mountain-flight-claude")!;
+    const grab = root.querySelector<HTMLElement>(".mountain-flight-grab")!;
+    const broom = root.querySelector<SVGElement>(".mountain-flight-broom")!;
+    const seat = root.querySelector<SVGRectElement>("[data-seat]")!;
+    // Where Claude can fly once thrown: the marked ancestor, else just the mountains.
+    const bounds = root.closest<HTMLElement>("[data-flight-bounds]") ?? root;
+
+    // x and y are the centre of Claude's body, relative to the bounds.
+    let x = 0;
+    let y = 0;
+    let vx = 0;
+    let vy = 0;
+    let angle = 0;
+    let spin = 0;
+    let grabX = 0;
+    let grabY = 0;
+    let trail: Array<{ x: number; y: number; time: number }> = [];
+    let frame = 0;
+    let lastTime = 0;
+
+    const state = () => claude.dataset.state;
+    const setState = (next: "riding" | "held" | "tumbling" | "fainted" | "seating") => {
+      claude.dataset.state = next;
+    };
+
+    const centerOf = (element: Element) => {
+      const box = element.getBoundingClientRect();
+      const boundsBox = bounds.getBoundingClientRect();
+      return { x: box.left + box.width / 2 - boundsBox.left, y: box.top + box.height / 2 - boundsBox.top };
+    };
+
+    // Half the size of Claude's bounding box at the current angle.
+    const extents = () => {
+      const cos = Math.abs(Math.cos(angle));
+      const sin = Math.abs(Math.sin(angle));
+      const halfWidth = grab.offsetWidth / 2;
+      const halfHeight = grab.offsetHeight / 2;
+      return { x: cos * halfWidth + sin * halfHeight, y: sin * halfWidth + cos * halfHeight };
+    };
+
+    const place = () => {
+      // The sprite is laid out inside root, which can sit anywhere in the bounds.
+      const rootBox = root.getBoundingClientRect();
+      const boundsBox = bounds.getBoundingClientRect();
+      const originX = rootBox.left - boundsBox.left + grab.offsetLeft + grab.offsetWidth / 2;
+      const originY = rootBox.top - boundsBox.top + grab.offsetTop + grab.offsetHeight / 2;
+      claude.style.transform = `translate(${x - originX}px, ${y - originY}px) rotate(${angle}rad)`;
+    };
+
+    const keepInFrame = () => {
+      const edge = extents();
+      x = clamp(x, edge.x, bounds.clientWidth - edge.x);
+      y = clamp(y, edge.y, bounds.clientHeight - edge.y);
+    };
+
+    const recentVelocity = (now: number) => {
+      const recent = trail.filter(({ time }) => now - time <= THROW_WINDOW_MS);
+      if (recent.length < 2) return { x: 0, y: 0 };
+      const first = recent[0];
+      const last = recent[recent.length - 1];
+      const elapsed = Math.max(last.time - first.time, 8) / 1000;
+      return {
+        x: clamp((last.x - first.x) / elapsed, -MAX_THROW, MAX_THROW),
+        y: clamp((last.y - first.y) / elapsed, -MAX_THROW, MAX_THROW),
+      };
+    };
+
+    const faint = () => {
+      angle = wrapAngle(angle) >= 0 ? Math.PI / 2 : -Math.PI / 2;
+      vx = 0;
+      vy = 0;
+      spin = 0;
+      y = bounds.clientHeight - extents().y;
+      keepInFrame();
+      setState("fainted");
+    };
+
+    const stepHeld = (dt: number, time: number) => {
+      const tilt = reducedMotion.matches ? 0 : clamp(recentVelocity(time).x * 0.0004, -0.5, 0.5);
+      angle += (tilt - angle) * (1 - Math.exp(-dt * 12));
+    };
+
+    const stepTumbling = (dt: number) => {
+      vy += GRAVITY * dt;
+      x += vx * dt;
+      y += vy * dt;
+      angle += spin * dt;
+
+      const edge = extents();
+      const right = bounds.clientWidth - edge.x;
+      const floor = bounds.clientHeight - edge.y;
+      if (x < edge.x || x > right) {
+        x = clamp(x, edge.x, right);
+        vx *= -WALL_BOUNCE;
+        spin = -spin * 0.8;
+      }
+      if (y < edge.y) {
+        y = edge.y;
+        vy *= -WALL_BOUNCE;
+      }
+      if (y < floor) return;
+
+      y = floor;
+      if (vy > SETTLE_SPEED) {
+        vy *= -FLOOR_BOUNCE;
+        vx *= FLOOR_GRIP;
+        spin = spin * 0.4 + vx * 0.006;
+        return;
+      }
+
+      // Done bouncing: slide to a stop and flop onto the nearest side.
+      vy = 0;
+      spin = 0;
+      vx *= Math.exp(-dt * 6);
+      angle = wrapAngle(angle);
+      const side = angle >= 0 ? Math.PI / 2 : -Math.PI / 2;
+      angle += (side - angle) * (1 - Math.exp(-dt * 9));
+      if (Math.abs(vx) < 6 && Math.abs(side - angle) < 0.01) faint();
+    };
+
+    const mount = () => {
+      setState("riding");
+      claude.classList.remove("is-dazed");
+      claude.style.transform = "";
+      // The bob restarts here; line it up with the broom's so they move as one.
+      const [bob] = claude.getAnimations();
+      const [broomBob] = broom.getAnimations();
+      if (bob && broomBob) bob.startTime = broomBob.startTime;
+    };
+
+    const stepSeating = (dt: number) => {
+      const target = centerOf(seat);
+      const ease = 1 - Math.exp(-dt * 22);
+      x += (target.x - x) * ease;
+      y += (target.y - y) * ease;
+      angle += (0 - angle) * ease;
+      if (Math.hypot(target.x - x, target.y - y) < 0.6 && Math.abs(angle) < 0.02) mount();
+    };
+
+    const tick = (time: number) => {
+      const dt = Math.min((time - lastTime) / 1000, 1 / 30);
+      lastTime = time;
+      if (state() === "held") stepHeld(dt, time);
+      else if (state() === "tumbling") stepTumbling(dt);
+      else if (state() === "seating") stepSeating(dt);
+
+      if (state() !== "riding") place();
+      const moving = state() !== "riding" && state() !== "fainted";
+      frame = moving ? window.requestAnimationFrame(tick) : 0;
+    };
+
+    const run = () => {
+      if (frame) return;
+      lastTime = performance.now();
+      frame = window.requestAnimationFrame(tick);
+    };
+
+    const pointerIn = (event: PointerEvent) => {
+      const boundsBox = bounds.getBoundingClientRect();
+      return { x: event.clientX - boundsBox.left, y: event.clientY - boundsBox.top };
+    };
+
+    grab.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) return;
+      event.preventDefault();
+      grab.setPointerCapture(event.pointerId);
+
+      if (state() === "riding") {
+        ({ x, y } = centerOf(grab));
+        angle = 0;
+      }
+      angle = wrapAngle(angle);
+      const pointer = pointerIn(event);
+      grabX = x - pointer.x;
+      grabY = y - pointer.y;
+      trail = [{ ...pointer, time: event.timeStamp }];
+      setState("held");
+      place();
+      run();
+    });
+
+    grab.addEventListener("pointermove", (event) => {
+      if (state() !== "held") return;
+      const pointer = pointerIn(event);
+      trail = trail.filter(({ time }) => event.timeStamp - time <= THROW_WINDOW_MS);
+      trail.push({ ...pointer, time: event.timeStamp });
+      x = pointer.x + grabX;
+      y = pointer.y + grabY;
+      keepInFrame();
+    });
+
+    const release = (event: PointerEvent) => {
+      if (state() !== "held") return;
+
+      const target = centerOf(seat);
+      if (Math.hypot(target.x - x, target.y - y) < grab.offsetWidth * SEAT_REACH) {
+        if (reducedMotion.matches) {
+          mount();
+        } else {
+          setState("seating");
+          run();
+        }
+        return;
+      }
+
+      claude.classList.add("is-dazed");
+      if (reducedMotion.matches) {
+        faint();
+        place();
+        return;
+      }
+      ({ x: vx, y: vy } = recentVelocity(event.timeStamp));
+      spin = vx * 0.008 + (vx >= 0 ? 2 : -2);
+      setState("tumbling");
+      run();
+    };
+
+    grab.addEventListener("pointerup", release);
+    grab.addEventListener("pointercancel", release);
+
+    return {
+      // The bounds changed size: stay inside them, and on the floor if already fainted.
+      fit: () => {
+        if (state() === "riding") return;
+        if (state() === "fainted") y = bounds.clientHeight;
+        keepInFrame();
+        place();
+      },
+      stop: () => window.cancelAnimationFrame(frame),
+    };
+  };
+
   const setupMountainFlight = () => {
     document.querySelectorAll<HTMLElement>("[data-mountain-flight]").forEach((root) => {
       if (root.dataset.bound === "true") return;
@@ -213,6 +519,7 @@ const isBristle = ({ key }: { key: string }) => key === "Y" || key === "y";
       const canvas = root.querySelector("canvas")!;
       const context = canvas.getContext("2d")!;
       const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+      const claudeToy = setupClaudeToy(root, reducedMotion);
       let tiles: Array<{ image: HTMLCanvasElement; top: number }> = [];
       let tileKey = "";
       let lastPositions = "";
@@ -310,7 +617,7 @@ const isBristle = ({ key }: { key: string }) => key === "Y" || key === "y";
 
       const currentTime = () => (reducedMotion.matches ? 0 : performance.now());
 
-      const resize = (rebuild = false) => {
+      const resize = () => {
         const { width, height } = root.getBoundingClientRect();
         if (!width || !height) return;
         ratio = Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO);
@@ -318,12 +625,13 @@ const isBristle = ({ key }: { key: string }) => key === "Y" || key === "y";
         canvas.height = Math.round(height * ratio);
         // Width only changes how much of a tile shows; tiles depend on height and pixel ratio.
         const key = `${height}:${ratio}`;
-        if (rebuild || key !== tileKey) {
+        if (key !== tileKey) {
           tileKey = key;
           buildTiles(height);
         }
         lastPositions = "";
         draw(currentTime());
+        claudeToy.fit();
       };
 
       const loop = (time: number) => {
@@ -343,20 +651,18 @@ const isBristle = ({ key }: { key: string }) => key === "Y" || key === "y";
         visible = entry.isIntersecting;
         start();
       });
-      const themeObserver = new MutationObserver(() => resize(true));
 
       resizeObserver.observe(root);
       visibilityObserver.observe(root);
-      themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
       document.addEventListener("visibilitychange", start);
 
       document.addEventListener(
         "astro:before-swap",
         () => {
           window.cancelAnimationFrame(frame);
+          claudeToy.stop();
           resizeObserver.disconnect();
           visibilityObserver.disconnect();
-          themeObserver.disconnect();
           document.removeEventListener("visibilitychange", start);
         },
         { once: true },
