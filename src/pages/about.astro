@@ -12,11 +12,8 @@ const { Content } = await render(about);
 ---
 
 <BaseLayout title={about.data.title} description={about.data.description}>
-  <article class="post-detail">
-    <header class="page-header">
-      <p class="eyebrow">About</p>
-      <h1>{about.data.title}</h1>
-    </header>
+  <article class="text-page">
+    <h1>{about.data.title}</h1>
     <div class="prose">
       <Content />
     </div>

@@ -1,86 +1,12 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
-import IntroSequence from "@components/IntroSequence.astro";
-import MetroScene from "@components/MetroScene.astro";
-import MountainFlight from "@components/MountainFlight.astro";
-import SiteData from "@components/SiteData.astro";
-import { ArrowRight } from "@lucide/astro";
-import { formatDate } from "@utils/dates";
-import { getPostDescription, getPostUrl, getPublishedPosts } from "@utils/posts";
+import FileCabinet from "@components/FileCabinet.astro";
+import { getPublishedPosts } from "@utils/posts";
 
 const posts = await getPublishedPosts();
-const latestPosts = posts.slice(0, 3);
-
-const selectedImages = [
-  { src: "/images/209169A8-B52A-4BA1-8F9E-B009E467288E_4_5005_c.jpeg", alt: "海边旅行照片" },
-  { src: "/images/my university/1.jpeg", alt: "大学时的摩天轮照片" },
-  { src: "/images/my university/4.jpeg", alt: "辽阔平原风景" },
-  { src: "/assets/ring.webp", alt: "夜色中的奇幻风景" },
-];
 ---
 
-
 <BaseLayout>
-  <IntroSequence slot="intro" />
-
-  <section class="editorial-hero" aria-labelledby="home-title" data-flight-bounds>
-    <div class="hero-copy">
-      <p class="hero-greeting"></p>
-      <h1 id="home-title">Akisy.</h1>
-      <p class="hero-intro">
-        独立思考 明辨是非
-      </p>
-    </div>
-
-    <div class="hero-portrait">
-      <MountainFlight />
-    </div>
-  </section>
-
-  <MetroScene />
-
-  <section class="editorial-grid" aria-label="博客最新内容与站点数据">
-    <div class="featured-list">
-      <div class="editorial-heading">
-        <span>最新记录</span>
-        <i aria-hidden="true"></i>
-      </div>
-      <ol>
-        {
-          latestPosts.map((post, index) => (
-            <li>
-              <span class="article-index">{String(index + 1).padStart(2, "0")}</span>
-              <div>
-                <h2><a href={getPostUrl(post)}>{post.data.title}</a></h2>
-                <p>{getPostDescription(post)}</p>
-                <p class="article-meta">
-                  <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
-                  <span>·</span>
-                  <span>{Math.max(3, Math.round((post.body?.length ?? 0) / 650))} 分钟阅读</span>
-                </p>
-              </div>
-              <ArrowRight class="article-arrow" size={16} stroke-width={1.3} aria-hidden="true" />
-            </li>
-          ))
-        }
-      </ol>
-    </div>
-
-    <SiteData />
-
-    <div class="photo-selection">
-      <div class="editorial-heading">
-        <span>片刻收藏</span>
-        <i aria-hidden="true"></i>
-      </div>
-      <div class="photo-grid">
-        {selectedImages.map((image) => <img src={image.src} alt={image.alt} loading="lazy" />)}
-      </div>
-      <a class="text-link" href="/posts/">
-        浏览全部记录
-        <ArrowRight size={15} stroke-width={1.35} aria-hidden="true" />
-      </a>
-    </div>
-  </section>
+  <h1 class="sr-only">Akisy 的档案柜</h1>
+  <FileCabinet posts={posts} label="独立思考 明辨是非" />
 </BaseLayout>
-

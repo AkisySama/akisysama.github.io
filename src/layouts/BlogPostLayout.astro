@@ -1,38 +1,73 @@
 ---
 import TagList from "@components/TagList.astro";
-import { Calendar, Clock } from "@lucide/astro";
-import { formatDate, toDateTime } from "@utils/dates";
-import type { BlogPost } from "@utils/posts";
+import { formatRecordDate, toDateTime } from "@utils/dates";
+import {
+  getMemoryNumbers,
+  getPostLength,
+  getPostUrl,
+  getPublishedPosts,
+  getReadingMinutes,
+  type BlogPost,
+} from "@utils/posts";
 
 interface Props {
   post: BlogPost;
 }
 
 const { post } = Astro.props;
+const posts = await getPublishedPosts();
+const numbers = getMemoryNumbers(posts);
+const index = posts.findIndex(({ id }) => id === post.id);
+const older = posts[index + 1];
+const newer = posts[index - 1];
 ---
 
-<article class="post-detail">
-  <header class="post-hero">
-    <p class="eyebrow">文章</p>
+<article class="record">
+  <header class="record-head" data-record-number={numbers.get(post.id)}>
     <h1>{post.data.title}</h1>
-    <div class="post-meta">
-      <time datetime={toDateTime(post.data.pubDate)}>
-        <Calendar class="icon-muted" size={16} stroke-width={1.8} />
-        发布于 {formatDate(post.data.pubDate)}
-      </time>
+    <div class="record-meta">
+      <time datetime={toDateTime(post.data.pubDate)}>{formatRecordDate(post.data.pubDate)}</time>
       {
         post.data.updatedDate && (
-          <time datetime={toDateTime(post.data.updatedDate)}>
-            <Clock class="icon-muted" size={16} stroke-width={1.8} />
-            更新于 {formatDate(post.data.updatedDate)}
-          </time>
+          <time datetime={toDateTime(post.data.updatedDate)}>修订于 {formatRecordDate(post.data.updatedDate)}</time>
         )
       }
+      <span>{getPostLength(post).toLocaleString("zh-CN")} 字</span>
+      <span>{getReadingMinutes(post)} 分钟</span>
+      <TagList tags={post.data.tags} />
     </div>
-    <TagList tags={post.data.tags} />
-    {post.data.cover && <img class="post-cover" src={post.data.cover} alt="" loading="eager" />}
   </header>
+
   <div class="prose">
     <slot />
   </div>
+
+  <nav class="record-end" aria-label="读完之后">
+    {older && <a href={getPostUrl(older)} rel="prev">更早：{older.data.title}</a>}
+    {newer && <a href={getPostUrl(newer)} rel="next">更新：{newer.data.title}</a>}
+    <a href="/" data-return-link>放回</a>
+  </nav>
+
+  <button class="to-top" type="button" aria-label="回到顶部" data-to-top>↑</button>
 </article>
+
+<script>
+  const setupToTop = () => {
+    const button = document.querySelector<HTMLButtonElement>("[data-to-top]");
+    if (!button) return;
+
+    const controller = new AbortController();
+    const { signal } = controller;
+    const sync = () => button.classList.toggle("is-visible", scrollY > innerHeight * 0.6);
+
+    addEventListener("scroll", sync, { passive: true, signal });
+    button.addEventListener("click", () => {
+      const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+    }, { signal });
+    document.addEventListener("astro:before-swap", () => controller.abort(), { once: true });
+    sync();
+  };
+
+  document.addEventListener("astro:page-load", setupToTop);
+</script>

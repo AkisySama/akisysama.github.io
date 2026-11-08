@@ -1,34 +1,32 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
-import { Tag } from "@lucide/astro";
 import { getAllTags, getPostsByTag, getPublishedPosts } from "@utils/posts";
 import { pathForTag } from "@utils/slug";
 
 const posts = await getPublishedPosts();
-const tags = getAllTags(posts);
+const tags = getAllTags(posts)
+  .map((tag) => ({ tag, count: getPostsByTag(posts, tag).length }))
+  .sort((a, b) => b.count - a.count);
 ---
 
 <BaseLayout title="标签" description="Akisy 博客的全部标签。">
-  <header class="page-header">
-    <p class="eyebrow">Tags</p>
+  <div class="text-page">
     <h1>标签</h1>
-    <p>按主题浏览文章。</p>
-  </header>
-
-  {
-    tags.length > 0 ? (
-      <ul class="tag-cloud">
-        {tags.map((tag) => (
-          <li>
-            <a href={pathForTag(tag)}>
-              <Tag class="icon-muted" size={14} stroke-width={1.8} />
-              {tag} <span>({getPostsByTag(posts, tag).length})</span>
-            </a>
-          </li>
-        ))}
-      </ul>
-    ) : (
-      <p class="empty-state">还没有标签。</p>
-    )
-  }
+    {
+      tags.length > 0 ? (
+        <ul class="plain-list">
+          {tags.map(({ tag, count }) => (
+            <li>
+              <a href={pathForTag(tag)}>
+                <span>{tag}</span>
+                <span>{count}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="empty-state">还没有标签。</p>
+      )
+    }
+  </div>
 </BaseLayout>

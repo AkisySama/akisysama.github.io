@@ -1,5 +1,6 @@
 ---
 import { ClientRouter } from "astro:transitions";
+import ArchiveTransitions from "@components/ArchiveTransitions.astro";
 import Header from "@components/Header.astro";
 import Footer from "@components/Footer.astro";
 import TimelineDrawer from "@components/TimelineDrawer.astro";
@@ -8,24 +9,17 @@ import "@styles/global.css";
 interface Props {
   title?: string;
   description?: string;
-  image?: string;
 }
 
 const siteTitle = "Akisy的记录";
 const defaultDescription = "Akisy 的个人博客，记录技术、生活、历史和路上的想法。";
-const { title = siteTitle, description = defaultDescription, image } = Astro.props;
+const { title = siteTitle, description = defaultDescription } = Astro.props;
 const pageTitle = title === siteTitle ? title : `${title} | ${siteTitle}`;
 const canonical = new URL(Astro.url.pathname, Astro.site).toString();
-const ogImage = image ? new URL(image, Astro.site).toString() : undefined;
-const isHome = Astro.url.pathname === "/";
 ---
 
 <!doctype html>
-<html
-  lang="zh-CN"
-  data-page={isHome ? "home" : "inner"}
-  data-intro={isHome ? "pending" : undefined}
->
+<html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -35,63 +29,15 @@ const isHome = Astro.url.pathname === "/";
     <meta property="og:type" content="website" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
-    {ogImage && <meta property="og:image" content={ogImage} />}
-    <script is:inline>
-      (() => {
-        const root = document.documentElement;
-        const isHomePage = root.dataset.page === "home";
-
-        if (!window.__akisyIntroNavigationBound) {
-          window.__akisyIntroNavigationBound = true;
-          document.addEventListener("astro:before-swap", (event) => {
-            const nextRoot = event.newDocument.documentElement;
-            if (nextRoot.dataset.page === "home") nextRoot.dataset.intro = "seen";
-          });
-        }
-
-        if (isHomePage) {
-          if ("scrollRestoration" in history) history.scrollRestoration = "manual";
-
-          const resetIntroScroll = () => {
-            const currentRoot = document.documentElement;
-            if (
-              currentRoot.dataset.page !== "home" ||
-              currentRoot.dataset.blogEntered === "true" ||
-              currentRoot.dataset.intro === "seen"
-            ) {
-              return;
-            }
-
-            window.scrollTo({ top: 0, left: 0, behavior: "auto" });
-          };
-
-          const resetBeforeUnload = () => {
-            if (document.documentElement.dataset.page === "home") window.scrollTo(0, 0);
-          };
-
-          const cleanupHomeScroll = () => {
-            window.removeEventListener("pageshow", resetIntroScroll);
-            window.removeEventListener("load", resetIntroScroll);
-            window.removeEventListener("beforeunload", resetBeforeUnload, { capture: true });
-          };
-
-          resetIntroScroll();
-          window.addEventListener("pageshow", resetIntroScroll);
-          window.addEventListener("load", resetIntroScroll, { once: true });
-          window.addEventListener("beforeunload", resetBeforeUnload, { capture: true });
-          document.addEventListener("astro:before-swap", cleanupHomeScroll, { once: true });
-        }
-      })();
-    </script>
     <ClientRouter />
   </head>
   <body>
-    <slot name="intro" />
-    <TimelineDrawer />
     <Header />
+    <TimelineDrawer />
     <main class="site-main">
       <slot />
     </main>
     <Footer />
+    <ArchiveTransitions />
   </body>
 </html>

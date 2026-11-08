@@ -63,12 +63,6 @@ export default config({
           description: "开启后文章不会显示在博客前台。",
           defaultValue: true,
         }),
-        cover: fields.image({
-          label: "封面图片",
-          description: "可选；不选择时文章将不显示封面。",
-          directory: "public/images",
-          publicPath: "/images/",
-        }),
         body: fields.markdoc({
           label: "正文",
           extension: "md",

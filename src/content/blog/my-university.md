@@ -5,7 +5,6 @@ tags:
   - 回忆
 categories: []
 draft: false
-cover: /images/my-university/cover.jpeg
 ---
 ## 我的大学生活结束了
 

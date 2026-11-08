@@ -30,15 +30,34 @@ export function getPostsByTag(posts: BlogPost[], tag: string): BlogPost[] {
   return posts.filter((post) => post.data.tags.includes(tag));
 }
 
-export function getPostDescription(post: BlogPost): string {
-  if (post.data.description) return post.data.description;
-
+function getPlainText(post: BlogPost): string {
   return (post.body ?? "")
     .replace(/```[\s\S]*?```/g, "")
     .replace(/!\[[^\]]*]\([^)]+\)/g, "")
     .replace(/\[[^\]]+]\([^)]+\)/g, "")
     .replace(/[#>*_`~-]/g, "")
     .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 120);
+    .trim();
+}
+
+export function getPostDescription(post: BlogPost): string {
+  return post.data.description || getPlainText(post).slice(0, 120);
+}
+
+/** Readable characters in the post, ignoring markup, code blocks and whitespace. */
+export function getPostLength(post: BlogPost): number {
+  return getPlainText(post).replace(/\s/g, "").length;
+}
+
+export function getReadingMinutes(post: BlogPost): number {
+  return Math.max(1, Math.round(getPostLength(post) / 400));
+}
+
+/** Record numbers count up from the oldest post, so new posts never renumber old ones. */
+export function getMemoryNumbers(postsNewestFirst: BlogPost[]): Map<string, number> {
+  return new Map(postsNewestFirst.map((post, index) => [post.id, postsNewestFirst.length - index]));
+}
+
+export function formatMemoryId(number: number): string {
+  return String(number).padStart(3, "0");
 }

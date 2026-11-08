@@ -21,11 +21,7 @@ const { post } = Astro.props;
 const { Content } = await render(post);
 ---
 
-<BaseLayout
-  title={post.data.title}
-  description={getPostDescription(post)}
-  image={post.data.cover}
->
+<BaseLayout title={post.data.title} description={getPostDescription(post)}>
   <BlogPostLayout post={post}>
     <Content />
   </BlogPostLayout>

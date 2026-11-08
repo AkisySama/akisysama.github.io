@@ -1,44 +1,7 @@
----
-import { BookOpen, Globe } from "@lucide/astro";
-import FortuneCard from "./FortuneCard.astro";
-
-const socialLinks = [
-  { href: "https://github.com/akisysama", label: "GitHub", icon: Globe, external: true },
-  { href: "/posts/", label: "文章", icon: BookOpen },
-];
----
-
 <footer class="site-footer">
-  <FortuneCard />
-  <div class="footer-links">
-    <p class="footer-title">快速导航</p>
-    <a href="/">首页</a>
-    <a href="/posts/">文章</a>
-    <a href="/tags/">标签</a>
-  </div>
-  <div class="footer-follow">
-    <p class="footer-title">关注</p>
-    <nav class="footer-social" aria-label="页脚链接">
-      {
-        socialLinks.map(({ href, label, icon: Icon, external }) => (
-          <a
-            href={href}
-            aria-label={label}
-            title={label}
-            target={external ? "_blank" : undefined}
-            rel={external ? "noreferrer" : undefined}
-          >
-            <Icon class="icon-muted" size={17} stroke-width={1.5} />
-          </a>
-        ))
-      }
-    </nav>
-  </div>
-  <blockquote>
-    总觉得盛夏应该发生点什么热烈的事，每次想来却也只不过是些闷热的日子。
-  </blockquote>
-  <div class="footer-bottom">
-    <span>© {new Date().getFullYear()} Akisy. All rights reserved.</span>
-    <span>Built with Astro</span>
-  </div>
+  <p>总觉得盛夏应该发生点什么热烈的事，每次想来却也只不过是些闷热的日子。</p>
+  <span>
+    © {new Date().getFullYear()} Akisy ·
+    <a href="https://github.com/akisysama" target="_blank" rel="noreferrer">GitHub</a>
+  </span>
 </footer>

@@ -1,6 +1,6 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
-import PostCard from "@components/PostCard.astro";
+import FileCabinet from "@components/FileCabinet.astro";
 import { getAllTags, getPostsByTag, getPublishedPosts, type BlogPost } from "@utils/posts";
 
 export async function getStaticPaths() {
@@ -21,13 +21,6 @@ const { tag, posts } = Astro.props;
 ---
 
 <BaseLayout title={`标签：${tag}`} description={`Akisy 博客中带有 ${tag} 标签的文章。`}>
-  <header class="page-header">
-    <p class="eyebrow">Tag</p>
-    <h1>{tag}</h1>
-    <p>共 {posts.length} 篇文章。</p>
-  </header>
-
-  <div class="post-list">
-    {posts.map((post) => <PostCard post={post} />)}
-  </div>
+  <h1 class="cabinet-heading">{tag}</h1>
+  <FileCabinet posts={posts} label={tag} />
 </BaseLayout>

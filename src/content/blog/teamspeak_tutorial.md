@@ -5,7 +5,6 @@ tags:
   - "技术"
 categories: []
 draft: false
-cover: "/images/teamspeak_tutorial/cover.webp"
 ---
 ## 啥是Teamspeak？
 TeamSpeak是一款语音通讯工具软件，常用于游戏、会议团队语音沟通，并提供文字聊天、文件共享功能。

@@ -4,8 +4,9 @@ const dateFormatter = new Intl.DateTimeFormat("zh-CN", {
   day: "2-digit",
 });
 
-export function formatDate(date: Date): string {
-  return dateFormatter.format(date);
+/** Archive-style date, for example 2026.09.05. */
+export function formatRecordDate(date: Date): string {
+  return dateFormatter.format(date).replaceAll("/", ".");
 }
 
 export function toDateTime(date: Date): string {

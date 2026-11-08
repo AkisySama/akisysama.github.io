@@ -1,0 +1,88 @@
+---
+import { formatRecordDate, toDateTime } from "@utils/dates";
+import {
+  formatMemoryId,
+  getMemoryNumbers,
+  getPostLength,
+  getPostUrl,
+  getPublishedPosts,
+  getReadingMinutes,
+  type BlogPost,
+} from "@utils/posts";
+
+interface Props {
+  posts: BlogPost[];
+  label: string;
+  heading?: "h2" | "h3";
+}
+
+const { posts, label, heading: Heading = "h2" } = Astro.props;
+
+const numbers = getMemoryNumbers(await getPublishedPosts());
+
+const years = posts.map((post) => post.data.pubDate.getFullYear());
+const firstYear = Math.min(...years);
+const lastYear = Math.max(...years);
+const yearRange = firstYear === lastYear ? String(firstYear) : `${firstYear}—${lastYear}`;
+const defaultStatus = `${label} · 共 ${posts.length} 份 · ${yearRange}`;
+---
+
+<section class="cabinet" aria-label={defaultStatus}>
+  <ol class="cabinet-well" data-cabinet-well>
+    {
+      posts.map((post) => {
+        const number = numbers.get(post.id)!;
+        const id = formatMemoryId(number);
+        const length = getPostLength(post).toLocaleString("zh-CN");
+        const tags = post.data.tags.join(" / ") || "未索引";
+        return (
+          <li class="file" data-memory={number}>
+            <a
+              class="file-link"
+              href={getPostUrl(post)}
+              aria-label={`${id} ${post.data.title}`}
+              data-file-link
+              data-file-status={`${id}　${post.data.title}　${length} 字 · ${getReadingMinutes(post)} 分钟 · ${tags}`}
+              data-astro-prefetch
+            >
+              <span class="file-number" aria-hidden="true">{id}</span>
+              <Heading class="file-title">{post.data.title}</Heading>
+              <time class="file-date" datetime={toDateTime(post.data.pubDate)}>
+                {formatRecordDate(post.data.pubDate).slice(2, 7)}
+              </time>
+            </a>
+          </li>
+        );
+      })
+    }
+  </ol>
+  <p class="cabinet-status" aria-hidden="true" data-cabinet-status data-default={defaultStatus}>{defaultStatus}</p>
+</section>
+
+<script>
+  const statusFor = (target: EventTarget | null) =>
+    target instanceof Element ? target.closest<HTMLElement>("[data-file-status]")?.dataset.fileStatus : undefined;
+
+  const showStatus = (text?: string) => {
+    const status = document.querySelector<HTMLElement>("[data-cabinet-status]");
+    if (status) status.textContent = text ?? status.dataset.default ?? "";
+  };
+
+  document.addEventListener("pointerover", (event) => showStatus(statusFor(event.target)));
+  document.addEventListener("focusin", (event) => showStatus(statusFor(event.target)));
+
+  // A full drawer scrolls sideways, including for mice that only have a vertical wheel.
+  document.addEventListener(
+    "wheel",
+    (event) => {
+      if (!(event.target instanceof Element) || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+      const well = event.target.closest<HTMLElement>("[data-cabinet-well]");
+      if (!well || well.scrollWidth <= well.clientWidth) return;
+
+      const before = well.scrollLeft;
+      well.scrollLeft += event.deltaY;
+      if (well.scrollLeft !== before) event.preventDefault();
+    },
+    { passive: false },
+  );
+</script>

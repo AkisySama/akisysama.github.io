@@ -1,20 +1,8 @@
 ---
-import { ChevronLeft, ChevronRight, ExternalLink, MessageCircle, RefreshCw, X } from "@lucide/astro";
+import { ChevronLeft, ChevronRight, ExternalLink, RefreshCw, X } from "@lucide/astro";
 ---
 
 <div class="timeline-shell" data-timeline-shell>
-  <button
-    class="timeline-toggle"
-    type="button"
-    aria-controls="timeline-drawer"
-    aria-expanded="false"
-    aria-label="打开生活动态"
-    data-timeline-toggle
-  >
-    <MessageCircle size={18} stroke-width={1.5} aria-hidden="true" />
-    <span>动态</span>
-  </button>
-
   <button class="timeline-backdrop" type="button" aria-label="关闭生活动态" tabindex="-1" data-timeline-close></button>
 
   <aside class="timeline-drawer" id="timeline-drawer" aria-label="生活动态" aria-hidden="true" data-timeline-drawer inert>
@@ -252,7 +240,7 @@ import { ChevronLeft, ChevronRight, ExternalLink, MessageCircle, RefreshCw, X } 
     if (!shell || shell.dataset.bound === "true") return;
     shell.dataset.bound = "true";
 
-    const toggle = shell.querySelector<HTMLButtonElement>("[data-timeline-toggle]")!;
+    const toggle = document.querySelector<HTMLButtonElement>("[data-timeline-toggle]")!;
     const drawer = shell.querySelector<HTMLElement>("[data-timeline-drawer]")!;
     const content = shell.querySelector<HTMLElement>("[data-timeline-content]")!;
     const refresh = shell.querySelector<HTMLButtonElement>("[data-timeline-refresh]")!;
@@ -482,49 +470,6 @@ import { ChevronLeft, ChevronRight, ExternalLink, MessageCircle, RefreshCw, X } 
 
   .timeline-shell.is-open::before { opacity: 1; }
 
-  .timeline-toggle {
-    position: absolute;
-    top: 50%;
-    left: 0;
-    z-index: 3;
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    align-items: center;
-    width: 44px;
-    border: 0;
-    border-radius: 0 var(--radius-md) var(--radius-md) 0;
-    padding: 13px 8px 12px;
-    background: color-mix(in srgb, var(--color-surface-lifted) 72%, transparent);
-    box-shadow: 8px 8px 28px rgb(0 0 0 / 10%);
-    color: var(--color-accent);
-    cursor: pointer;
-    opacity: 1;
-    pointer-events: auto;
-    transform: translate3d(0, -50%, 0) scale(1);
-    visibility: visible;
-    transition:
-      opacity 220ms ease,
-      transform 440ms cubic-bezier(0.2, 1.35, 0.35, 1),
-      visibility 0s linear 0s,
-      color 180ms ease,
-      background 180ms ease;
-    -webkit-backdrop-filter: blur(24px) saturate(115%);
-    backdrop-filter: blur(24px) saturate(115%);
-  }
-
-  .timeline-toggle span {
-    font-size: 0.65rem;
-    letter-spacing: 0.12em;
-    line-height: 1;
-    writing-mode: vertical-rl;
-  }
-
-  .timeline-toggle:hover {
-    background: color-mix(in srgb, var(--color-surface-soft) 82%, transparent);
-    color: var(--color-heading);
-  }
-
   .timeline-drawer {
     position: absolute;
     inset: 0 auto 0 0;
@@ -540,18 +485,6 @@ import { ChevronLeft, ChevronRight, ExternalLink, MessageCircle, RefreshCw, X } 
   }
 
   .timeline-shell.is-open .timeline-drawer { transform: translateX(0); }
-  .timeline-shell.is-open .timeline-toggle {
-    opacity: 0;
-    pointer-events: none;
-    transform: translate3d(-12px, -50%, 0) scale(0.94);
-    visibility: hidden;
-    transition:
-      opacity 160ms ease,
-      transform 200ms ease,
-      visibility 0s linear 200ms,
-      color 180ms ease,
-      background 180ms ease;
-  }
 
   .timeline-backdrop {
     position: absolute;
@@ -676,7 +609,7 @@ import { ChevronLeft, ChevronRight, ExternalLink, MessageCircle, RefreshCw, X } 
   .timeline-header h2 {
     margin: 0;
     color: var(--color-heading);
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-size: 1.8rem;
     font-weight: 500;
     line-height: 1;
@@ -727,7 +660,7 @@ import { ChevronLeft, ChevronRight, ExternalLink, MessageCircle, RefreshCw, X } 
     width: fit-content;
     margin-bottom: 5px;
     color: var(--color-accent);
-    font-family: var(--font-serif);
+    font-family: var(--font-display);
     font-size: 0.95rem;
     font-weight: 600;
     line-height: 1.2;
@@ -832,22 +765,11 @@ import { ChevronLeft, ChevronRight, ExternalLink, MessageCircle, RefreshCw, X } 
   .timeline-loading p { margin: 18px 0 0; color: var(--color-muted); font-size: 0.7rem; text-align: center; }
 
   :global(.timeline-state) { padding: 70px 30px; text-align: center; }
-  :global(.timeline-state p) { margin: 0 0 7px; color: var(--color-heading); font-family: var(--font-serif); font-size: 1.1rem; }
+  :global(.timeline-state p) { margin: 0 0 7px; color: var(--color-heading); font-family: var(--font-display); font-size: 1.1rem; }
   :global(.timeline-state span) { color: var(--color-muted); font-size: 0.72rem; }
   :global(.timeline-state.is-error p) { color: var(--color-accent); }
 
-  :global(html[data-page="home"]:not([data-blog-entered="true"]) .timeline-shell) {
-    visibility: hidden;
-    opacity: 0;
-    transition:
-      opacity 180ms ease,
-      visibility 0s linear 260ms;
-  }
 
-  :global(html[data-page="home"]:not([data-blog-entered="true"]) .timeline-toggle) {
-    opacity: 0;
-    transform: translate3d(-110%, -50%, 0) scale(0.86);
-  }
   :global(body.timeline-lightbox-is-open) { overflow: hidden; }
 
   @keyframes timeline-spin { to { transform: rotate(360deg); } }
@@ -857,19 +779,12 @@ import { ChevronLeft, ChevronRight, ExternalLink, MessageCircle, RefreshCw, X } 
     .timeline-backdrop { background: transparent; }
   }
 
-  @media (max-width: 720px) {
-    :global(body:has(.post-detail)) .timeline-toggle {
-      display: none;
-    }
-  }
-
   @media (max-width: 600px) {
     .timeline-shell {
       --timeline-width: calc(100vw - 44px);
       --timeline-blur-fade: 112px;
       --timeline-blur-fade-mid: 56px;
     }
-    .timeline-toggle { width: 40px; }
     .timeline-header { min-height: 98px; padding: 23px 20px 18px; }
     :global(.timeline-list) { padding-right: 24px; padding-left: 20px; }
     .timeline-footer { padding-inline: 20px; }
@@ -885,7 +800,6 @@ import { ChevronLeft, ChevronRight, ExternalLink, MessageCircle, RefreshCw, X } 
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .timeline-toggle,
     .timeline-drawer,
     .timeline-backdrop,
     .timeline-shell,
