@@ -6,17 +6,15 @@ import {
   getPostLength,
   getPostUrl,
   getPublishedPosts,
-  getReadingMinutes,
   type BlogPost,
 } from "@utils/posts";
 
 interface Props {
   posts: BlogPost[];
-  label: string;
   heading?: "h2" | "h3";
 }
 
-const { posts, label, heading: Heading = "h2" } = Astro.props;
+const { posts, heading: Heading = "h2" } = Astro.props;
 
 const numbers = getMemoryNumbers(await getPublishedPosts());
 
@@ -24,7 +22,7 @@ const years = posts.map((post) => post.data.pubDate.getFullYear());
 const firstYear = Math.min(...years);
 const lastYear = Math.max(...years);
 const yearRange = firstYear === lastYear ? String(firstYear) : `${firstYear}—${lastYear}`;
-const defaultStatus = `${label} · 共 ${posts.length} 份 · ${yearRange}`;
+const defaultStatus = `共 ${posts.length} 份 · ${yearRange}`;
 ---
 
 <section class="cabinet" aria-label={defaultStatus}>
@@ -42,7 +40,7 @@ const defaultStatus = `${label} · 共 ${posts.length} 份 · ${yearRange}`;
               href={getPostUrl(post)}
               aria-label={`${id} ${post.data.title}`}
               data-file-link
-              data-file-status={`${id}　${post.data.title}　${length} 字 · ${getReadingMinutes(post)} 分钟 · ${tags}`}
+              data-file-status={`${id}　${post.data.title}　${length} 字 · ${tags}`}
               data-astro-prefetch
             >
               <span class="file-number" aria-hidden="true">{id}</span>

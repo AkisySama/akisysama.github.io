@@ -20,16 +20,6 @@ export async function getPublishedPosts(): Promise<BlogPost[]> {
   return sortPostsByDate(posts);
 }
 
-export function getAllTags(posts: BlogPost[]): string[] {
-  return Array.from(new Set(posts.flatMap((post) => post.data.tags))).sort((a, b) =>
-    a.localeCompare(b, "zh-CN"),
-  );
-}
-
-export function getPostsByTag(posts: BlogPost[], tag: string): BlogPost[] {
-  return posts.filter((post) => post.data.tags.includes(tag));
-}
-
 function getPlainText(post: BlogPost): string {
   return (post.body ?? "")
     .replace(/```[\s\S]*?```/g, "")
@@ -47,10 +37,6 @@ export function getPostDescription(post: BlogPost): string {
 /** Readable characters in the post, ignoring markup, code blocks and whitespace. */
 export function getPostLength(post: BlogPost): number {
   return getPlainText(post).replace(/\s/g, "").length;
-}
-
-export function getReadingMinutes(post: BlogPost): number {
-  return Math.max(1, Math.round(getPostLength(post) / 400));
 }
 
 /** Record numbers count up from the oldest post, so new posts never renumber old ones. */

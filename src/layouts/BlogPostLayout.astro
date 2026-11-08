@@ -6,7 +6,6 @@ import {
   getPostLength,
   getPostUrl,
   getPublishedPosts,
-  getReadingMinutes,
   type BlogPost,
 } from "@utils/posts";
 
@@ -33,7 +32,6 @@ const newer = posts[index - 1];
         )
       }
       <span>{getPostLength(post).toLocaleString("zh-CN")} 字</span>
-      <span>{getReadingMinutes(post)} 分钟</span>
       <TagList tags={post.data.tags} />
     </div>
   </header>

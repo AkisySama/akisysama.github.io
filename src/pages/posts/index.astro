@@ -1,4 +1,5 @@
 ---
+import { Tag } from "@lucide/astro";
 import BaseLayout from "@layouts/BaseLayout.astro";
 import { formatRecordDate, toDateTime } from "@utils/dates";
 import { getPostUrl, getPublishedPosts, type BlogPost } from "@utils/posts";
@@ -24,6 +25,12 @@ for (const post of posts) {
               <li>
                 <a href={getPostUrl(post)}>
                   <span>{post.data.title}</span>
+                  {post.data.tags.length > 0 && (
+                    <span class="post-tags">
+                      <Tag size={12} stroke-width={1.5} aria-hidden="true" />
+                      {post.data.tags.join(" / ")}
+                    </span>
+                  )}
                   <time datetime={toDateTime(post.data.pubDate)}>{formatRecordDate(post.data.pubDate).slice(5)}</time>
                 </a>
               </li>
