@@ -30,6 +30,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site).toString();
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <ClientRouter />
+    <slot name="head" />
   </head>
   <body>
     <Header />

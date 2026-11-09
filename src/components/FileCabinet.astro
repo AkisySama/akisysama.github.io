@@ -26,15 +26,15 @@ const defaultStatus = `共 ${posts.length} 份 · ${yearRange}`;
 ---
 
 <section class="cabinet" aria-label={defaultStatus}>
-  <ol class="cabinet-well" data-cabinet-well>
+  <ol class="cabinet-well" style={`--file-count: ${posts.length}`} data-cabinet-well>
     {
-      posts.map((post) => {
+      posts.map((post, index) => {
         const number = numbers.get(post.id)!;
         const id = formatMemoryId(number);
         const length = getPostLength(post).toLocaleString("zh-CN");
         const tags = post.data.tags.join(" / ") || "未索引";
         return (
-          <li class="file" data-memory={number}>
+          <li class="file" style={`--file-index: ${index}`} data-memory={number}>
             <a
               class="file-link"
               href={getPostUrl(post)}

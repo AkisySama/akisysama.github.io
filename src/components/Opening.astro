@@ -1,0 +1,150 @@
+---
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!--
+  The home page has two states: a cover (a title and a line) and the shelf (the folders).
+  Scrolling down raises the folders out of the line, scrolling back lowers them again.
+  The folders are in the page underneath the whole time, so this is only ever a layer on
+  top, and the motion itself lives in global.css. The first visit starts on the cover.
+-->
+<div class="opening" aria-hidden="true" data-opening-stage>
+  <p class="opening-title">{title}</p>
+  <p class="opening-hint">向下滚动</p>
+</div>
+
+<script>
+  // Ignores the small drift of a resting finger on a trackpad; one wheel notch clears it.
+  const WHEEL_THRESHOLD = 24;
+  const WHEEL_IDLE_MS = 400;
+  const WHEEL_LINE_PX = 16;
+  const SWIPE_THRESHOLD = 40;
+  const RAISE_KEYS = ["ArrowDown", "PageDown", "End", " ", "Enter"];
+  const LOWER_KEYS = ["ArrowUp", "PageUp", "Home"];
+
+  const root = document.documentElement;
+
+  const stage = () => document.querySelector<HTMLElement>("[data-opening-stage]");
+  const isCover = () => root.dataset.opening === "cover";
+  const isRising = () => root.dataset.opening === "rising";
+
+  // These listeners outlive page swaps, so everything is checked again when it happens.
+  const gesturesOff = () =>
+    !stage() ||
+    matchMedia("(prefers-reduced-motion: reduce)").matches ||
+    document.querySelector("[data-timeline-shell].is-open") !== null;
+
+  const foldersAreMoving = () =>
+    root.hasAttribute("data-opening") &&
+    document
+      .querySelector("[data-cabinet-well]")
+      ?.getAnimations({ subtree: true })
+      .some((animation) => animation instanceof CSSTransition && animation.playState === "running");
+
+  const setState = (state: "rising" | "cover") => {
+    if (root.dataset.opening === state) return;
+    root.toggleAttribute("data-opening-turned", foldersAreMoving());
+    delete root.dataset.openingIntro;
+    root.dataset.opening = state;
+  };
+
+  // Scrolling back first undoes what it already moves: the page, then a sideways drawer.
+  const canLower = (target: EventTarget | null) => {
+    if (window.scrollY > 0) return false;
+    const well = target instanceof Element ? target.closest<HTMLElement>("[data-cabinet-well]") : null;
+    return !well || well.scrollLeft === 0;
+  };
+
+  let wheelTotal = 0;
+  let wheelAt = 0;
+
+  // Capture on window: this decides before the drawer's own wheel handling on document.
+  window.addEventListener(
+    "wheel",
+    (event) => {
+      if (gesturesOff() || event.ctrlKey || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+
+      const delta = event.deltaMode === WheelEvent.DOM_DELTA_LINE ? event.deltaY * WHEEL_LINE_PX : event.deltaY;
+      const onShelf = !isCover() && !isRising();
+      if (onShelf && (delta > 0 || !canLower(event.target))) {
+        wheelTotal = 0;
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (event.timeStamp - wheelAt > WHEEL_IDLE_MS || Math.sign(wheelTotal) !== Math.sign(delta)) wheelTotal = 0;
+      wheelTotal += delta;
+      wheelAt = event.timeStamp;
+      if (Math.abs(wheelTotal) < WHEEL_THRESHOLD) return;
+
+      wheelTotal = 0;
+      if (delta < 0) setState("cover");
+      else if (isCover()) setState("rising");
+    },
+    { capture: true, passive: false },
+  );
+
+  // Touch screens have no wheel: a vertical swipe means the same, and sideways stays the drawer's.
+  let touchStart: { x: number; y: number } | undefined;
+
+  window.addEventListener(
+    "touchstart",
+    (event) => {
+      const touch = event.touches.length === 1 ? event.touches[0] : undefined;
+      touchStart = touch && { x: touch.clientX, y: touch.clientY };
+    },
+    { passive: true },
+  );
+
+  window.addEventListener(
+    "touchend",
+    (event) => {
+      const touch = event.changedTouches[0];
+      if (!touchStart || !touch || gesturesOff()) return;
+
+      const dx = touch.clientX - touchStart.x;
+      const dy = touch.clientY - touchStart.y;
+      touchStart = undefined;
+      if (Math.abs(dy) < SWIPE_THRESHOLD || Math.abs(dx) > Math.abs(dy)) return;
+
+      if (dy > 0 && canLower(event.target)) setState("cover");
+      else if (dy < 0 && isCover()) setState("rising");
+    },
+    { passive: true },
+  );
+
+  window.addEventListener("keydown", (event) => {
+    if (gesturesOff() || event.metaKey || event.ctrlKey || event.altKey) return;
+
+    if (isCover() && RAISE_KEYS.includes(event.key)) {
+      event.preventDefault();
+      setState("rising");
+    } else if (!isCover() && LOWER_KEYS.includes(event.key) && canLower(event.target)) {
+      event.preventDefault();
+      setState("cover");
+    }
+  });
+
+  // Tabbing lands on links the cover is hiding, so they have to come into view.
+  document.addEventListener("focusin", () => {
+    if (isCover()) setState("rising");
+  });
+
+  document.addEventListener("click", (event) => {
+    if (isCover() && event.target instanceof Node && stage()?.contains(event.target)) setState("rising");
+  });
+
+  // The stage's delayed visibility change is timed to end with the last folder.
+  document.addEventListener("transitionend", (event) => {
+    if (isRising() && event.target === stage() && event.propertyName === "visibility") {
+      delete root.dataset.opening;
+      root.removeAttribute("data-opening-turned");
+    }
+  });
+</script>

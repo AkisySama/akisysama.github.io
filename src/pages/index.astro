@@ -1,12 +1,36 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
 import FileCabinet from "@components/FileCabinet.astro";
+import Opening from "@components/Opening.astro";
 import { getPublishedPosts } from "@utils/posts";
 
 const posts = await getPublishedPosts();
 ---
 
 <BaseLayout>
+  <Fragment slot="head">
+    {/*
+      Decided before the first paint, so returning visitors never see a flash of the cover.
+      The client router re-runs this on later navigations, when the document has already
+      loaded: only a real page load starts on the cover, not coming back from a post.
+    */}
+    <script is:inline>
+      try {
+        if (
+          document.readyState === "loading" &&
+          !sessionStorage.getItem("akisy:opening-seen") &&
+          !matchMedia("(prefers-reduced-motion: reduce)").matches
+        ) {
+          sessionStorage.setItem("akisy:opening-seen", "1");
+          document.documentElement.dataset.opening = "cover";
+          document.documentElement.dataset.openingIntro = "";
+        }
+      } catch {
+        // No storage: go straight to the folders rather than stop on the cover every visit.
+      }
+    </script>
+  </Fragment>
   <h1 class="sr-only">Akisy 的档案柜</h1>
+  <Opening title="Akisy的记录" />
   <FileCabinet posts={posts} />
 </BaseLayout>

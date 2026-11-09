@@ -34,19 +34,31 @@
       if (!link || !file) return;
 
       event.preventDefault();
+
+      // One folder at a time: navigating again would throw away the download under way.
+      // The mark goes away with the page, so this can't outlive the navigation.
+      if (document.querySelector("[data-pulling]")) return;
+
       clearSharedNames();
       file.style.setProperty("view-transition-name", SHARED_NAME);
+      file.toggleAttribute("data-pulling", true);
 
       if (prefersReducedMotion()) {
         navigate(link.href);
         return;
       }
 
-      file.toggleAttribute("data-pulling", true);
       window.setTimeout(() => navigate(link.href), LIFT_MS);
     },
     { capture: true },
   );
+
+  // A page restored from the back/forward cache keeps its marks, but nothing is loading any more.
+  window.addEventListener("pageshow", (event) => {
+    if (!event.persisted) return;
+    clearSharedNames();
+    document.querySelectorAll("[data-pulling]").forEach((file) => file.removeAttribute("data-pulling"));
+  });
 
   // Runs before the old snapshot. A header scrolled far off screen would otherwise
   // fly in across the whole page, so reading to the end simply fades back instead.

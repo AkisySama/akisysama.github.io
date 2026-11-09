@@ -393,6 +393,7 @@ img {
 
 .cabinet-well:has([data-pulling]) .file:not([data-pulling]) {
   opacity: 0.2;
+  pointer-events: none;
 }
 
 .cabinet-status {
@@ -406,6 +407,183 @@ img {
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/*
+ * ---- Opening: a title and a line that turn into the folders, and back ----
+ *
+ * The line is exactly as long as the row and sits on the well's bottom edge, which
+ * already clips overflow, so the folders come up from behind it. It is erased from the
+ * left at the pace the folders rise, and that is what makes it read as becoming them.
+ *
+ * html[data-opening] is "cover" while waiting and "rising" on the way up, and is gone once
+ * the folders stand. Everything is a transition, so changing direction halfway carries on
+ * from where things are. The resting styles below are the shelf: the layer and the line
+ * stay rendered but invisible, because something that appears from nothing can't transition.
+ */
+:root {
+  --shelf-span: 1400ms; /* From the first folder starting to the last one starting. */
+  --shelf-rise: 1100ms; /* One folder's journey. */
+  --shelf-ease: cubic-bezier(0.32, 0, 0.2, 1);
+}
+
+html:has(.opening) {
+  overscroll-behavior-y: none; /* A swipe down lowers the folders, not reloads the page. */
+}
+
+.opening {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.opening-title {
+  margin: 0;
+  color: var(--color-heading);
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 4.4vw, 2.75rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  opacity: 0;
+}
+
+/* Where the footer will be. */
+.opening-hint {
+  position: absolute;
+  right: 0;
+  bottom: 20px;
+  left: 0;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  text-align: center;
+  opacity: 0;
+}
+
+.cabinet-well {
+  position: relative;
+}
+
+.cabinet-well::after {
+  position: absolute;
+  right: 16px;
+  bottom: 1px;
+  left: 16px;
+  height: 1px;
+  background: var(--line);
+  clip-path: inset(0 0 0 100%);
+  content: "";
+  pointer-events: none;
+}
+
+/* The cover. Going back, everything runs in reverse: last folder first, title last. */
+html[data-opening="cover"] {
+  overflow: hidden;
+}
+
+html[data-opening="cover"] .opening {
+  visibility: visible;
+  pointer-events: auto;
+}
+
+html[data-opening="cover"] .opening-title {
+  opacity: 1;
+  transition: opacity 800ms linear var(--shelf-span);
+}
+
+html[data-opening="cover"] .opening-hint {
+  opacity: 1;
+  transition: opacity 600ms linear calc(var(--shelf-span) + 600ms);
+}
+
+html[data-opening="cover"] .cabinet-well::after {
+  clip-path: inset(0);
+  transition: clip-path var(--shelf-span) linear;
+}
+
+html[data-opening="cover"] .file {
+  transform: translateY(calc(100% + var(--rise) + 6px));
+  transition: transform var(--shelf-rise) var(--shelf-ease)
+    calc(var(--shelf-span) * (var(--file-count) - 1 - var(--file-index)) / var(--file-count));
+}
+
+html[data-opening="cover"] .site-header,
+html[data-opening="cover"] .site-footer {
+  opacity: 0;
+  transition: opacity 500ms linear;
+}
+
+/* On the way up. The stage's visibility change does nothing but mark the end for the script. */
+html[data-opening="rising"] .opening {
+  transition: visibility 0s linear calc(var(--shelf-span) + var(--shelf-rise));
+}
+
+html[data-opening="rising"] .opening-title {
+  transition: opacity 600ms linear;
+}
+
+html[data-opening="rising"] .opening-hint {
+  transition: opacity 300ms linear;
+}
+
+html[data-opening="rising"] .cabinet-well::after {
+  transition: clip-path var(--shelf-span) linear;
+}
+
+/*
+ * Hover and focus lift a folder by changing its transform. Mid-journey that would restart
+ * this delayed transition and leave the folder waiting where it is, so the target is pinned
+ * until they all stand. No pointer either, or it would turn black halfway up.
+ */
+html[data-opening="rising"] .cabinet-well {
+  pointer-events: none;
+}
+
+html[data-opening="rising"] .file {
+  transform: none;
+  transition: transform var(--shelf-rise) var(--shelf-ease)
+    calc(var(--shelf-span) * var(--file-index) / var(--file-count));
+}
+
+html[data-opening="rising"] .site-header,
+html[data-opening="rising"] .site-footer {
+  transition: opacity 900ms linear var(--shelf-span);
+}
+
+/* Changing direction halfway: a folder on its way turns around now, not after its turn in the line. */
+html[data-opening-turned] .file {
+  transition-delay: 0s;
+}
+
+/* The first arrival builds the cover up once. */
+html[data-opening-intro] .opening-title {
+  animation: opening-appear 1000ms linear backwards;
+}
+
+html[data-opening-intro] .opening-hint {
+  animation: opening-appear 600ms linear 1700ms backwards;
+}
+
+html[data-opening-intro] .cabinet-status {
+  animation: opening-appear 800ms linear 900ms backwards;
+}
+
+html[data-opening-intro] .cabinet-well::after {
+  animation: opening-draw 1200ms cubic-bezier(0.65, 0, 0.35, 1) 500ms backwards;
+}
+
+@keyframes opening-appear {
+  from { opacity: 0; }
+}
+
+/* Both ends are spelled out: clip-path can't interpolate from `none`. */
+@keyframes opening-draw {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0); }
 }
 
 /* ---- Article: a single quiet column, no boxes ---- */
