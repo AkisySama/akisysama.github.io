@@ -53,6 +53,13 @@
     { capture: true },
   );
 
+  // Chrome on iOS can skip history entries added by script, so its back button leaves the
+  // site instead of returning to the list. Cancelling here makes the router load the page
+  // normally, which gives that browser real entries at the cost of the page transition.
+  document.addEventListener("astro:before-preparation", (event) => {
+    if (navigator.userAgent.includes("CriOS/")) event.preventDefault();
+  });
+
   // A page restored from the back/forward cache keeps its marks, but nothing is loading any more.
   window.addEventListener("pageshow", (event) => {
     if (!event.persisted) return;
