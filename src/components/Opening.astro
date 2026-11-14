@@ -1,19 +1,21 @@
 ---
-interface Props {
-  title: string;
-}
+import portrait from "../data/portrait.txt?raw";
 
-const { title } = Astro.props;
+// Made from src/assets/portrait.jpg by scripts/make-ascii-portrait.mjs.
+const rows = portrait.trimEnd().split("\n");
+const cols = Math.max(...rows.map((row) => row.length));
+const text = rows.map((row) => row.padEnd(cols)).join("\n");
 ---
 
 <!--
-  The home page has two states: a cover (a title and a line) and the shelf (the folders).
-  Scrolling down raises the folders out of the line, scrolling back lowers them again.
-  The folders are in the page underneath the whole time, so this is only ever a layer on
-  top, and the motion itself lives in global.css. The first visit starts on the cover.
+  The home page has two states: a cover (a portrait drawn in characters, and a line) and the
+  shelf (the folders). Scrolling down raises the folders out of the line, scrolling back
+  lowers them again. The folders are in the page underneath the whole time, so this is only
+  ever a layer on top, and the motion itself lives in global.css. The first visit starts on
+  the cover.
 -->
 <div class="opening" aria-hidden="true" data-opening-stage>
-  <p class="opening-title">{title}</p>
+  <pre class="opening-portrait" style={`--portrait-cols: ${cols}; --portrait-rows: ${rows.length}`} data-portrait>{text}</pre>
   <p class="opening-hint">向下滚动</p>
 </div>
 
@@ -147,4 +149,143 @@ const { title } = Astro.props;
       root.removeAttribute("data-opening-turned");
     }
   });
+</script>
+
+<script>
+  /*
+   * The portrait is plain text in the page; this only stirs it while the cover is showing.
+   * It is typed in from the left when the cover appears, a glint crosses it now and then,
+   * and the cells under the pointer scramble. Stirred characters are wrapped in <b>.
+   */
+  const NOISE = "/\\|-_=+*:;!^~<>";
+  const FRAME_MS = 50;
+  const TYPE_IN_MS = 1500;
+  const GLINT_EVERY_MS = 7000;
+  const GLINT_MS = 2200;
+  const STIR_MS = 900;
+  const ESCAPED: Record<string, string> = { "<": "&lt;", ">": "&gt;", "&": "&amp;" };
+
+  const root = document.documentElement;
+  const noise = () => {
+    const ch = NOISE[Math.floor(Math.random() * NOISE.length)];
+    return `<b>${ESCAPED[ch] ?? ch}</b>`;
+  };
+
+  let stop: (() => void) | undefined;
+
+  const start = () => {
+    stop?.();
+    stop = undefined;
+
+    const pre = document.querySelector<HTMLElement>("[data-portrait]");
+    if (!pre) return;
+
+    const plain = pre.textContent ?? "";
+    const grid = plain.split("\n");
+    const rows = grid.length;
+    const cols = grid[0].length;
+
+    let typedAt = performance.now();
+    let pointer: { col: number; row: number; at: number } | undefined;
+    let lastFrame = 0;
+    let raf = 0;
+    let timer = 0;
+    let stirred = false;
+
+    const showing = () => root.dataset.opening === "cover" || Number(getComputedStyle(pre).opacity) > 0;
+
+    const frame = (now: number) => {
+      raf = 0;
+      if (document.hidden || !showing()) {
+        if (stirred) pre.textContent = plain;
+        stirred = false;
+        return;
+      }
+      if (now - lastFrame < FRAME_MS) return wake();
+      lastFrame = now;
+
+      const elapsed = now - typedAt;
+      const typing = elapsed < TYPE_IN_MS;
+      // The edge of what has been typed, a little ragged from row to row.
+      const edge = (elapsed / TYPE_IN_MS) * (cols + 16) - 8;
+      const sinceGlint = (elapsed - TYPE_IN_MS) % GLINT_EVERY_MS;
+      const glinting = !typing && sinceGlint < GLINT_MS;
+      // The glint is a diagonal band; this is how far along the diagonal it has come.
+      const glint = (sinceGlint / GLINT_MS) * (cols * 0.6 + rows) * 1.15 - 6;
+      const stirring = pointer !== undefined && now - pointer.at < STIR_MS;
+
+      let html = "";
+      for (let row = 0; row < rows; row++) {
+        const line = grid[row];
+        for (let col = 0; col < cols; col++) {
+          const ch = line[col];
+          if (ch === " ") {
+            html += " ";
+            continue;
+          }
+
+          let scramble = false;
+          if (typing) {
+            scramble = col + ((row * 7 + col * 13) % 9) - 4 > edge;
+          } else {
+            if (glinting) scramble = Math.abs(col * 0.6 + row - glint) < 1.3 && Math.random() < 0.55;
+            if (!scramble && stirring) {
+              scramble = Math.abs(col - pointer!.col) < 5 && Math.abs(row - pointer!.row) < 3 && Math.random() < 0.6;
+            }
+          }
+          html += scramble ? noise() : (ESCAPED[ch] ?? ch);
+        }
+        if (row < rows - 1) html += "\n";
+      }
+      pre.innerHTML = html;
+      stirred = true;
+
+      if (typing || glinting || stirring) wake();
+      else timer = window.setTimeout(wake, GLINT_EVERY_MS - sinceGlint);
+    };
+
+    const wake = () => {
+      window.clearTimeout(timer);
+      raf ||= requestAnimationFrame(frame);
+    };
+
+    const retype = () => {
+      typedAt = performance.now();
+      wake();
+    };
+
+    const onPointerMove = (event: PointerEvent) => {
+      const box = pre.getBoundingClientRect();
+      pointer = {
+        col: ((event.clientX - box.left) / box.width) * cols,
+        row: ((event.clientY - box.top) / box.height) * rows,
+        at: performance.now(),
+      };
+      wake();
+    };
+
+    // Coming back to the cover, the portrait waits for the folders to go down and then fades
+    // in: that fade starting is the moment to type it in again.
+    const onTransitionStart = (event: TransitionEvent) => {
+      if (event.target === pre && event.propertyName === "opacity" && root.dataset.opening === "cover") retype();
+    };
+
+    const controller = new AbortController();
+    const { signal } = controller;
+    pre.addEventListener("pointermove", onPointerMove, { signal });
+    pre.addEventListener("pointerleave", () => (pointer = undefined), { signal });
+    pre.addEventListener("transitionstart", onTransitionStart, { signal });
+    document.addEventListener("visibilitychange", wake, { signal });
+
+    stop = () => {
+      controller.abort();
+      cancelAnimationFrame(raf);
+      window.clearTimeout(timer);
+    };
+
+    if (root.dataset.opening === "cover") retype();
+  };
+
+  // Runs on the first load and again whenever the client router swaps this page in.
+  document.addEventListener("astro:page-load", start);
 </script>

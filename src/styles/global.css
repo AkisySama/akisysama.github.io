@@ -410,7 +410,7 @@ img {
 }
 
 /*
- * ---- Opening: a title and a line that turn into the folders, and back ----
+ * ---- Opening: a portrait and a line that turn into the folders, and back ----
  *
  * The line is exactly as long as the row and sits on the well's bottom edge, which
  * already clips overflow, so the folders come up from behind it. It is erased from the
@@ -441,14 +441,25 @@ html:has(.opening) {
   pointer-events: none;
 }
 
-.opening-title {
+/*
+ * The portrait is text, sized by its font: one row is 1em tall and one column about 0.6em
+ * wide. It takes what the viewport allows in either direction, and stays clear of the line.
+ */
+.opening-portrait {
   margin: 0;
-  color: var(--color-heading);
-  font-family: var(--font-display);
-  font-size: clamp(1.75rem, 4.4vw, 2.75rem);
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  color: var(--line);
+  font-family: var(--font-mono);
+  font-size: min(56svh / var(--portrait-rows), 88vw / var(--portrait-cols) / 0.6);
+  line-height: 1;
+  cursor: default;
   opacity: 0;
+  user-select: none;
+}
+
+/* A character that is being stirred. */
+.opening-portrait b {
+  color: var(--color-faint);
+  font-weight: inherit;
 }
 
 /* Where the footer will be. */
@@ -480,7 +491,7 @@ html:has(.opening) {
   pointer-events: none;
 }
 
-/* The cover. Going back, everything runs in reverse: last folder first, title last. */
+/* The cover. Going back, everything runs in reverse: last folder first, portrait last. */
 html[data-opening="cover"] {
   overflow: hidden;
 }
@@ -490,7 +501,7 @@ html[data-opening="cover"] .opening {
   pointer-events: auto;
 }
 
-html[data-opening="cover"] .opening-title {
+html[data-opening="cover"] .opening-portrait {
   opacity: 1;
   transition: opacity 800ms linear var(--shelf-span);
 }
@@ -522,7 +533,7 @@ html[data-opening="rising"] .opening {
   transition: visibility 0s linear calc(var(--shelf-span) + var(--shelf-rise));
 }
 
-html[data-opening="rising"] .opening-title {
+html[data-opening="rising"] .opening-portrait {
   transition: opacity 600ms linear;
 }
 
@@ -560,7 +571,7 @@ html[data-opening-turned] .file {
 }
 
 /* The first arrival builds the cover up once. */
-html[data-opening-intro] .opening-title {
+html[data-opening-intro] .opening-portrait {
   animation: opening-appear 1000ms linear backwards;
 }
 
